@@ -49,8 +49,8 @@ function ResgisterArt() {
 
         <Input
           label="Coloque sua senha:"
-          id="senha"
-          name="senha"
+          id="password"
+          name="password"
           type="password"
           description="********"
           value={formData.password}

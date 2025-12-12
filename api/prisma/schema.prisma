@@ -1,0 +1,67 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url = env("DATABASE_URL")
+}
+
+// Modelo de Usuário (Base para Artista e Contratante)
+model Usuario {
+  id            String   @id @default(uuid()) @map("id_usuario") // Mapeia para o nome antigo se quiser, ou usa id novo
+  email         String   @unique
+  usuario       String
+  senha         String
+  telefone      String?
+  localAtuacao  String?  @map("local_atuacao")
+  imagemPerfil  String?  @map("imagem_perfil_url")
+  bannerUrl     String?  @map("banner_url")
+  descricao     String?
+  tipoUsuario   String   @map("tipo_usuario") // 'artista' ou 'contratante'
+  corTema       String?  @map("cor_tema")
+  corBanner     String?  @map("cor_banner")
+  createdAt     DateTime @default(now())
+
+  // Relacionamentos
+  contratante   Contratante?
+  contratosComoArtista Contrato[] @relation("ArtistaContrato")
+  contratosComoContratante Contrato[] @relation("ContratanteContrato")
+
+  @@map("usuario") // Nome da tabela no banco
+}
+
+model Contratante {
+  id          String  @id @default(uuid())
+  organizacao String?
+  userId      String  @unique @map("id_usuario")
+  usuario     Usuario @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("contratante")
+}
+
+model Contrato {
+  id            String   @id @default(uuid()) @map("id_contrato")
+  localEvento   String   @map("local_evento")
+  dataEvento    DateTime @map("data_evento")
+  tempoEvento   Int?     @map("tempo_evento")
+  valorServico  Decimal  @map("valor_servico")
+  mensagem      String?
+  status        String   @default("Pendente")
+  
+  // Relacionamentos (Chaves Estrangeiras)
+  artistaId     String   @map("id_usuario") // Quem toca (Artista)
+  artista       Usuario  @relation("ArtistaContrato", fields: [artistaId], references: [id])
+  
+  contratanteId String   @map("id_contratante") // Quem paga (Geralmente o Usuario Contratante)
+  contratante   Usuario  @relation("ContratanteContrato", fields: [contratanteId], references: [id])
+
+  @@map("contrato")
+}
