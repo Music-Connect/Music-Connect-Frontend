@@ -1,11 +1,22 @@
 {
+  "name": "music-connect-backend",
+  "version": "1.0.0",
+  "description": "Backend Core for Music Connect",
+  "main": "dist/index.js",
+  "type": "module",
+  "scripts": {
+    "dev": "ts-node src/index.ts",
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "watch": "tsc --watch"
+  },
   "devDependencies": {
+    "@types/express": "^5.0.6",
     "@types/node": "^25.0.8",
     "ts-node": "^10.9.2",
     "typescript": "^5.9.3"
   },
   "dependencies": {
-    "@types/express": "^5.0.6",
     "express": "^5.2.1"
   }
 }

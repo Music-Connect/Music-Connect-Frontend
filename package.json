@@ -1,0 +1,23 @@
+{
+  "name": "music-connect",
+  "version": "1.0.0",
+  "description": "Music Connect - Multi-platform music application with BFF architecture",
+  "private": true,
+  "scripts": {
+    "dev:backend": "cd backend && npm run dev",
+    "dev:bff-mobile": "cd bff-mobile && npm run dev",
+    "dev:bff-web": "cd bff-web && npm run dev",
+    "dev:mobile": "cd mobile && npm start",
+    "dev:web": "cd frontend && npm run dev",
+    "install:all": "npm install && cd backend && npm install && cd ../bff-mobile && npm install && cd ../bff-web && npm install && cd ../mobile && npm install && cd ../frontend && npm install"
+  },
+  "keywords": [
+    "music",
+    "streaming",
+    "react-native",
+    "next.js",
+    "bff"
+  ],
+  "author": "",
+  "license": "MIT"
+}
