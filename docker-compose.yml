@@ -1,0 +1,43 @@
+version: "3.8"
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: music-connect-db
+    environment:
+      POSTGRES_USER: music_user
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: music_connect_db
+      POSTGRES_INITDB_ARGS: "--encoding=UTF8 --locale=pt_BR.UTF-8"
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./scripts/init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - music-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U music_user -d music_connect_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: music-connect-pgadmin
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@musicconnect.com
+      PGADMIN_DEFAULT_PASSWORD: admin123
+    ports:
+      - "5050:80"
+    depends_on:
+      - postgres
+    networks:
+      - music-network
+
+volumes:
+  postgres_data:
+
+networks:
+  music-network:
+    driver: bridge

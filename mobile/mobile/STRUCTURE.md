@@ -1,6 +1,6 @@
 # Estrutura do Projeto Mobile - Music Connect
 
-## 📁 Organização de Pastas
+## Organização de Pastas
 
 ```
 mobile/
@@ -40,7 +40,7 @@ mobile/
 └── package.json
 ```
 
-## 🎨 Componentes Disponíveis
+## Componentes Disponíveis
 
 ### Header
 
@@ -63,7 +63,7 @@ import Button from "@/components/shared/Button";
   label="Enviar"
   onPress={() => {}}
   variant="primary" // primary | secondary | danger | outline
-  icon="📤"
+  icon="send"
 />;
 ```
 
@@ -85,11 +85,11 @@ import Badge from "@/components/shared/Badge";
 <Badge
   label="Aceito"
   variant="success" // info | success | warning | error
-  icon="✅"
+  icon="check"
 />;
 ```
 
-## 🔧 Hooks Disponíveis
+## Hooks Disponíveis
 
 ### useFormState
 
@@ -122,7 +122,7 @@ confirm(
 );
 ```
 
-## 🎯 Utilitários
+## Utilitários
 
 ### Helpers de Proposta
 
@@ -148,7 +148,7 @@ import { COLORS, SPACING, FONT_SIZE } from "@/utils/theme";
 </View>;
 ```
 
-## 📝 Boas Práticas
+## Boas Práticas
 
 1. **Use componentes compartilhados** em vez de duplicar código
 2. **Use hooks customizados** para lógica reutilizável
@@ -156,7 +156,7 @@ import { COLORS, SPACING, FONT_SIZE } from "@/utils/theme";
 4. **Mantenha screens limpas** movendo lógica para hooks/utils
 5. **Importe do path alias** (@/components, @/hooks, etc)
 
-## 🚀 Próximos Passos
+## Próximos Passos
 
 - [ ] Refatorar screens existentes para usar novos componentes
 - [ ] Criar mais componentes (Input, Select, Modal, etc)

@@ -228,13 +228,3 @@ npm start
 4. **Cache**: Cada BFF pode manter seu próprio cache
 5. **Rate Limiting**: Controlar uso por cliente
 6. **Versionamento**: Cada cliente evolui independentemente
-
-## Próximos Passos
-
-- [ ] Implementar autenticação JWT
-- [ ] Adicionar banco de dados no Backend Core
-- [ ] Implementar cache Redis
-- [ ] Adicionar logging e monitoring
-- [ ] Testes unitários e E2E
-- [ ] Docker compose para orquestração
-- [ ] CI/CD pipeline

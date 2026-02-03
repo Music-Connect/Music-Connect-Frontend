@@ -1,6 +1,6 @@
-# 🎵 Music Connect - Mobile App (Expo)
+# Music Connect - Mobile App (Expo)
 
-## 📋 Estrutura Atualizada do Projeto
+## Estrutura Atualizada do Projeto
 
 ### Telas Implementadas (25 telas)
 
@@ -29,11 +29,11 @@
 
 #### **Novas Telas Implementadas (5 telas)**
 
-- ✨ `app/create-proposal.tsx` - Formulário para criar proposta para um artista
-- ✨ `app/reviews.tsx` - Avaliações recebidas e enviadas com sistema de rating
-- ✨ `app/history.tsx` - Histórico de propostas aceitas/recusadas com estatísticas
-- ✨ `app/edit-profile.tsx` - Edição completa do perfil do usuário
-- ✨ `app/advanced-search.tsx` - Busca avançada com filtros (tipo, gênero, localização)
+- `app/create-proposal.tsx` - Formulário para criar proposta para um artista
+- `app/reviews.tsx` - Avaliações recebidas e enviadas com sistema de rating
+- `app/history.tsx` - Histórico de propostas aceitas/recusadas com estatísticas
+- `app/edit-profile.tsx` - Edição completa do perfil do usuário
+- `app/advanced-search.tsx` - Busca avançada com filtros (tipo, gênero, localização)
 
 #### **Configurações (2 telas)**
 
@@ -42,7 +42,7 @@
 
 ---
 
-## 🧩 Componentes Compartilhados (4 componentes)
+## Componentes Compartilhados (4 componentes)
 
 ### `components/shared/Header.tsx`
 
@@ -70,7 +70,7 @@
 
 ---
 
-## 🎣 Hooks Customizados (2 hooks)
+## Hooks Customizados (2 hooks)
 
 ### `hooks/useFormState.ts`
 
@@ -84,7 +84,7 @@
 
 ---
 
-## 🎨 Utilitários (2 arquivos)
+## Utilitários (2 arquivos)
 
 ### `utils/theme.ts`
 
@@ -109,7 +109,7 @@ Funções utilitárias:
 
 - `getStatusColor(status)` - Retorna cor do status
 - `getStatusLabel(status)` - Retorna label do status
-- `getStatusIcon(status)` - Retorna emoji do status
+- `getStatusIcon(status)` - Retorna ícone do status
 - `getFilterLabel(status)` - Label para filtros
 - `formatDate(date)` - Formata data completa
 - `formatDateShort(date)` - Formata data curta
@@ -117,7 +117,7 @@ Funções utilitárias:
 
 ---
 
-## 📊 Mock Data
+## Mock Data
 
 ### `constants/mockData.ts`
 
@@ -129,7 +129,7 @@ Funções utilitárias:
 
 ---
 
-## 🔄 Fluxo de Navegação
+## Fluxo de Navegação
 
 ### Autenticação → App Principal
 
@@ -166,9 +166,9 @@ index (Landing) → login → profile-selector
 
 ---
 
-## 🎯 Recursos Implementados
+## Recursos Implementados
 
-### ✅ Completo
+### Completo
 
 - [x] Autenticação (6 telas de auth)
 - [x] Dashboard com propostas
@@ -187,7 +187,7 @@ index (Landing) → login → profile-selector
 - [x] Hooks customizados
 - [x] Responsividade (mobile)
 
-### ⏳ Futuro
+### Futuro
 
 - [ ] Chat/Messaging
 - [ ] Notificações em tempo real

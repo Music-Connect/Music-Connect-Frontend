@@ -1,6 +1,6 @@
-# 🏗️ Arquitetura do Music Connect
+# Arquitetura do Music Connect
 
-## 📌 Visão Geral
+## Visão Geral
 
 O **Music Connect** é uma plataforma de conexão entre artistas e contratantes, implementada com arquitetura **BFF (Backend for Frontend)** com 3 servidores Node.js/Express separados.
 
@@ -26,7 +26,7 @@ O **Music Connect** é uma plataforma de conexão entre artistas e contratantes,
 
 ---
 
-## 🏛️ Arquitetura em Camadas
+## Arquitetura em Camadas
 
 ### **Nível 1: Frontend - Mobile (Expo)**
 
@@ -155,7 +155,7 @@ mobile/mobile/
 
 ---
 
-## 🔄 Fluxo de Dados
+## Fluxo de Dados
 
 ### **1. Autenticação**
 
@@ -284,7 +284,7 @@ Renderizar resultado
 
 ---
 
-## 🎨 Sistema de Design
+## Sistema de Design
 
 ### **Componentes Reutilizáveis**
 
@@ -565,16 +565,16 @@ export default function ExploreScreen() {
 
 ---
 
-## 🚀 Implementação Futura - Roadmap
+## Implementação Futura - Roadmap
 
 ### **Fase 1: API Integration** (Próxima)
 
 ```
-✅ Criar BFF Mobile (Express + Node)
-✅ Criar Backend principal
-✅ Conectar telas ao BFF
-✅ Autenticação JWT
-✅ Mock data → Database real
+- Criar BFF Mobile (Express + Node)
+- Criar Backend principal
+- Conectar telas ao BFF
+- Autenticação JWT
+- Mock data → Database real
 ```
 
 ### **Fase 2: Features Críticas**
@@ -599,7 +599,7 @@ export default function ExploreScreen() {
 
 ---
 
-## 📊 Stack Tecnológico
+## Stack Tecnológico
 
 ### **Frontend - Mobile**
 
@@ -739,7 +739,7 @@ export default function ExploreScreen() {
 
 ---
 
-## 🎯 Como Começar o Desenvolvimento
+## Como Começar o Desenvolvimento
 
 ### **1. Entender a navegação**
 
@@ -777,7 +777,7 @@ Leia: app/_layout.tsx e app/(tabs)/_layout.tsx
 
 ---
 
-## ✅ Checklist de Implementação
+## Checklist de Implementação
 
 - [x] 25 telas implementadas
 - [x] 4 componentes reutilizáveis
