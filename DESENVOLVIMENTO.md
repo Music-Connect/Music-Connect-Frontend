@@ -2,7 +2,7 @@
 
 Este documento contém informações úteis para desenvolvedores que desejam contribuir ou entender a arquitetura interna da Music Connect.
 
-## 📂 Estrutura de Pastas
+## Estrutura de Pastas
 
 ```
 music-connect/
@@ -42,7 +42,7 @@ music-connect/
     └── init.sql             # Schema do banco
 ```
 
-## 🔄 Fluxo de Dados
+## Fluxo de Dados
 
 ### Requisição Autenticada (Exemplo)
 
@@ -83,7 +83,7 @@ music-connect/
 └─────────────────────┘
 ```
 
-## 🛠️ Padrões de Desenvolvimento
+## Padrões de Desenvolvimento
 
 ### 1. Controladores
 
@@ -253,7 +253,7 @@ export interface Proposta {
 }
 ```
 
-## 🔌 Frontend - Chamadas à API
+## Frontend - Chamadas à API
 
 ### Pattern de API Client
 
@@ -355,7 +355,7 @@ export default function ExemploPage() {
 }
 ```
 
-## 📝 Adicionando Novo Recurso (Exemplo Completo)
+## Adicionando Novo Recurso (Exemplo Completo)
 
 Digamos que você quer adicionar **Comentários em Propostas**:
 
@@ -519,7 +519,7 @@ const handleAddComentario = async (texto: string) => {
 };
 ```
 
-## 🧪 Testes Manual com Curl
+## Testes Manual com Curl
 
 ```bash
 # 1. Registrar usuário
@@ -551,7 +551,7 @@ curl -X POST http://localhost:3001/api/usuarios/auth/logout \
   -b cookies.txt
 ```
 
-## 🚨 Erros Comuns
+## Erros Comuns
 
 | Erro                                        | Causa                         | Solução                                     |
 | ------------------------------------------- | ----------------------------- | ------------------------------------------- |
@@ -561,7 +561,7 @@ curl -X POST http://localhost:3001/api/usuarios/auth/logout \
 | `Connection refused`                        | PostgreSQL desligado          | `pg_ctl start` ou Docker                    |
 | `SyntaxError: Unexpected token`             | Arquivo `.tsx` com duplicação | Verificar sintaxe e duplicações             |
 
-## 📚 Recursos Úteis
+## Recursos Úteis
 
 - **Express.js Docs**: https://expressjs.com/
 - **TypeScript Handbook**: https://www.typescriptlang.org/docs/
@@ -569,7 +569,7 @@ curl -X POST http://localhost:3001/api/usuarios/auth/logout \
 - **JWT Debugger**: https://jwt.io/
 - **Next.js Docs**: https://nextjs.org/docs
 
-## ✅ Checklist para PR
+## Checklist para PR
 
 Antes de fazer um Pull Request:
 

@@ -2,14 +2,14 @@
 
 Um ecossistema integrado para conectar músicos profissionais com contratantes, facilitando descoberta, comunicação e fechamento de propostas.
 
-## 📚 Documentação
+## Documentação
 
 - **[QUICK_START.md](QUICK_START.md)** - Comece em 5 minutos!
 - **[DESENVOLVIMENTO.md](DESENVOLVIMENTO.md)** - Como adicionar features e padrões do código
 - **[API.md](API.md)** - Documentação completa de todas as rotas
 - **[DEPLOYMENT.md](DEPLOYMENT.md)** - Guia de deployment em produção
 
-## 🏗️ Arquitetura da Aplicação
+## Arquitetura da Aplicação
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
@@ -31,7 +31,7 @@ Um ecossistema integrado para conectar músicos profissionais com contratantes, 
                                       └──────────────────┘
 ```
 
-## 🚀 Quick Start
+## Quick Start
 
 ### Pré-requisitos
 
@@ -106,7 +106,7 @@ npm start
 
 Acesse `http://localhost:3000` no navegador.
 
-## 📊 Estrutura de Dados
+## Estrutura de Dados
 
 ### Tabelas Principais
 
@@ -136,7 +136,7 @@ Acesse `http://localhost:3000` no navegador.
 - `nota` (1-5), `comentario`
 - `created_at`
 
-## 🔐 Autenticação e Segurança
+## Autenticação e Segurança
 
 ### JWT + httpOnly Cookies
 
@@ -187,7 +187,7 @@ const decoded = jwt.verify(token, process.env.JWT_SECRET);
 req.user = decoded;
 ```
 
-## 📡 Rotas da API
+## Rotas da API
 
 ### Autenticação
 
@@ -219,7 +219,7 @@ req.user = decoded;
 - `GET /api/avaliacoes/usuario/:id` - Avaliações recebidas
 - `POST /api/avaliacoes` - Criar avaliação (autenticado)
 
-## 🔧 Stack Tecnológico
+## Stack Tecnológico
 
 ### Backend
 
@@ -249,7 +249,7 @@ req.user = decoded;
 - **Expo** - Gerenciador de build
 - **TypeScript** - Type safety
 
-## 👨‍💻 Guia para Desenvolvedores
+## Guia para Desenvolvedores
 
 ### Adicionando Nova Rota
 
@@ -304,7 +304,7 @@ curl -X GET http://localhost:3001/api/propostas/recebidas \
   -b cookies.txt
 ```
 
-## 📱 Fluxo de Usuário
+## Fluxo de Usuário
 
 ### Artista
 
@@ -322,7 +322,7 @@ curl -X GET http://localhost:3001/api/propostas/recebidas \
 4. **Gerenciar** → Acompanhar status das propostas
 5. **Avaliar** → Deixar feedback após contratação
 
-## 🐛 Troubleshooting
+## Troubleshooting
 
 ### Erro: "Unexpected token" no Next.js
 
@@ -336,7 +336,7 @@ Cookie pode ter expirado (7 dias) ou não foi enviado com `credentials: 'include
 
 Verificar se PostgreSQL está rodando em `localhost:5433` com credenciais corretas
 
-## 📝 Notas Importantes
+## Notas Importantes
 
 - **Todos os tokens têm expiração de 7 dias**
 - **Senhas são hasheadas com bcrypt (10 rounds)**
@@ -344,7 +344,7 @@ Verificar se PostgreSQL está rodando em `localhost:5433` com credenciais corret
 - **httpOnly cookies impedem acesso via JavaScript (proteção XSS)**
 - **Migrations de banco de dados estão em `scripts/init.sql`**
 
-## 🔗 Links Úteis
+## Links Úteis
 
 - PostgreSQL: [https://www.postgresql.org/](https://www.postgresql.org/)
 - Express.js: [https://expressjs.com/](https://expressjs.com/)

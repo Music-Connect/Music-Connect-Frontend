@@ -2,7 +2,7 @@
 
 Comece a desenvolver em 5 minutos!
 
-## ⚡ Setup Rápido
+## Setup Rápido
 
 ### 1. Clonar e Instalar
 
@@ -65,7 +65,7 @@ Pronto! Acesse `http://localhost:3000`
 
 ---
 
-## 🔐 Teste de Autenticação
+## Teste de Autenticação
 
 ```bash
 # 1. Registrar
@@ -85,7 +85,7 @@ curl -X GET 'http://localhost:3001/api/propostas/recebidas?id_artista=1' \
 
 ---
 
-## 📚 Documentação Completa
+## Documentação Completa
 
 - **[README.md](README.md)** - Visão geral do projeto
 - **[DESENVOLVIMENTO.md](DESENVOLVIMENTO.md)** - Como adicionar features
@@ -94,7 +94,7 @@ curl -X GET 'http://localhost:3001/api/propostas/recebidas?id_artista=1' \
 
 ---
 
-## 🎯 Estrutura Principal
+## Estrutura Principal
 
 ```
 backend/
@@ -114,7 +114,7 @@ bff-web/             → Agregação de APIs para web
 
 ---
 
-## 🔑 Padrões Importantes
+## Padrões Importantes
 
 ### 1. Todas as requisições HTTP devem incluir `credentials: 'include'`
 
@@ -152,7 +152,7 @@ try {
 
 ---
 
-## 🚀 Adicionar Nova Rota (Exemplo)
+## Adicionar Nova Rota (Exemplo)
 
 ### Passo 1: Tipo
 
@@ -220,7 +220,7 @@ useEffect(() => {
 
 ---
 
-## 🐛 Erros Comuns
+## Erros Comuns
 
 | Erro                                | Solução                               |
 | ----------------------------------- | ------------------------------------- |
@@ -232,7 +232,7 @@ useEffect(() => {
 
 ---
 
-## 🧪 Testar Backend
+## Testar Backend
 
 ```bash
 # Listar artistas
@@ -247,7 +247,7 @@ curl http://localhost:3001/api/propostas/recebidas?id_artista=1 -b cookies.txt
 
 ---
 
-## 💾 Salvar Progresso
+## Salvar Progresso
 
 ```bash
 git add .
@@ -257,7 +257,7 @@ git push origin main
 
 ---
 
-## 📞 Precisa de Ajuda?
+## Precisa de Ajuda?
 
 - Ver logs do backend: `npm run dev` (já mostra no terminal)
 - Ver rede: DevTools do navegador (F12)
@@ -266,7 +266,7 @@ git push origin main
 
 ---
 
-## ✅ Checklist de Desenvolvimento
+## Checklist de Desenvolvimento
 
 Antes de commitar:
 

@@ -1,12 +1,12 @@
-# 📖 Documentação - Music Connect
+# Documentação - Music Connect
 
 Guia de referência para todos os documentos do projeto.
 
 ---
 
-## 🚀 Para Começar
+## Para Começar
 
-### **[QUICK_START.md](QUICK_START.md)** ⚡ _Leia Primeiro!_
+### **[QUICK_START.md](QUICK_START.md)** _Leia Primeiro!_
 
 - Setup em 5 minutos
 - Teste de autenticação
@@ -15,9 +15,9 @@ Guia de referência para todos os documentos do projeto.
 
 ---
 
-## 📚 Documentação Completa
+## Documentação Completa
 
-### **[README.md](README.md)** 📋
+### **[README.md](README.md)**
 
 - Visão geral do projeto
 - Arquitetura completa
@@ -26,7 +26,7 @@ Guia de referência para todos os documentos do projeto.
 - Troubleshooting comum
 - **Ideal para**: Entender o projeto inteiro
 
-### **[DESENVOLVIMENTO.md](DESENVOLVIMENTO.md)** 🛠️
+### **[DESENVOLVIMENTO.md](DESENVOLVIMENTO.md)**
 
 - Estrutura de pastas detalhada
 - Padrões de desenvolvimento
@@ -35,7 +35,7 @@ Guia de referência para todos os documentos do projeto.
 - Checklist para PRs
 - **Ideal para**: Contribuir código novo
 
-### **[API.md](API.md)** 📡
+### **[API.md](API.md)**
 
 - Documentação de TODAS as rotas
 - Request/Response examples
@@ -44,7 +44,7 @@ Guia de referência para todos os documentos do projeto.
 - Exemplos com Curl
 - **Ideal para**: Integrar com a API
 
-### **[DEPLOYMENT.md](DEPLOYMENT.md)** 🚀
+### **[DEPLOYMENT.md](DEPLOYMENT.md)**
 
 - Deploy em servidor Linux
 - Configuração PostgreSQL
@@ -56,27 +56,27 @@ Guia de referência para todos os documentos do projeto.
 
 ---
 
-## 🎯 Fluxo de Leitura Recomendado
+## Fluxo de Leitura Recomendado
 
-### 👨‍💻 Novo Desenvolvedor
+### Novo Desenvolvedor
 
 1. **QUICK_START.md** (5 min) - Setup local
 2. **README.md** (10 min) - Entender arquitetura
 3. **DESENVOLVIMENTO.md** (30 min) - Padrões e como contribuir
 4. **API.md** (referência) - Usar conforme necessário
 
-### 🏗️ DevOps / Infra
+### DevOps / Infra
 
 1. **README.md** - Visão geral
 2. **DEPLOYMENT.md** - Setup em produção
 3. **API.md** - Testar endpoints
 
-### 🔌 Integração Externa
+### Integração Externa
 
 1. **API.md** - Documentação completa
 2. **QUICK_START.md** - Autenticação
 
-### 📱 Mobile Developer
+### Mobile Developer
 
 1. **QUICK_START.md** - Setup local
 2. **API.md** - Rotas disponíveis
@@ -86,13 +86,13 @@ Guia de referência para todos os documentos do projeto.
 
 ## Checklist Rápido
 
-### ✅ Antes de Começar
+### Antes de Começar
 
 - [ ] Node.js 18+ instalado
 - [ ] PostgreSQL 15 rodando
 - [ ] Ler QUICK_START.md
 
-### ✅ Antes de Commitar
+### Antes de Commitar
 
 - [ ] Sem `console.log()` de debug
 - [ ] TypeScript sem erros
@@ -101,7 +101,7 @@ Guia de referência para todos os documentos do projeto.
 - [ ] Tratamento de erros
 - [ ] Commit message descritiva
 
-### ✅ Antes de Fazer Deploy
+### Antes de Fazer Deploy
 
 - [ ] Tudo testado localmente
 - [ ] Variáveis de ambiente (.env)
@@ -112,7 +112,7 @@ Guia de referência para todos os documentos do projeto.
 
 ---
 
-## 🔍 Encontrar Informações Rápido
+## Encontrar Informações Rápido
 
 | Procurando        | Arquivo                      |
 | ----------------- | ---------------------------- |
@@ -127,7 +127,7 @@ Guia de referência para todos os documentos do projeto.
 
 ---
 
-## 🆘 Precisa de Ajuda?
+## Precisa de Ajuda?
 
 ### Erro ao Iniciar?
 
@@ -151,7 +151,7 @@ Guia de referência para todos os documentos do projeto.
 
 ---
 
-## 📊 Estatísticas de Documentação
+## Estatísticas de Documentação
 
 - **Total de Documentos**: 5 arquivos
 - **Tamanho Total**: ~13 MB
@@ -164,7 +164,7 @@ Guia de referência para todos os documentos do projeto.
 
 ---
 
-## 🔄 Atualizar Documentação
+## Atualizar Documentação
 
 Quando adicionar features, atualize:
 
@@ -174,7 +174,7 @@ Quando adicionar features, atualize:
 
 ---
 
-## 🎓 Recursos Externos
+## Recursos Externos
 
 - **Express.js**: https://expressjs.com/
 - **Next.js**: https://nextjs.org/
@@ -185,7 +185,7 @@ Quando adicionar features, atualize:
 
 ---
 
-## 💡 Dicas
+## Dicas
 
 - Use Ctrl+F para buscar em documentos
 - Leia QUICK_START.md primeiro sempre

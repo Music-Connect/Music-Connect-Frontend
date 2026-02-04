@@ -2,7 +2,7 @@
 
 Instruções para fazer deploy da Music Connect em produção.
 
-## 📋 Pré-requisitos
+## Pré-requisitos
 
 - Node.js 18+ instalado
 - PostgreSQL 15 instalado
@@ -13,7 +13,7 @@ Instruções para fazer deploy da Music Connect em produção.
 
 ---
 
-## 🚀 Deploy em Servidor Linux
+## Deploy em Servidor Linux
 
 ### 1. Preparar o Servidor
 
@@ -314,7 +314,7 @@ pm2 web  # Acesso em http://localhost:9615
 
 ---
 
-## 🔒 Segurança em Produção
+## Segurança em Produção
 
 ### 1. Senhas Fortes
 
@@ -366,7 +366,7 @@ pm2 install pm2-auto-restart
 
 ---
 
-## 🚀 Deploy em Plataformas Gerenciadas
+## Deploy em Plataformas Gerenciadas
 
 ### Heroku
 
@@ -416,7 +416,7 @@ vercel --env-file .env.local
 
 ---
 
-## 📊 Variáveis de Ambiente em Produção
+## Variáveis de Ambiente em Produção
 
 ```env
 # Backend Production
@@ -438,7 +438,7 @@ NODE_ENV=production
 
 ---
 
-## 🔄 Atualizações
+## Atualizações
 
 ```bash
 # Pullar código atualizado
@@ -460,7 +460,7 @@ pm2 status
 
 ---
 
-## 📊 Health Check
+## Health Check
 
 ```bash
 # Endpoint de saúde
@@ -474,7 +474,7 @@ curl https://seu-dominio.com/health
 
 ---
 
-## 🆘 Troubleshooting
+## Troubleshooting
 
 | Problema                 | Solução                                                                              |
 | ------------------------ | ------------------------------------------------------------------------------------ |
@@ -487,7 +487,7 @@ curl https://seu-dominio.com/health
 
 ---
 
-## 📈 Performance
+## Performance
 
 ### Otimizações Recomendadas
 
@@ -520,7 +520,7 @@ curl https://seu-dominio.com/health
 
 ---
 
-## 📱 Monitoramento Contínuo
+## Monitoramento Contínuo
 
 ```bash
 # Dashboard PM2
@@ -537,7 +537,7 @@ pm2 install pm2-email
 
 ---
 
-## ✅ Checklist de Deployment
+## Checklist de Deployment
 
 - [ ] Variáveis de ambiente configuradas
 - [ ] PostgreSQL inicializado com dados
