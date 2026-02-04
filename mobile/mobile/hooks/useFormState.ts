@@ -3,7 +3,7 @@ import { useCallback, useState } from "react";
 export function useFormState<T>(initialState: T) {
   const [form, setForm] = useState(initialState);
 
-  const handleChange = useCallback((field: keyof T, value: any) => {
+  const handleChange = useCallback((field: keyof T, value: T[keyof T]) => {
     setForm((prev) => ({ ...prev, [field]: value }));
   }, []);
 

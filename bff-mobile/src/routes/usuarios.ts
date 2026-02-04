@@ -1,0 +1,104 @@
+import { Express, Request, Response } from "express";
+import axios from "axios";
+import {
+  ApiResponse,
+  Usuario,
+  MobileUserProfile,
+  Avaliacao,
+} from "../types/index";
+
+export function setupUsuariosRoutes(app: Express, backendUrl: string) {
+  // Get user profile with aggregated data (mobile optimized)
+  app.get("/api/mobile/usuarios/:id", async (req: Request, res: Response) => {
+    try {
+      const { id } = req.params;
+
+      // Fetch user data and evaluations in parallel
+      const [userResponse, avaliacoesResponse, mediaResponse] =
+        await Promise.all([
+          axios.get<ApiResponse<Usuario>>(`${backendUrl}/api/usuarios/${id}`),
+          axios.get<ApiResponse<Avaliacao[]>>(
+            `${backendUrl}/api/avaliacoes/usuario/${id}`,
+          ),
+          axios.get<ApiResponse<{ media: number; total: number }>>(
+            `${backendUrl}/api/avaliacoes/usuario/${id}/media`,
+          ),
+        ]);
+
+      // Aggregate data for mobile
+      const mobileProfile: MobileUserProfile = {
+        ...userResponse.data.data!,
+        avaliacoes_recebidas: avaliacoesResponse.data.data?.slice(0, 5), // Only last 5 for mobile
+        media_avaliacoes: mediaResponse.data.data?.media,
+        total_avaliacoes: mediaResponse.data.data?.total,
+      };
+
+      res.json({
+        success: true,
+        data: mobileProfile,
+      });
+    } catch (error) {
+      if (axios.isAxiosError(error) && error.response) {
+        res.status(error.response.status).json({
+          success: false,
+          error: error.response.data.error || "Erro ao buscar usuário",
+        });
+      } else {
+        res.status(500).json({
+          success: false,
+          error: "Erro ao conectar com o servidor",
+        });
+      }
+    }
+  });
+
+  // Update user profile
+  app.put("/api/mobile/usuarios/:id", async (req: Request, res: Response) => {
+    try {
+      const { id } = req.params;
+      const response = await axios.put<ApiResponse<Usuario>>(
+        `${backendUrl}/api/usuarios/${id}`,
+        req.body,
+      );
+
+      res.json(response.data);
+    } catch (error) {
+      if (axios.isAxiosError(error) && error.response) {
+        res.status(error.response.status).json({
+          success: false,
+          error: error.response.data.error || "Erro ao atualizar usuário",
+        });
+      } else {
+        res.status(500).json({
+          success: false,
+          error: "Erro ao conectar com o servidor",
+        });
+      }
+    }
+  });
+
+  // Delete user
+  app.delete(
+    "/api/mobile/usuarios/:id",
+    async (req: Request, res: Response) => {
+      try {
+        const { id } = req.params;
+        const response = await axios.delete(`${backendUrl}/api/usuarios/${id}`);
+
+        res.json(response.data);
+      } catch (error) {
+        if (axios.isAxiosError(error) && error.response) {
+          res.status(error.response.status).json({
+            success: false,
+            error: error.response.data.error || "Erro ao deletar usuário",
+          });
+        } else {
+          res.status(500).json({
+            success: false,
+            error: "Erro ao conectar com o servidor",
+          });
+        }
+      }
+    },
+  );
+}

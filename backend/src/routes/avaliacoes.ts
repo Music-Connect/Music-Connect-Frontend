@@ -1,27 +1,15 @@
-import { Router, Request, Response } from "express";
+import { Router } from "express";
+import {
+  getAvaliacoesByUserId,
+  createAvaliacao,
+  getMediaAvaliacoes,
+} from "../controllers/avaliacoesController.js";
+import { authMiddleware } from "../middleware/auth.js";
 
 const router = Router();
 
-// GET avaliacoes de um usuario
-router.get("/usuario/:id", async (req: Request, res: Response) => {
-  try {
-    const { id } = req.params;
-    // TODO: Implementar lógica
-    res.json({ success: true, data: [] });
-  } catch (error) {
-    res.status(500).json({ success: false, error: String(error) });
-  }
-});
-
-// POST create avaliacao
-router.post("/", async (req: Request, res: Response) => {
-  try {
-    const data = req.body;
-    // TODO: Implementar lógica
-    res.status(201).json({ success: true, data: {} });
-  } catch (error) {
-    res.status(500).json({ success: false, error: String(error) });
-  }
-});
+router.get("/usuario/:id", getAvaliacoesByUserId);
+router.get("/usuario/:id/media", getMediaAvaliacoes);
+router.post("/", authMiddleware, createAvaliacao);
 
 export default router;

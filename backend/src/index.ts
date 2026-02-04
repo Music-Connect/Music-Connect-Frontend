@@ -1,6 +1,7 @@
 import express from "express";
 import dotenv from "dotenv";
 import cors from "cors";
+import cookieParser from "cookie-parser";
 import { testConnection } from "./database.js";
 
 // Import routes
@@ -15,7 +16,13 @@ const app = express();
 const PORT = process.env.PORT || 3001;
 
 // Middleware
-app.use(cors());
+app.use(
+  cors({
+    origin: process.env.CORS_ORIGIN?.split(",") || "http://localhost:3000",
+    credentials: true,
+  }),
+);
+app.use(cookieParser());
 app.use(express.json());
 
 // ============================================
@@ -43,6 +50,34 @@ app.use("/api/usuarios", usuariosRouter);
 app.use("/api/artistas", artistasRouter);
 app.use("/api/propostas", propostasRouter);
 app.use("/api/avaliacoes", avaliacoesRouter);
+
+// ============================================
+// ERROR HANDLING MIDDLEWARE
+// ============================================
+
+// 404 handler
+app.use((req, res) => {
+  res.status(404).json({
+    success: false,
+    error: "Route not found",
+  });
+});
+
+// Global error handler
+app.use(
+  (
+    err: Error,
+    req: express.Request,
+    res: express.Response,
+    next: express.NextFunction,
+  ) => {
+    console.error("Error:", err);
+    res.status(500).json({
+      success: false,
+      error: err.message || "Internal server error",
+    });
+  },
+);
 
 // ============================================
 // START SERVER
