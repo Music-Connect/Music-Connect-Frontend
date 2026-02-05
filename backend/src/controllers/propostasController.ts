@@ -9,6 +9,74 @@ import {
 } from "../types/index.js";
 import { QueryResult } from "pg";
 
+export const getMinhasPropostas = async (
+  req: Request,
+  res: Response,
+): Promise<void> => {
+  try {
+    // Get user ID from auth middleware
+    const userId = (req as any).user?.id_usuario;
+
+    if (!userId) {
+      res.status(401).json({
+        success: false,
+        error: "Usuário não autenticado",
+      });
+      return;
+    }
+
+    // Get both received and sent proposals
+    const queryRecebidas = `
+      SELECT 
+        p.*,
+        u.usuario as nome_outro,
+        u.email as email_outro,
+        u.imagem_perfil_url,
+        'recebida' as tipo_proposta
+      FROM propostas p
+      LEFT JOIN usuarios u ON u.id_usuario = p.id_contratante
+      WHERE p.id_artista = $1
+      ORDER BY p.created_at DESC
+    `;
+
+    const queryEnviadas = `
+      SELECT 
+        p.*,
+        u.usuario as nome_outro,
+        u.email as email_outro,
+        u.imagem_perfil_url,
+        'enviada' as tipo_proposta
+      FROM propostas p
+      LEFT JOIN usuarios u ON u.id_usuario = p.id_artista
+      WHERE p.id_contratante = $1
+      ORDER BY p.created_at DESC
+    `;
+
+    const [resultRecebidas, resultEnviadas] = await Promise.all([
+      pool.query<PropostaComDetalhes>(queryRecebidas, [userId]),
+      pool.query<PropostaComDetalhes>(queryEnviadas, [userId]),
+    ]);
+
+    // Combine and sort by most recent
+    const propostas = [...resultRecebidas.rows, ...resultEnviadas.rows].sort(
+      (a, b) =>
+        new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
+    );
+
+    const response: ApiResponse<{ propostas: PropostaComDetalhes[] }> = {
+      success: true,
+      data: {
+        propostas,
+      },
+    };
+
+    res.json(response);
+  } catch (error) {
+    console.error("Erro ao buscar minhas propostas:", error);
+    res.status(500).json({ success: false, error: "Erro ao buscar propostas" });
+  }
+};
+
 export const getPropostasRecebidas = async (
   req: Request,
   res: Response,

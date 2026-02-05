@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import Image from "next/image";
 import { api, User } from "@/lib/api";
 
 const genres = ["Rock", "Pop", "Sertanejo", "Eletrônica", "MPB", "Jazz"];
@@ -145,13 +146,15 @@ export default function ExplorePage() {
                 className="group bg-zinc-900 border border-zinc-800 p-4 rounded-2xl hover:border-zinc-600 transition-all duration-300 hover:-translate-y-1 cursor-pointer flex flex-col h-full"
               >
                 <div className="relative aspect-square rounded-xl overflow-hidden mb-4 bg-zinc-800">
-                  <div className="absolute inset-0 bg-gradient-to-br from-zinc-800 to-black group-hover:scale-105 transition-transform duration-500"></div>
+                  <div className="absolute inset-0 bg-linear-to-br from-zinc-800 to-black group-hover:scale-105 transition-transform duration-500"></div>
 
                   <div className="absolute inset-0 flex items-center justify-center">
                     {user.imagem_perfil_url ? (
-                      <img
+                      <Image
                         src={user.imagem_perfil_url}
                         alt={user.usuario}
+                        width={300}
+                        height={300}
                         className="w-full h-full object-cover"
                       />
                     ) : (

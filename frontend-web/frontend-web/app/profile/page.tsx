@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 import { api, User } from "@/lib/api";
 
 const DEFAULT_THEME = "#ec4899";
@@ -81,7 +82,7 @@ export default function ProfilePage() {
       localStorage.setItem("user", JSON.stringify(updatedUser));
       setIsEditing(false);
       alert("Perfil atualizado com sucesso!");
-    } catch (error) {
+    } catch {
       alert("Erro ao atualizar perfil");
     }
   };
@@ -110,7 +111,7 @@ export default function ProfilePage() {
           }}
         >
           <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10"></div>
-          <div className="absolute bottom-0 left-0 w-full h-32 bg-gradient-to-t from-black to-transparent"></div>
+          <div className="absolute bottom-0 left-0 w-full h-32 bg-linear-to-t from-black to-transparent"></div>
         </div>
 
         {/* Info Container */}
@@ -124,10 +125,13 @@ export default function ProfilePage() {
           >
             <div className="w-full h-full rounded-full bg-zinc-900 flex items-center justify-center text-4xl font-bold text-white border-4 border-black overflow-hidden">
               {user.imagem_perfil_url ? (
-                <img
+                <Image
                   src={user.imagem_perfil_url}
                   alt={user.usuario}
+                  width={160}
+                  height={160}
                   className="w-full h-full object-cover"
+                  priority
                 />
               ) : (
                 user.usuario.substring(0, 2).toUpperCase()

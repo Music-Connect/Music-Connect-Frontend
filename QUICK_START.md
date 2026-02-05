@@ -2,6 +2,31 @@
 
 Comece a desenvolver em 5 minutos!
 
+## Arquitetura
+
+```
+┌─────────────┐      ┌─────────────┐
+│  Web App    │      │  Mobile App │
+│ (Next.js)   │      │   (Expo)    │
+└──────┬──────┘      └──────┬──────┘
+       │                    │
+       ▼                    ▼
+  ┌────────┐           ┌────────┐
+  │BFF Web │           │BFF Mob │
+  └────┬───┘           └───┬────┘
+       │                   │
+       └───────────┬───────┘
+                   ▼
+              ┌─────────┐
+              │ Backend │
+              │(Express)│
+              └────┬────┘
+                   ▼
+            ┌────────────┐
+            │PostgreSQL  │
+            └────────────┘
+```
+
 ## Setup Rápido
 
 ### 1. Clonar e Instalar
@@ -13,17 +38,44 @@ cd music-connect
 # Backend
 cd backend && npm install && cd ..
 
-# Frontend Web
-cd frontend-web/frontend-web && npm install && cd ../..
-
 # BFF Mobile
 cd bff-mobile && npm install && cd ..
 
 # BFF Web
 cd bff-web && npm install && cd ..
+
+# Frontend Web
+cd frontend-web/frontend-web && npm install && cd ../..
+
+# Frontend Mobile
+cd mobile/mobile && npm install && cd ../..
 ```
 
-### 2. Configurar PostgreSQL
+### 2. Configurar Ambiente
+
+**Backend** - Criar `backend/.env`:
+
+```env
+DATABASE_URL=postgresql://music_user:postgres@localhost:5433/music_connect_db
+JWT_SECRET=seu-secret-seguro-aqui
+NODE_ENV=development
+PORT=3001
+```
+
+**Frontend Web** - Criar `frontend-web/frontend-web/.env.local`:
+
+```env
+NEXT_PUBLIC_API_URL=http://localhost:3003
+```
+
+**Mobile** - Já existe `mobile/mobile/.env`:
+
+```env
+EXPO_PUBLIC_API_URL=http://localhost:3002
+EXPO_PUBLIC_DEBUG=true
+```
+
+### 3. Configurar PostgreSQL
 
 ```bash
 # Criar banco (executar uma vez)
@@ -35,245 +87,245 @@ psql -U postgres -c "GRANT ALL PRIVILEGES ON DATABASE music_connect_db TO music_
 psql -U music_user -d music_connect_db -f scripts/init.sql
 ```
 
-### 3. Executar Tudo em Paralelo
+### 4. Executar Tudo em Paralelo (5 Terminais)
 
-**Terminal 1 - Backend**
+**Terminal 1 - Backend** (porta 3001)
 
 ```bash
 cd backend && npm run dev
 ```
 
-**Terminal 2 - Frontend**
+Teste: `curl http://localhost:3001/health`
 
-```bash
-cd frontend-web/frontend-web && npm run dev
-```
-
-**Terminal 3 - BFF Mobile** (opcional)
+**Terminal 2 - BFF Mobile** (porta 3002)
 
 ```bash
 cd bff-mobile && npm run dev
 ```
 
-**Terminal 4 - BFF Web** (opcional)
+Teste: `curl http://localhost:3002/health`
+
+**Terminal 3 - BFF Web** (porta 3003)
 
 ```bash
 cd bff-web && npm run dev
 ```
 
-Pronto! Acesse `http://localhost:3000`
+Teste: `curl http://localhost:3003/health`
 
----
-
-## Teste de Autenticação
+**Terminal 4 - Frontend Web** (porta 3000)
 
 ```bash
-# 1. Registrar
-curl -X POST http://localhost:3001/api/usuarios/auth/register \
-  -H "Content-Type: application/json" \
-  -d '{
-    "usuario": "teste",
-    "email": "teste@test.com",
-    "senha": "123456",
-    "tipo_usuario": "artista"
-  }' -c cookies.txt
-
-# 2. Ver propostas recebidas (autenticado)
-curl -X GET 'http://localhost:3001/api/propostas/recebidas?id_artista=1' \
-  -b cookies.txt
+cd frontend-web/frontend-web && npm run dev
 ```
 
----
+Acesse: http://localhost:3000
 
-## Documentação Completa
+**Terminal 5 - Frontend Mobile** (porta 19000)
 
-- **[README.md](README.md)** - Visão geral do projeto
-- **[DESENVOLVIMENTO.md](DESENVOLVIMENTO.md)** - Como adicionar features
-- **[API.md](API.md)** - Documentação de todas as rotas
-- **[DEPLOYMENT.md](DEPLOYMENT.md)** - Como fazer deploy
+```bash
+cd mobile/mobile && npm start
+```
 
----
+Escaneie o QR Code com Expo Go app ou pressione 'w' para web
 
 ## Estrutura Principal
 
 ```
-backend/
-  src/controllers/   → Lógica de negócio
-  src/routes/        → Definição de rotas
-  src/middleware/    → Autenticação
-  src/types/         → Interfaces TypeScript
-
-frontend-web/
-  app/               → Páginas
-  components/        → Componentes React
-  lib/api.ts         → Cliente HTTP
-
-bff-mobile/          → Agregação de APIs para mobile
-bff-web/             → Agregação de APIs para web
+music-connect/
+├── backend/                     # API Principal
+│   └── src/
+│       ├── controllers/         # Lógica de negócio
+│       ├── routes/              # Definição de rotas
+│       ├── middleware/          # Autenticação
+│       ├── types/               # Interfaces TypeScript
+│       └── index.ts             # Express app
+│
+├── bff-mobile/                  # Otimizado para Mobile
+│   └── src/
+│       ├── routes/              # Proxy inteligente
+│       └── index.ts
+│
+├── bff-web/                     # Otimizado para Web
+│   └── src/
+│       ├── routes/              # Proxy com SSR
+│       └── index.ts
+│
+├── frontend-web/                # Web (Next.js)
+│   └── frontend-web/
+│       ├── app/                 # Páginas
+│       ├── components/          # Componentes
+│       ├── lib/api.ts           # Cliente HTTP
+│       └── package.json
+│
+├── mobile/                      # Mobile (React Native)
+│   └── mobile/
+│       ├── app/                 # Telas
+│       ├── services/api.ts      # Cliente HTTP
+│       ├── components/          # Componentes
+│       └── package.json
+│
+└── scripts/init.sql             # Schema PostgreSQL
 ```
 
----
+## Testar Fluxo Completo
 
-## Padrões Importantes
+### 1. Registro
 
-### 1. Todas as requisições HTTP devem incluir `credentials: 'include'`
+```bash
+curl -X POST http://localhost:3001/api/usuarios/auth/register \
+  -H "Content-Type: application/json" \
+  -d '{
+    "email": "teste@test.com",
+    "nome": "Teste User",
+    "senha": "123456",
+    "tipo": "artista"
+  }' -c cookies.txt
+```
+
+### 2. Login Web
+
+- Abrir http://localhost:3000
+- Login automático com cookie
+
+### 3. Login Mobile
+
+- Abrir app via Expo
+- Login automático com cookie httpOnly
+
+## Autenticação com httpOnly Cookies
+
+### Como Funciona
+
+1. **Login**: Backend gera JWT (7 dias)
+2. **Cookie httpOnly**: JWT salvo em cookie seguro (não acessível via JS)
+3. **Requisições**: Cookie é enviado automaticamente
+4. **Logout**: Cookie é deletado pelo servidor
+
+### Como Usar
+
+**Frontend Web**
 
 ```typescript
-const response = await fetch(url, {
-  credentials: "include", // Envia cookie automaticamente
+const response = await fetch(`${API_URL}/api/usuarios/me`, {
+  credentials: "include", // Envia cookie
 });
 ```
 
-### 2. Tipos TypeScript vão em `backend/src/types/index.ts`
+**Frontend Mobile**
 
 ```typescript
-export interface MinhaEntidade {
-  id: number;
+import { api } from "@/services/api";
+const user = await api.getCurrentUser(); // Inclui automaticamente
+```
+
+**Backend**
+
+```typescript
+router.get("/me", authenticateToken, async (req, res) => {
+  // req.user vem do JWT do cookie
+});
+```
+
+## BFF - Backend for Frontend
+
+BFF otimiza respostas para cada cliente:
+
+- Mobile: Dados compactos, menos waterfall
+- Web: Inclui metadata, paginação, filtros
+
+Exemplo:
+
+```
+Mobile  → BFF Mobile (3002)  → Backend (3001)
+Web     → BFF Web (3003)     → Backend (3001)
+```
+
+## Padrões Importantes
+
+### 1. Tipos em `backend/src/types/index.ts`
+
+```typescript
+export interface Usuario {
+  id_usuario: string;
+  email: string;
   nome: string;
 }
 ```
 
-### 3. Rotas protegidas usam middleware `authenticateToken`
+### 2. Controllers com try/catch
 
 ```typescript
-router.put("/:id", authenticateToken, updateController);
-```
-
-### 4. Sempre tratar erros em try/catch
-
-```typescript
-try {
-  // código
-} catch (error) {
-  console.error(error);
-  res.status(500).json({ message: "Erro" });
-}
-```
-
----
-
-## Adicionar Nova Rota (Exemplo)
-
-### Passo 1: Tipo
-
-```typescript
-// backend/src/types/index.ts
-export interface Exemplo {
-  id_exemplo: number;
-  titulo: string;
-}
-```
-
-### Passo 2: Controller
-
-```typescript
-// backend/src/controllers/exemplosController.ts
-export const getExemplos = async (req: Request, res: Response) => {
+export const getUsuario = async (req, res) => {
   try {
-    const result = await db.query("SELECT * FROM exemplos");
+    const result = await db.query(...);
     res.json({ data: result.rows });
   } catch (error) {
-    res.status(500).json({ message: "Erro" });
+    res.status(500).json({ erro: error.message });
   }
 };
 ```
 
-### Passo 3: Rota
+### 3. Rotas Protegidas
 
 ```typescript
-// backend/src/routes/exemplos.ts
-import { Router } from "express";
-import { getExemplos } from "../controllers/exemplosController.js";
-
-const router = Router();
-router.get("/", getExemplos);
-export default router;
+router.get("/me", authenticateToken, getCurrentUser);
 ```
 
-### Passo 4: Registrar no Express
-
-```typescript
-// backend/src/index.ts
-import exemplosRouter from "./routes/exemplos.js";
-app.use("/api/exemplos", exemplosRouter);
-```
-
-### Passo 5: Usar no Frontend
+### 4. Frontend Service Centralizado
 
 ```typescript
 // lib/api.ts
 export const api = {
-  async getExemplos() {
-    const response = await fetch(`${API_BASE_URL}/api/exemplos`, {
+  async getUser() {
+    return fetch(`${API_URL}/api/usuarios/me`, {
       credentials: "include",
-    });
-    return response.json();
+    }).then((r) => r.json());
   },
 };
-
-// Usar em componente
-const [exemplos, setExemplos] = useState([]);
-useEffect(() => {
-  api.getExemplos().then((data) => setExemplos(data.data));
-}, []);
 ```
 
----
+## Documentação Completa
+
+- **[README.md](README.md)** - Visão geral
+- **[DESENVOLVIMENTO.md](DESENVOLVIMENTO.md)** - Arquitetura
+- **[API.md](API.md)** - Endpoints (19 rotas)
+- **[DEPLOYMENT.md](DEPLOYMENT.md)** - Produção
+- **[DOCUMENTACAO.md](DOCUMENTACAO.md)** - Índice
 
 ## Erros Comuns
 
-| Erro                                | Solução                               |
-| ----------------------------------- | ------------------------------------- |
-| `Cannot find module`                | Executar `npm install`                |
-| `ECONNREFUSED`                      | PostgreSQL não está rodando           |
-| `401 Unauthorized`                  | Token expirado, fazer login novamente |
-| `CORS error`                        | Adicionar `credentials: 'include'`    |
-| `Cannot read property of undefined` | Verificar tipos TypeScript            |
+| Erro                                | Solução                                |
+| ----------------------------------- | -------------------------------------- |
+| `Cannot find module`                | `npm install` no diretório             |
+| `ECONNREFUSED 5432`                 | PostgreSQL não está rodando            |
+| `401 Unauthorized`                  | Fazer login novamente (cookie expirou) |
+| `CORS error`                        | Adicionar `credentials: 'include'`     |
+| `Cannot read property 'id_usuario'` | Adicionar `authenticateToken` na rota  |
 
----
-
-## Testar Backend
+## Testar APIs
 
 ```bash
 # Listar artistas
 curl http://localhost:3001/api/artistas
 
-# Usuário específico
-curl http://localhost:3001/api/usuarios/1
+# Login
+curl -X POST http://localhost:3001/api/usuarios/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"email":"teste@test.com","senha":"123456"}' \
+  -c cookies.txt
 
-# Com autenticação (usar cookies.txt gerado no login)
-curl http://localhost:3001/api/propostas/recebidas?id_artista=1 -b cookies.txt
+# Com autenticação
+curl -X GET http://localhost:3001/api/usuarios/me \
+  -b cookies.txt
+
+# BFF Mobile
+curl http://localhost:3002/api/mobile/artistas
 ```
 
----
+## Suporte
 
-## Salvar Progresso
-
-```bash
-git add .
-git commit -m "descrição da mudança"
-git push origin main
-```
-
----
-
-## Precisa de Ajuda?
-
-- Ver logs do backend: `npm run dev` (já mostra no terminal)
-- Ver rede: DevTools do navegador (F12)
-- Testar API: Use Postman ou curl
-- Ler documentação: Veja os arquivos `.md`
-
----
-
-## Checklist de Desenvolvimento
-
-Antes de commitar:
-
-- [ ] Sem `console.log()` de debug
-- [ ] TypeScript compila sem erros
-- [ ] Tipos definidos para tudo
-- [ ] Autenticação implementada se necessário
-- [ ] Tratamento de erros completo
-- [ ] Sem `any` types
-- [ ] Commit message descritiva
+- Logs: Terminal onde rodou `npm run dev`
+- Network: F12 > Network tab no browser
+- Mobile: Expo app ou Expo Go
+- Docs: Veja os arquivos `.md`

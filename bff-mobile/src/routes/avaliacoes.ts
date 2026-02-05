@@ -73,9 +73,16 @@ export function setupAvaliacoesRoutes(app: Express, backendUrl: string) {
   // Create review
   app.post("/api/mobile/avaliacoes", async (req: Request, res: Response) => {
     try {
+      const authorization = req.headers.authorization || "";
+
       const response = await axios.post<ApiResponse<Avaliacao>>(
         `${backendUrl}/api/avaliacoes`,
         req.body,
+        {
+          headers: {
+            ...(authorization && { Authorization: authorization }),
+          },
+        },
       );
 
       res.status(201).json({

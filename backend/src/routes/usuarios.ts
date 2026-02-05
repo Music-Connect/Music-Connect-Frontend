@@ -4,6 +4,7 @@ import {
   register,
   getAllUsuarios,
   getUsuarioById,
+  getCurrentUser,
   updateUsuario,
   deleteUsuario,
 } from "../controllers/usuariosController.js";
@@ -18,6 +19,9 @@ router.post("/auth/logout", (req, res) => {
   res.clearCookie("token");
   res.json({ success: true, message: "Logout realizado com sucesso" });
 });
+
+// Get current user (protegida)
+router.get("/me", authMiddleware, getCurrentUser);
 
 // CRUD routes
 router.get("/", getAllUsuarios);

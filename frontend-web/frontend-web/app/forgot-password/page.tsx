@@ -7,7 +7,7 @@ export default function ForgotPasswordPage() {
     <div className="min-h-screen w-full flex items-center justify-center bg-black">
       <div className="w-full h-full flex flex-col items-center justify-center p-8">
         <h1 className="text-5xl font-bold mb-10 text-center">
-          <span className="bg-gradient-to-r from-yellow-300 to-pink-500 text-transparent bg-clip-text">
+          <span className="bg-linear-to-r from-yellow-300 to-pink-500 text-transparent bg-clip-text">
             Recuperar Senha
           </span>
         </h1>
@@ -35,7 +35,7 @@ export default function ForgotPasswordPage() {
 
           <button
             type="submit"
-            className="w-full px-6 py-3 rounded-full bg-gradient-to-r from-yellow-300 to-pink-500 text-black font-bold hover:opacity-90 transition"
+            className="w-full px-6 py-3 rounded-full bg-linear-to-r from-yellow-300 to-pink-500 text-black font-bold hover:opacity-90 transition"
           >
             Enviar Email
           </button>

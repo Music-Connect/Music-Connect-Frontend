@@ -8,8 +8,8 @@ import {
   TouchableOpacity,
   StatusBar,
 } from "react-native";
-import { useRouter } from "expo-router";
-import { mockArtists } from "@/constants/mockData";
+import { useRouter, useFocusEffect } from "expo-router";
+import api from "@/services/api";
 
 interface Artist {
   id_usuario: number;
@@ -30,13 +30,26 @@ export default function ExploreScreen() {
   const [selectedFilter, setSelectedFilter] = useState<FilterType>("todos");
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    setTimeout(() => {
-      setArtists(mockArtists);
-      setFilteredArtists(mockArtists);
+  useFocusEffect(
+    React.useCallback(() => {
+      loadArtists();
+    }, []),
+  );
+
+  const loadArtists = async () => {
+    try {
+      setLoading(true);
+      const response = await api.listarArtistas();
+      if (response.success && response.data?.artistas) {
+        setArtists(response.data.artistas);
+        setFilteredArtists(response.data.artistas);
+      }
+    } catch (error) {
+      console.error("Erro ao carregar artistas:", error);
+    } finally {
       setLoading(false);
-    }, 500);
-  }, []);
+    }
+  };
 
   useEffect(() => {
     filterArtists();

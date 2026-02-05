@@ -46,7 +46,7 @@ export default function Header({
           <p className="text-sm font-bold text-white">{user.usuario}</p>
           <p className="text-xs text-zinc-500 capitalize">{userType}</p>
         </div>
-        <div className="w-10 h-10 rounded-full bg-gradient-to-r from-yellow-300 to-pink-500 p-[2px]">
+        <div className="w-10 h-10 rounded-full bg-linear-to-r from-yellow-300 to-pink-500 p-0.5">
           <div className="w-full h-full rounded-full bg-zinc-900 flex items-center justify-center font-bold text-sm">
             {user.usuario ? user.usuario.substring(0, 2).toUpperCase() : "U"}
           </div>

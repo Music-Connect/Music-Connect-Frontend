@@ -7,76 +7,73 @@ import {
   ScrollView,
   TouchableOpacity,
   FlatList,
+  ActivityIndicator,
 } from "react-native";
+import { useFocusEffect } from "expo-router";
+import api from "@/services/api";
 import Header from "@/components/shared/Header";
 import Card from "@/components/shared/Card";
 import Badge from "@/components/shared/Badge";
 import { getStatusLabel, formatDateShort } from "@/utils/proposalHelpers";
 
 interface HistoryItem {
-  id: number;
+  id: string;
   titulo: string;
   artista?: string;
   contratante?: string;
   data: string;
   valor: string;
-  status: "pendente" | "aceito" | "recusado";
+  status: "pendente" | "aceita" | "rejeitada";
   type: "enviada" | "recebida";
 }
 
-const mockHistory: HistoryItem[] = [
-  {
-    id: 1,
-    titulo: "Show para Casamento",
-    artista: "Maria Santos",
-    data: "2026-02-01",
-    valor: "R$ 3.000,00",
-    status: "aceito",
-    type: "enviada",
-  },
-  {
-    id: 2,
-    titulo: "Festival de Música",
-    contratante: "Prefeitura Municipal",
-    data: "2026-01-28",
-    valor: "R$ 5.000,00",
-    status: "aceito",
-    type: "recebida",
-  },
-  {
-    id: 3,
-    titulo: "DJ para Festa de Formatura",
-    artista: "Pedro Lima",
-    data: "2026-01-15",
-    valor: "R$ 2.200,00",
-    status: "recusado",
-    type: "enviada",
-  },
-  {
-    id: 4,
-    titulo: "Show em Casa de Eventos",
-    contratante: "Espaço Cultural XYZ",
-    data: "2026-01-10",
-    valor: "R$ 2.500,00",
-    status: "pendente",
-    type: "recebida",
-  },
-];
-
-type FilterType = "todos" | "aceito" | "recusado" | "pendente";
+type FilterType = "todos" | "aceita" | "rejeitada" | "pendente";
 
 export default function HistoryScreen() {
   const [filter, setFilter] = useState<FilterType>("todos");
+  const [history, setHistory] = useState<HistoryItem[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const filteredHistory = mockHistory.filter((h) =>
+  useFocusEffect(
+    React.useCallback(() => {
+      loadHistory();
+    }, []),
+  );
+
+  const loadHistory = async () => {
+    try {
+      setLoading(true);
+      const response = await api.listarMinhasPropostas();
+      if (response.success && response.data?.propostas) {
+        const items = response.data.propostas.map((p: any) => ({
+          id: p.id_proposta,
+          titulo: p.descricao || "Proposta",
+          artista: p.tipo_proposta === "enviada" ? p.nome_outro : undefined,
+          contratante:
+            p.tipo_proposta === "recebida" ? p.nome_outro : undefined,
+          data: p.created_at,
+          valor: p.valor_oferecido ? `R$ ${p.valor_oferecido}` : "A combinar",
+          status: p.status,
+          type: p.tipo_proposta,
+        }));
+        setHistory(items);
+      }
+    } catch (error) {
+      console.error("Erro ao carregar histórico:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const filteredHistory = history.filter((h) =>
     filter === "todos" ? true : h.status === filter,
   );
 
   const stats = {
-    total: mockHistory.length,
-    aceito: mockHistory.filter((h) => h.status === "aceito").length,
-    recusado: mockHistory.filter((h) => h.status === "recusado").length,
-    pendente: mockHistory.filter((h) => h.status === "pendente").length,
+    total: history.length,
+    aceita: history.filter((h) => h.status === "aceita").length,
+    rejeitada: history.filter((h) => h.status === "rejeitada").length,
+    pendente: history.filter((h) => h.status === "pendente").length,
   };
 
   const renderItem = ({ item }: { item: HistoryItem }) => (
@@ -91,11 +88,11 @@ export default function HistoryScreen() {
           </Text>
         </View>
         <Badge
-          label={getStatusLabel(item.status)}
+          label={getStatusLabel(item.status as any)}
           variant={
-            item.status === "aceito"
+            item.status === "aceita"
               ? "success"
-              : item.status === "recusado"
+              : item.status === "rejeitada"
                 ? "error"
                 : "warning"
           }
@@ -132,13 +129,13 @@ export default function HistoryScreen() {
           </Card>
           <Card style={styles.statCard}>
             <Text style={[styles.statNumber, { color: "#10B981" }]}>
-              {stats.aceito}
+              {stats.aceita}
             </Text>
             <Text style={styles.statLabel}>Aceitas</Text>
           </Card>
           <Card style={styles.statCard}>
             <Text style={[styles.statNumber, { color: "#EF4444" }]}>
-              {stats.recusado}
+              {stats.rejeitada}
             </Text>
             <Text style={styles.statLabel}>Recusadas</Text>
           </Card>
@@ -152,7 +149,7 @@ export default function HistoryScreen() {
 
         {/* Filters */}
         <View style={styles.filterContainer}>
-          {(["todos", "aceito", "recusado", "pendente"] as FilterType[]).map(
+          {(["todos", "aceita", "rejeitada", "pendente"] as FilterType[]).map(
             (f) => (
               <TouchableOpacity
                 key={f}
@@ -170,10 +167,10 @@ export default function HistoryScreen() {
                 >
                   {f === "todos"
                     ? "Todos"
-                    : f === "aceito"
-                      ? "✅ Aceitos"
-                      : f === "recusado"
-                        ? "❌ Recusados"
+                    : f === "aceita"
+                      ? "✅ Aceitas"
+                      : f === "rejeitada"
+                        ? "❌ Rejeitadas"
                         : "⏳ Pendentes"}
                 </Text>
               </TouchableOpacity>
@@ -182,7 +179,11 @@ export default function HistoryScreen() {
         </View>
 
         {/* History List */}
-        {filteredHistory.length > 0 ? (
+        {loading ? (
+          <View style={styles.loadingContainer}>
+            <ActivityIndicator size="large" color="#FF6B35" />
+          </View>
+        ) : filteredHistory.length > 0 ? (
           <View style={styles.listContainer}>
             <Text style={styles.listTitle}>
               {filteredHistory.length} proposta
@@ -345,5 +346,10 @@ const styles = StyleSheet.create({
   emptyText: {
     fontSize: 12,
     color: "#999",
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
   },
 });

@@ -7,21 +7,75 @@ import {
   StatusBar,
   ScrollView,
   Alert,
+  ActivityIndicator,
 } from "react-native";
-import { useLocalSearchParams, useRouter } from "expo-router";
-import { mockProposalsSent, mockArtists } from "@/constants/mockData";
+import { useLocalSearchParams, useRouter, useFocusEffect } from "expo-router";
+import api from "@/services/api";
 
-type ProposalStatus = "pendente" | "aceito" | "recusado";
+type ProposalStatus = "pendente" | "aceita" | "rejeitada";
 
 export default function ProposalSentDetailScreen() {
   const { id } = useLocalSearchParams();
   const router = useRouter();
+  const [proposal, setProposal] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
 
-  const proposal = mockProposalsSent.find(
-    (p) => p.id_proposta === parseInt(id as string),
+  useFocusEffect(
+    React.useCallback(() => {
+      if (id) {
+        loadProposal();
+      }
+    }, [id]),
   );
 
-  const artist = mockArtists.find((a) => a.id_usuario === proposal?.id_artista);
+  const loadProposal = async () => {
+    try {
+      setLoading(true);
+      const response = await api.listarMinhasPropostas();
+      if (response.success && response.data?.propostas) {
+        const found = response.data.propostas.find(
+          (p: any) => p.id_proposta === id,
+        );
+        if (found) {
+          setProposal(found);
+        }
+      }
+    } catch (error) {
+      console.error("Erro ao carregar proposta:", error);
+      Alert.alert("Erro", "Falha ao carregar proposta");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <View style={styles.container}>
+        <StatusBar barStyle="light-content" backgroundColor="#000" />
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color="#FF6B35" />
+        </View>
+      </View>
+    );
+  }
+
+  if (!proposal) {
+    return (
+      <View style={styles.container}>
+        <StatusBar barStyle="light-content" backgroundColor="#000" />
+        <View style={styles.errorContainer}>
+          <Text style={styles.errorText}>Proposta não encontrada</Text>
+          <TouchableOpacity
+            style={styles.backButton}
+            onPress={() => router.back()}
+          >
+            <Text style={styles.backButtonText}>← Voltar</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+    );
+  }
+
   const [status] = useState<ProposalStatus>(
     (proposal?.status as ProposalStatus) || "pendente",
   );

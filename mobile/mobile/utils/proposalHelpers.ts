@@ -1,11 +1,11 @@
-export type ProposalStatus = "pendente" | "aceito" | "recusado";
-export type FilterStatus = "todos" | "pendente" | "aceito" | "recusado";
+export type ProposalStatus = "pendente" | "aceita" | "rejeitada";
+export type FilterStatus = "todos" | "pendente" | "aceita" | "rejeitada";
 
 export function getStatusColor(status: ProposalStatus): string {
   switch (status) {
-    case "aceito":
+    case "aceita":
       return "#10B981";
-    case "recusado":
+    case "rejeitada":
       return "#EF4444";
     case "pendente":
     default:
@@ -15,10 +15,10 @@ export function getStatusColor(status: ProposalStatus): string {
 
 export function getStatusLabel(status: ProposalStatus): string {
   switch (status) {
-    case "aceito":
-      return "Aceito";
-    case "recusado":
-      return "Recusado";
+    case "aceita":
+      return "Aceita";
+    case "rejeitada":
+      return "Rejeitada";
     case "pendente":
     default:
       return "Pendente";
@@ -27,9 +27,9 @@ export function getStatusLabel(status: ProposalStatus): string {
 
 export function getStatusIcon(status: ProposalStatus): string {
   switch (status) {
-    case "aceito":
+    case "aceita":
       return "✅";
-    case "recusado":
+    case "rejeitada":
       return "❌";
     case "pendente":
     default:
@@ -41,10 +41,10 @@ export function getFilterLabel(filter: FilterStatus): string {
   switch (filter) {
     case "pendente":
       return "⏳ Pendentes";
-    case "aceito":
-      return "✅ Aceitos";
-    case "recusado":
-      return "❌ Recusados";
+    case "aceita":
+      return "✅ Aceitas";
+    case "rejeitada":
+      return "❌ Rejeitadas";
     case "todos":
     default:
       return "Todos";

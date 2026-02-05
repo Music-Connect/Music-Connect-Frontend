@@ -8,8 +8,8 @@ import {
   TextInput,
   Alert,
 } from "react-native";
-import { useLocalSearchParams, useRouter } from "expo-router";
-import { mockArtists } from "@/constants/mockData";
+import { useLocalSearchParams, useRouter, useFocusEffect } from "expo-router";
+import api from "@/services/api";
 import Header from "@/components/shared/Header";
 import Button from "@/components/shared/Button";
 import Card from "@/components/shared/Card";
@@ -17,9 +17,30 @@ import Card from "@/components/shared/Card";
 export default function CreateProposalScreen() {
   const { id } = useLocalSearchParams();
   const router = useRouter();
-  const artist = mockArtists.find(
-    (a) => a.id_usuario === parseInt(id as string),
+  const [artist, setArtist] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+
+  useFocusEffect(
+    React.useCallback(() => {
+      if (id) {
+        loadArtist();
+      }
+    }, [id]),
   );
+
+  const loadArtist = async () => {
+    try {
+      setLoading(true);
+      const response = await api.getArtistaDetalhes(Number(id));
+      if (response.success && response.data?.artista) {
+        setArtist(response.data.artista);
+      }
+    } catch (error) {
+      console.error("Erro ao carregar artista:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const [form, setForm] = useState({
     titulo: "",
@@ -29,6 +50,17 @@ export default function CreateProposalScreen() {
     valor: "",
     local: "",
   });
+
+  if (loading) {
+    return (
+      <View style={styles.container}>
+        <Header title="Criar Proposta" />
+        <View style={styles.errorContainer}>
+          <Text style={styles.errorText}>Carregando...</Text>
+        </View>
+      </View>
+    );
+  }
 
   if (!artist) {
     return (
@@ -41,18 +73,32 @@ export default function CreateProposalScreen() {
     );
   }
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!form.titulo || !form.data || !form.valor) {
       Alert.alert("Erro", "Preencha todos os campos obrigatórios");
       return;
     }
 
-    Alert.alert("Sucesso", "Proposta enviada com sucesso!", [
-      {
-        text: "OK",
-        onPress: () => router.back(),
-      },
-    ]);
+    try {
+      const response = await api.criarProposta({
+        ...form,
+        id_artista: Number(id),
+      });
+
+      if (response.success) {
+        Alert.alert("Sucesso", "Proposta enviada com sucesso!", [
+          {
+            text: "OK",
+            onPress: () => router.back(),
+          },
+        ]);
+      } else {
+        Alert.alert("Erro", response.error || "Erro ao criar proposta");
+      }
+    } catch (error) {
+      console.error("Erro ao criar proposta:", error);
+      Alert.alert("Erro", "Não foi possível criar a proposta");
+    }
   };
 
   return (

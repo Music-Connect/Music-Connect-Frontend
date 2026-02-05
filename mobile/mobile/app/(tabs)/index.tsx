@@ -6,39 +6,70 @@ import {
   StyleSheet,
   TouchableOpacity,
   StatusBar,
+  ActivityIndicator,
 } from "react-native";
-import { useRouter } from "expo-router";
-import { mockProposals, mockUser } from "@/constants/mockData";
+import { useRouter, useFocusEffect } from "expo-router";
+import api from "@/services/api";
 
 interface Proposal {
-  id_contrato: number;
-  titulo: string;
-  data: string;
-  hora: string;
-  valor: string;
-  status: string;
-  contratante: string;
+  id_proposta: string;
   descricao: string;
+  valor_oferecido: number;
+  status: "pendente" | "aceita" | "rejeitada" | "concluida";
+  data_criacao: string;
+  id_contratante: string;
+  id_artista: string;
+}
+
+interface User {
+  id_usuario: string;
+  nome: string;
+  email: string;
+  tipo: string;
 }
 
 export default function DashboardScreen() {
   const router = useRouter();
   const [proposals, setProposals] = useState<Proposal[]>([]);
+  const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    setTimeout(() => {
-      setProposals(mockProposals);
+  useFocusEffect(
+    React.useCallback(() => {
+      loadData();
+    }, []),
+  );
+
+  const loadData = async () => {
+    setLoading(true);
+    try {
+      const [userRes, proposalsRes] = await Promise.all([
+        api.getCurrentUser(),
+        api.listarMinhasPropostas(),
+      ]);
+
+      if (userRes.success && userRes.data?.user) {
+        setUser(userRes.data.user as User);
+      }
+
+      if (proposalsRes.success && proposalsRes.data?.propostas) {
+        setProposals(proposalsRes.data.propostas);
+      }
+    } catch (error) {
+      console.error("Erro ao carregar dados:", error);
+    } finally {
       setLoading(false);
-    }, 500);
-  }, []);
+    }
+  };
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case "aceito":
+      case "aceita":
         return "#10B981";
-      case "recusado":
+      case "rejeitada":
         return "#EF4444";
+      case "concluida":
+        return "#3B82F6";
       default:
         return "#F59E0B";
     }
@@ -46,29 +77,33 @@ export default function DashboardScreen() {
 
   const getStatusText = (status: string) => {
     switch (status) {
-      case "aceito":
-        return "Aceito";
-      case "recusado":
-        return "Recusado";
+      case "aceita":
+        return "Aceita";
+      case "rejeitada":
+        return "Rejeitada";
+      case "concluida":
+        return "Concluída";
       default:
         return "Pendente";
     }
   };
 
-  const handleAccept = (id: number) => {
-    setProposals(
-      proposals.map((p) =>
-        p.id_contrato === id ? { ...p, status: "aceito" } : p,
-      ),
-    );
+  const handleAccept = async (id: string) => {
+    try {
+      await api.atualizarStatusProposta(id, "aceita");
+      loadData();
+    } catch (error) {
+      console.error("Erro ao aceitar proposta:", error);
+    }
   };
 
-  const handleDecline = (id: number) => {
-    setProposals(
-      proposals.map((p) =>
-        p.id_contrato === id ? { ...p, status: "recusado" } : p,
-      ),
-    );
+  const handleDecline = async (id: string) => {
+    try {
+      await api.atualizarStatusProposta(id, "rejeitada");
+      loadData();
+    } catch (error) {
+      console.error("Erro ao recusar proposta:", error);
+    }
   };
 
   const renderProposal = ({ item }: { item: Proposal }) => (
@@ -116,13 +151,13 @@ export default function DashboardScreen() {
         <View style={styles.actionsContainer}>
           <TouchableOpacity
             style={[styles.actionButton, styles.declineButton]}
-            onPress={() => handleDecline(item.id_contrato)}
+            onPress={() => handleDecline(item.id_proposta)}
           >
             <Text style={styles.declineButtonText}>Recusar</Text>
           </TouchableOpacity>
           <TouchableOpacity
             style={[styles.actionButton, styles.acceptButton]}
-            onPress={() => handleAccept(item.id_contrato)}
+            onPress={() => handleAccept(item.id_proposta)}
           >
             <Text style={styles.acceptButtonText}>Aceitar</Text>
           </TouchableOpacity>
@@ -146,12 +181,14 @@ export default function DashboardScreen() {
       {/* Header */}
       <View style={styles.header}>
         <View>
-          <Text style={styles.greeting}>Olá, {mockUser.usuario}! 👋</Text>
-          <Text style={styles.userType}>{mockUser.tipo_usuario}</Text>
+          <Text style={styles.greeting}>
+            Olá, {user?.usuario || "Usuário"}! 👋
+          </Text>
+          <Text style={styles.userType}>{user?.tipo_usuario || ""}</Text>
         </View>
         <TouchableOpacity style={styles.avatar}>
           <Text style={styles.avatarText}>
-            {mockUser.usuario.substring(0, 2).toUpperCase()}
+            {(user?.usuario || "US").substring(0, 2).toUpperCase()}
           </Text>
         </TouchableOpacity>
       </View>

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -10,8 +10,8 @@ import {
   Alert,
   useWindowDimensions,
 } from "react-native";
-import { useRouter } from "expo-router";
-import { mockUser } from "@/constants/mockData";
+import { useRouter, useFocusEffect } from "expo-router";
+import api from "@/services/api";
 
 type TabType = "account" | "security" | "notifications";
 
@@ -20,15 +20,54 @@ export default function SettingsScreen() {
   const { width } = useWindowDimensions();
   const isTablet = width >= 768;
   const [activeTab, setActiveTab] = useState<TabType>("account");
+  const [initializing, setInitializing] = useState(true);
   const [form, setForm] = useState({
-    usuario: mockUser.usuario,
-    email: mockUser.email,
-    telefone: mockUser.telefone || "",
-    local_atuacao: mockUser.local_atuacao || "",
+    nome: "",
+    email: "",
+    telefone: "",
+    local_atuacao: "",
   });
 
-  const handleUpdate = () => {
-    Alert.alert("Sucesso", "Configurações salvas com sucesso!");
+  useFocusEffect(
+    React.useCallback(() => {
+      loadUserData();
+    }, []),
+  );
+
+  const loadUserData = async () => {
+    try {
+      setInitializing(true);
+      const response = await api.getCurrentUser();
+      if (response.success && response.data?.user) {
+        const user = response.data.user as any;
+        setForm({
+          nome: user.nome || "",
+          email: user.email || "",
+          telefone: user.telefone || "",
+          local_atuacao:
+            user.tipo === "artista"
+              ? (user as any).especialidades
+              : (user as any).area_atuacao || "",
+        });
+      }
+    } catch (error) {
+      Alert.alert("Erro", "Falha ao carregar configurações");
+    } finally {
+      setInitializing(false);
+    }
+  };
+
+  const handleUpdate = async () => {
+    try {
+      const response = await api.updateProfile(form);
+      if (response.success) {
+        Alert.alert("Sucesso", "Configurações salvas com sucesso!");
+      } else {
+        Alert.alert("Erro", response.error || "Falha ao salvar");
+      }
+    } catch (error) {
+      Alert.alert("Erro", "Falha ao salvar configurações");
+    }
   };
 
   const handleDeleteAccount = () => {
@@ -44,6 +83,15 @@ export default function SettingsScreen() {
     ]);
   };
 
+  if (initializing) {
+    return (
+      <View style={styles.container}>
+        <StatusBar barStyle="light-content" backgroundColor="#000" />
+        <Text style={styles.sectionTitle}>Carregando...</Text>
+      </View>
+    );
+  }
+
   const renderAccount = () => (
     <View style={styles.section}>
       <View style={styles.sectionHeader}>
@@ -53,7 +101,7 @@ export default function SettingsScreen() {
       <View style={styles.avatarSection}>
         <View style={styles.avatar}>
           <Text style={styles.avatarText}>
-            {mockUser.usuario.substring(0, 2).toUpperCase()}
+            {form.nome.substring(0, 2).toUpperCase()}
           </Text>
         </View>
         <TouchableOpacity style={styles.changePhotoButton}>
@@ -63,11 +111,11 @@ export default function SettingsScreen() {
 
       <View style={styles.form}>
         <View style={styles.inputGroup}>
-          <Text style={styles.label}>Nome de usuário</Text>
+          <Text style={styles.label}>Nome</Text>
           <TextInput
             style={styles.input}
-            value={form.usuario}
-            onChangeText={(text) => setForm({ ...form, usuario: text })}
+            value={form.nome}
+            onChangeText={(text) => setForm({ ...form, nome: text })}
             placeholderTextColor="#666"
           />
         </View>

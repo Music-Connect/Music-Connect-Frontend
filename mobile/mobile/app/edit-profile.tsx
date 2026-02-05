@@ -8,8 +8,8 @@ import {
   TextInput,
   Alert,
 } from "react-native";
-import { useRouter } from "expo-router";
-import { mockUser } from "@/constants/mockData";
+import { useRouter, useFocusEffect } from "expo-router";
+import api from "@/services/api";
 import Header from "@/components/shared/Header";
 import Button from "@/components/shared/Button";
 import Card from "@/components/shared/Card";
@@ -18,31 +18,89 @@ import { useFormState } from "@/hooks/useFormState";
 export default function EditProfileScreen() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
-  const { form, handleChange } = useFormState({
-    usuario: mockUser.usuario,
-    email: mockUser.email,
-    telefone: mockUser.telefone || "",
-    local_atuacao: mockUser.local_atuacao || "",
-    descricao: mockUser.descricao || "",
+  const [initializing, setInitializing] = useState(true);
+  const { form, handleChange, setForm } = useFormState({
+    nome: "",
+    email: "",
+    telefone: "",
+    local_atuacao: "",
+    descricao: "",
   });
 
+  useFocusEffect(
+    React.useCallback(() => {
+      loadUserData();
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []),
+  );
+
+  const loadUserData = async () => {
+    try {
+      setInitializing(true);
+      const response = await api.getCurrentUser();
+      if (response.success && response.data?.user) {
+        const user = response.data.user as any;
+        setForm({
+          nome: user.nome || "",
+          email: user.email || "",
+          telefone: user.telefone || "",
+          local_atuacao:
+            user.local_atuacao ||
+            user.area_atuacao ||
+            user.especialidades ||
+            "",
+          descricao: user.descricao || "",
+        });
+      }
+    } catch {
+      Alert.alert("Erro", "Falha ao carregar dados do perfil");
+    } finally {
+      setInitializing(false);
+    }
+  };
+
   const handleSave = async () => {
-    if (!form.usuario || !form.email) {
+    if (!form.nome || !form.email) {
       Alert.alert("Erro", "Preencha os campos obrigatórios");
       return;
     }
 
     setLoading(true);
-    setTimeout(() => {
+    try {
+      const response = await api.updateProfile({
+        nome: form.nome,
+        email: form.email,
+        telefone: form.telefone,
+      } as any);
+
+      if (response.success) {
+        Alert.alert("Sucesso", "Perfil atualizado com sucesso!", [
+          {
+            text: "OK",
+            onPress: () => router.back(),
+          },
+        ]);
+      } else {
+        Alert.alert("Erro", response.error || "Falha ao atualizar perfil");
+      }
+    } catch {
+      Alert.alert("Erro", "Falha ao atualizar perfil");
+    } finally {
       setLoading(false);
-      Alert.alert("Sucesso", "Perfil atualizado com sucesso!", [
-        {
-          text: "OK",
-          onPress: () => router.back(),
-        },
-      ]);
-    }, 1000);
+    }
   };
+
+  if (initializing) {
+    return (
+      <View style={styles.container}>
+        <StatusBar barStyle="light-content" backgroundColor="#000" />
+        <Header title="Editar Perfil" />
+        <View style={styles.loadingContainer}>
+          <Text style={styles.loadingText}>Carregando...</Text>
+        </View>
+      </View>
+    );
+  }
 
   return (
     <View style={styles.container}>
@@ -58,7 +116,7 @@ export default function EditProfileScreen() {
           <View style={styles.avatarContainer}>
             <View style={styles.avatar}>
               <Text style={styles.avatarText}>
-                {form.usuario.substring(0, 2).toUpperCase()}
+                {form.nome.substring(0, 2).toUpperCase()}
               </Text>
             </View>
             <Button
@@ -74,11 +132,11 @@ export default function EditProfileScreen() {
           <Text style={styles.sectionTitle}>Informações Pessoais</Text>
 
           <View style={styles.inputGroup}>
-            <Text style={styles.label}>Nome de Usuário *</Text>
+            <Text style={styles.label}>Nome *</Text>
             <TextInput
               style={styles.input}
-              value={form.usuario}
-              onChangeText={(text) => handleChange("usuario", text)}
+              value={form.nome}
+              onChangeText={(text) => handleChange("nome", text)}
               placeholderTextColor="#666"
             />
           </View>
@@ -281,5 +339,14 @@ const styles = StyleSheet.create({
     backgroundColor: "#000",
     borderTopWidth: 1,
     borderTopColor: "#18181B",
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  loadingText: {
+    fontSize: 14,
+    color: "#999",
   },
 });

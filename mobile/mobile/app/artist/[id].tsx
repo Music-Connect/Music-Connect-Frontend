@@ -7,45 +7,52 @@ import {
   TouchableOpacity,
   StatusBar,
 } from "react-native";
-import { useRouter } from "expo-router";
-import { mockArtists, mockPosts } from "@/constants/mockData";
+import { useRouter, useLocalSearchParams, useFocusEffect } from "expo-router";
+import api from "@/services/api";
 
 type TabType = "publicacoes" | "sobre" | "agenda";
 
 export default function PublicProfileScreen() {
   const router = useRouter();
+  const { id } = useLocalSearchParams();
   const [activeTab, setActiveTab] = useState<TabType>("publicacoes");
   const [showModal, setShowModal] = useState(false);
+  const [artist, setArtist] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
 
-  // Find artist by ID (usando o primeiro artista como exemplo)
-  const artist = mockArtists[0];
+  useFocusEffect(
+    React.useCallback(() => {
+      if (id) {
+        loadArtist();
+      }
+    }, [id]),
+  );
+
+  const loadArtist = async () => {
+    try {
+      setLoading(true);
+      const response = await api.getArtistaDetalhes(id as string);
+      if (response.success && response.data?.artista) {
+        setArtist(response.data.artista);
+      }
+    } catch (error) {
+      console.error("Erro ao carregar artista:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleSendProposal = () => {
     router.push(`/create-proposal?id=${artist.id_usuario}`);
   };
 
   const renderPublicacoes = () => (
-    <View style={styles.postsGrid}>
-      {mockPosts.slice(0, 4).map((post) => (
-        <View key={post.id} style={styles.postCard}>
-          <View style={[styles.postImage, styles.postImagePlaceholder]}>
-            <Text style={styles.postImageText}>📷</Text>
-          </View>
-          <View style={styles.postInfo}>
-            <Text style={styles.postTitle} numberOfLines={2}>
-              {post.title}
-            </Text>
-            <View style={styles.postStats}>
-              <Text key="likes" style={styles.postStat}>
-                ❤️ {post.likes}
-              </Text>
-              <Text key="comments" style={styles.postStat}>
-                💬 {post.comments}
-              </Text>
-            </View>
-          </View>
-        </View>
-      ))}
+    <View style={styles.emptyState}>
+      <Text style={styles.emptyStateIcon}>📝</Text>
+      <Text style={styles.emptyStateTitle}>Nenhuma publicação ainda</Text>
+      <Text style={styles.emptyStateDescription}>
+        Este artista ainda não possui publicações.
+      </Text>
     </View>
   );
 
@@ -92,144 +99,156 @@ export default function PublicProfileScreen() {
   return (
     <View style={styles.container}>
       <StatusBar barStyle="light-content" backgroundColor="#000" />
-      <ScrollView showsVerticalScrollIndicator={false}>
-        {/* Header */}
-        <View style={styles.header}>
-          <TouchableOpacity
-            style={styles.backButton}
-            onPress={() => router.back()}
-          >
-            <Text style={styles.backButtonText}>←</Text>
-          </TouchableOpacity>
+      {loading ? (
+        <View style={styles.loadingContainer}>
+          <Text style={styles.loadingText}>Carregando...</Text>
         </View>
-
-        {/* Banner */}
-        <View style={styles.banner} />
-
-        {/* Profile Info */}
-        <View style={styles.profileSection}>
-          <View style={styles.avatarContainer}>
-            <View style={styles.avatar}>
-              <Text style={styles.avatarText}>
-                {artist.usuario.substring(0, 2).toUpperCase()}
-              </Text>
-            </View>
+      ) : !artist ? (
+        <View style={styles.loadingContainer}>
+          <Text style={styles.loadingText}>Artista não encontrado</Text>
+        </View>
+      ) : (
+        <ScrollView showsVerticalScrollIndicator={false}>
+          {/* Header */}
+          <View style={styles.header}>
+            <TouchableOpacity
+              style={styles.backButton}
+              onPress={() => router.back()}
+            >
+              <Text style={styles.backButtonText}>←</Text>
+            </TouchableOpacity>
           </View>
 
-          <Text style={styles.artistName}>{artist.usuario}</Text>
-          <Text style={styles.artistType}>{artist.tipo_usuario}</Text>
-          {artist.local_atuacao && (
-            <Text style={styles.artistLocation}>📍 {artist.local_atuacao}</Text>
-          )}
+          {/* Banner */}
+          <View style={styles.banner} />
 
-          <View
-            style={[
-              styles.statusBadge,
-              artist.disponivel
-                ? styles.statusAvailable
-                : styles.statusUnavailable,
-            ]}
-          >
+          {/* Profile Info */}
+          <View style={styles.profileSection}>
+            <View style={styles.avatarContainer}>
+              <View style={styles.avatar}>
+                <Text style={styles.avatarText}>
+                  {artist.usuario.substring(0, 2).toUpperCase()}
+                </Text>
+              </View>
+            </View>
+
+            <Text style={styles.artistName}>{artist.usuario}</Text>
+            <Text style={styles.artistType}>{artist.tipo_usuario}</Text>
+            {artist.local_atuacao && (
+              <Text style={styles.artistLocation}>
+                📍 {artist.local_atuacao}
+              </Text>
+            )}
+
             <View
               style={[
-                styles.statusDot,
+                styles.statusBadge,
                 artist.disponivel
-                  ? styles.statusDotAvailable
-                  : styles.statusDotUnavailable,
-              ]}
-            />
-            <Text
-              style={[
-                styles.statusText,
-                artist.disponivel
-                  ? styles.statusTextAvailable
-                  : styles.statusTextUnavailable,
+                  ? styles.statusAvailable
+                  : styles.statusUnavailable,
               ]}
             >
-              {artist.disponivel ? "Disponível" : "Indisponível"}
-            </Text>
+              <View
+                style={[
+                  styles.statusDot,
+                  artist.disponivel
+                    ? styles.statusDotAvailable
+                    : styles.statusDotUnavailable,
+                ]}
+              />
+              <Text
+                style={[
+                  styles.statusText,
+                  artist.disponivel
+                    ? styles.statusTextAvailable
+                    : styles.statusTextUnavailable,
+                ]}
+              >
+                {artist.disponivel ? "Disponível" : "Indisponível"}
+              </Text>
+            </View>
+
+            {artist.descricao && (
+              <Text style={styles.artistBio}>{artist.descricao}</Text>
+            )}
+
+            <View style={styles.stats}>
+              <View style={styles.statItem}>
+                <Text style={styles.statValue}>0</Text>
+                <Text style={styles.statLabel}>Seguidores</Text>
+              </View>
+              <View style={styles.statItem}>
+                <Text style={styles.statValue}>0</Text>
+                <Text style={styles.statLabel}>Eventos</Text>
+              </View>
+              <View style={styles.statItem}>
+                <Text style={styles.statValue}>5.0</Text>
+                <Text style={styles.statLabel}>Avaliação</Text>
+              </View>
+            </View>
+
+            <TouchableOpacity
+              style={styles.proposalButton}
+              onPress={handleSendProposal}
+            >
+              <Text style={styles.proposalButtonText}>Enviar Proposta</Text>
+            </TouchableOpacity>
           </View>
 
-          {artist.descricao && (
-            <Text style={styles.artistBio}>{artist.descricao}</Text>
-          )}
-
-          <View style={styles.stats}>
-            <View style={styles.statItem}>
-              <Text style={styles.statValue}>{mockPosts.length}</Text>
-              <Text style={styles.statLabel}>Posts</Text>
-            </View>
-            <View style={styles.statItem}>
-              <Text style={styles.statValue}>0</Text>
-              <Text style={styles.statLabel}>Eventos</Text>
-            </View>
-            <View style={styles.statItem}>
-              <Text style={styles.statValue}>5.0</Text>
-              <Text style={styles.statLabel}>Avaliação</Text>
-            </View>
+          {/* Tabs */}
+          <View style={styles.tabs}>
+            <TouchableOpacity
+              style={[
+                styles.tab,
+                activeTab === "publicacoes" && styles.tabActive,
+              ]}
+              onPress={() => setActiveTab("publicacoes")}
+            >
+              <Text
+                style={[
+                  styles.tabText,
+                  activeTab === "publicacoes" && styles.tabTextActive,
+                ]}
+              >
+                Publicações
+              </Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[styles.tab, activeTab === "sobre" && styles.tabActive]}
+              onPress={() => setActiveTab("sobre")}
+            >
+              <Text
+                style={[
+                  styles.tabText,
+                  activeTab === "sobre" && styles.tabTextActive,
+                ]}
+              >
+                Sobre
+              </Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[styles.tab, activeTab === "agenda" && styles.tabActive]}
+              onPress={() => setActiveTab("agenda")}
+            >
+              <Text
+                style={[
+                  styles.tabText,
+                  activeTab === "agenda" && styles.tabTextActive,
+                ]}
+              >
+                Agenda
+              </Text>
+            </TouchableOpacity>
           </View>
 
-          <TouchableOpacity
-            style={styles.proposalButton}
-            onPress={handleSendProposal}
-          >
-            <Text style={styles.proposalButtonText}>Enviar Proposta</Text>
-          </TouchableOpacity>
-        </View>
-
-        {/* Tabs */}
-        <View style={styles.tabs}>
-          <TouchableOpacity
-            style={[
-              styles.tab,
-              activeTab === "publicacoes" && styles.tabActive,
-            ]}
-            onPress={() => setActiveTab("publicacoes")}
-          >
-            <Text
-              style={[
-                styles.tabText,
-                activeTab === "publicacoes" && styles.tabTextActive,
-              ]}
-            >
-              Publicações
-            </Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={[styles.tab, activeTab === "sobre" && styles.tabActive]}
-            onPress={() => setActiveTab("sobre")}
-          >
-            <Text
-              style={[
-                styles.tabText,
-                activeTab === "sobre" && styles.tabTextActive,
-              ]}
-            >
-              Sobre
-            </Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={[styles.tab, activeTab === "agenda" && styles.tabActive]}
-            onPress={() => setActiveTab("agenda")}
-          >
-            <Text
-              style={[
-                styles.tabText,
-                activeTab === "agenda" && styles.tabTextActive,
-              ]}
-            >
-              Agenda
-            </Text>
-          </TouchableOpacity>
-        </View>
-
-        {/* Tab Content */}
-        <View style={styles.tabContent}>
-          {activeTab === "publicacoes" && renderPublicacoes()}
-          {activeTab === "sobre" && renderSobre()}
-          {activeTab === "agenda" && renderAgenda()}
-        </View>
-      </ScrollView>
+          {/* Tab Content */}
+          <View style={styles.tabContent}>
+            {activeTab === "publicacoes" && renderPublicacoes()}
+            {activeTab === "sobre" && renderSobre()}
+            {activeTab === "agenda" && renderAgenda()}
+          </View>
+        </ScrollView>
+      )}
 
       {/* Proposal Modal (placeholder) */}
       {showModal && (
@@ -543,6 +562,15 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: "#999",
     lineHeight: 20,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  loadingText: {
+    color: "#fff",
+    fontSize: 16,
   },
   modalOverlay: {
     position: "absolute",

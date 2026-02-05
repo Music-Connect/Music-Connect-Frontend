@@ -5,11 +5,13 @@ import {
   getPropostaById,
   createProposta,
   updatePropostaStatus,
+  getMinhasPropostas,
 } from "../controllers/propostasController.js";
 import { authMiddleware } from "../middleware/auth.js";
 
 const router = Router();
 
+router.get("/minhas", authMiddleware, getMinhasPropostas);
 router.get("/recebidas", authMiddleware, getPropostasRecebidas);
 router.get("/enviadas", authMiddleware, getPropostasEnviadas);
 router.get("/:id", authMiddleware, getPropostaById);

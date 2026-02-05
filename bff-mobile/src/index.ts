@@ -8,7 +8,7 @@ import { setupPropostasRoutes } from "./routes/propostas";
 import { setupAvaliacoesRoutes } from "./routes/avaliacoes";
 
 const app = express();
-const PORT = process.env.PORT || 3002;
+const PORT = Number(process.env.PORT) || 3002;
 const BACKEND_URL = process.env.BACKEND_URL || "http://localhost:3001";
 
 // Middleware
@@ -31,7 +31,8 @@ setupArtistasRoutes(app, BACKEND_URL);
 setupPropostasRoutes(app, BACKEND_URL);
 setupAvaliacoesRoutes(app, BACKEND_URL);
 
-app.listen(PORT, () => {
+app.listen(PORT, "0.0.0.0", () => {
   console.log(`🚀 BFF Mobile running on port ${PORT}`);
+  console.log(`🌐 Listening on 0.0.0.0:${PORT}`);
   console.log(`🔗 Backend URL: ${BACKEND_URL}`);
 });

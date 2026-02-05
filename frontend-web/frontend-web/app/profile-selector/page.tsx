@@ -8,7 +8,7 @@ export default function ProfileSelectorPage() {
       <div className="w-full h-full flex flex-col items-center justify-center p-8">
         <span className="text-6xl font-bold mb-2 text-center">
           <h1 className="text-5xl font-bold mb-10 text-center">
-            <span className="bg-gradient-to-r from-yellow-300 to-pink-500 text-transparent bg-clip-text">
+            <span className="bg-linear-to-r from-yellow-300 to-pink-500 text-transparent bg-clip-text">
               Escolha seu perfil
             </span>
           </h1>

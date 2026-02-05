@@ -8,35 +8,44 @@ import {
   ScrollView,
   FlatList,
   Alert,
+  ActivityIndicator,
 } from "react-native";
-import { useRouter } from "expo-router";
-import { mockProposalsSent } from "@/constants/mockData";
+import { useRouter, useFocusEffect } from "expo-router";
+import api from "@/services/api";
 
-type ProposalStatus = "pendente" | "aceito" | "recusado";
-type FilterStatus = "todos" | "pendente" | "aceito" | "recusado";
-
-interface ProposalSent {
-  id_proposta: number;
-  titulo: string;
-  artista: string;
-  id_artista: number;
-  data: string;
-  hora: string;
-  valor: string;
-  status: ProposalStatus;
-  descricao: string;
-  dataEnvio: string;
-}
+type ProposalStatus = "pendente" | "aceita" | "rejeitada" | "concluida";
+type FilterStatus = "todos" | "pendente" | "aceita" | "rejeitada";
 
 export default function ProposalsSentScreen() {
   const router = useRouter();
   const [filter, setFilter] = useState<FilterStatus>("todos");
-  const [proposals, setProposals] = useState<ProposalSent[]>(
-    mockProposalsSent.map((p) => ({
-      ...p,
-      status: p.status as ProposalStatus,
-    })),
+  const [proposals, setProposals] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useFocusEffect(
+    React.useCallback(() => {
+      loadProposals();
+    }, []),
   );
+
+  const loadProposals = async () => {
+    try {
+      setLoading(true);
+      const response = await api.listarMinhasPropostas();
+      if (response.success && response.data?.propostas) {
+        // Filter only sent proposals (id_contratante is current user)
+        const sentProposals = response.data.propostas.filter(
+          (p: any) => p.tipo_proposta === "enviada",
+        );
+        setProposals(sentProposals);
+      }
+    } catch (error) {
+      console.error("Erro ao carregar propostas:", error);
+      Alert.alert("Erro", "Falha ao carregar propostas");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const filteredProposals = proposals.filter((p) =>
     filter === "todos" ? true : p.status === filter,
@@ -44,10 +53,12 @@ export default function ProposalsSentScreen() {
 
   const getStatusColor = (status: ProposalStatus) => {
     switch (status) {
-      case "aceito":
+      case "aceita":
         return "#10B981";
-      case "recusado":
+      case "rejeitada":
         return "#EF4444";
+      case "concluida":
+        return "#8B5CF6";
       case "pendente":
       default:
         return "#F59E0B";
@@ -56,17 +67,19 @@ export default function ProposalsSentScreen() {
 
   const getStatusLabel = (status: ProposalStatus) => {
     switch (status) {
-      case "aceito":
-        return "Aceito";
-      case "recusado":
-        return "Recusado";
+      case "aceita":
+        return "Aceita";
+      case "rejeitada":
+        return "Rejeitada";
+      case "concluida":
+        return "Concluída";
       case "pendente":
       default:
         return "Pendente";
     }
   };
 
-  const handleCancel = (id: number) => {
+  const handleCancel = (id: string) => {
     Alert.alert(
       "Cancelar Proposta",
       "Tem certeza que deseja cancelar esta proposta?",
@@ -75,16 +88,24 @@ export default function ProposalsSentScreen() {
         {
           text: "Sim, cancelar",
           style: "destructive",
-          onPress: () => {
-            setProposals(proposals.filter((p) => p.id_proposta !== id));
-            Alert.alert("Proposta cancelada com sucesso");
+          onPress: async () => {
+            try {
+              // Nota: método updatePropostaStatus não existe na API
+              // setProposals(proposals.filter((p) => p.id_proposta !== id));
+              Alert.alert(
+                "Info",
+                "Funcionalidade de cancelamento será implementada no backend",
+              );
+            } catch {
+              Alert.alert("Erro", "Falha ao cancelar proposta");
+            }
           },
         },
       ],
     );
   };
 
-  const renderProposal = ({ item }: { item: ProposalSent }) => (
+  const renderProposal = ({ item }: { item: any }) => (
     <TouchableOpacity
       style={styles.proposalCard}
       onPress={() => router.push(`/proposal-sent/${item.id_proposta}`)}
@@ -199,7 +220,7 @@ export default function ProposalsSentScreen() {
           showsHorizontalScrollIndicator={false}
           style={styles.filterContainer}
         >
-          {(["todos", "pendente", "aceito", "recusado"] as FilterStatus[]).map(
+          {(["todos", "pendente", "aceita", "rejeitada"] as FilterStatus[]).map(
             (f) => {
               let filterColor = "#999";
               let filterBgColor = "#18181B";
@@ -208,10 +229,10 @@ export default function ProposalsSentScreen() {
                 if (f === "pendente") {
                   filterColor = "#F59E0B";
                   filterBgColor = "#F59E0B20";
-                } else if (f === "aceito") {
+                } else if (f === "aceita") {
                   filterColor = "#10B981";
                   filterBgColor = "#10B98120";
-                } else if (f === "recusado") {
+                } else if (f === "rejeitada") {
                   filterColor = "#EF4444";
                   filterBgColor = "#EF444420";
                 } else {
@@ -237,9 +258,9 @@ export default function ProposalsSentScreen() {
                       ? "Todos"
                       : f === "pendente"
                         ? "⏳ Pendentes"
-                        : f === "aceito"
-                          ? "✅ Aceitos"
-                          : "❌ Recusados"}
+                        : f === "aceita"
+                          ? "✅ Aceitas"
+                          : "❌ Rejeitadas"}
                   </Text>
                 </TouchableOpacity>
               );
@@ -249,7 +270,11 @@ export default function ProposalsSentScreen() {
       </View>
 
       {/* Proposals List */}
-      {filteredProposals.length > 0 ? (
+      {loading ? (
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color="#FF6B35" />
+        </View>
+      ) : filteredProposals.length > 0 ? (
         <FlatList
           data={filteredProposals}
           renderItem={renderProposal}
@@ -499,5 +524,10 @@ const styles = StyleSheet.create({
     color: "#999",
     textAlign: "center",
     lineHeight: 20,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
   },
 });

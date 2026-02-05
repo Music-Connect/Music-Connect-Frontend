@@ -8,26 +8,61 @@ import {
   StatusBar,
   TextInput,
 } from "react-native";
-import { mockUser, mockPosts } from "@/constants/mockData";
-import { useRouter } from "expo-router";
+import { useRouter, useFocusEffect } from "expo-router";
+import api from "@/services/api";
 
 type TabType = "publicacoes" | "agenda" | "sobre";
 
 export default function ProfileScreen() {
   const router = useRouter();
-  const [user, setUser] = useState(mockUser);
+  const [user, setUser] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<TabType>("publicacoes");
   const [isEditing, setIsEditing] = useState(false);
   const [editForm, setEditForm] = useState({
-    usuario: user.usuario,
-    telefone: user.telefone || "",
-    local_atuacao: user.local_atuacao || "",
-    descricao: user.descricao || "",
+    usuario: "",
+    telefone: "",
+    local_atuacao: "",
+    descricao: "",
   });
 
-  const handleSave = () => {
-    setUser({ ...user, ...editForm });
-    setIsEditing(false);
+  useFocusEffect(
+    React.useCallback(() => {
+      loadUserData();
+    }, []),
+  );
+
+  const loadUserData = async () => {
+    try {
+      setLoading(true);
+      const response = await api.getCurrentUser();
+      if (response.success && response.data?.user) {
+        const userData = response.data.user;
+        setUser(userData);
+        setEditForm({
+          usuario: userData.usuario || "",
+          telefone: userData.telefone || "",
+          local_atuacao: userData.local_atuacao || "",
+          descricao: userData.descricao || "",
+        });
+      }
+    } catch (error) {
+      console.error("Erro ao carregar usuário:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSave = async () => {
+    try {
+      const response = await api.updateProfile(editForm);
+      if (response.success) {
+        setUser({ ...user, ...editForm });
+        setIsEditing(false);
+      }
+    } catch (error) {
+      console.error("Erro ao salvar perfil:", error);
+    }
   };
 
   const renderPublicacoes = () => (
@@ -40,24 +75,13 @@ export default function ProfileScreen() {
         <Text style={styles.createPostText}>Criar nova publicação</Text>
       </TouchableOpacity>
 
-      {/* Posts Grid */}
-      <View style={styles.postsGrid}>
-        {mockPosts.map((post) => (
-          <View key={post.id} style={styles.postCard}>
-            <View style={[styles.postImage, styles.postImagePlaceholder]}>
-              <Text style={styles.postImageText}>📷</Text>
-            </View>
-            <View style={styles.postInfo}>
-              <Text style={styles.postTitle} numberOfLines={2}>
-                {post.title}
-              </Text>
-              <View style={styles.postStats}>
-                <Text style={styles.postStat}>❤️ {post.likes}</Text>
-                <Text style={styles.postStat}>💬 {post.comments}</Text>
-              </View>
-            </View>
-          </View>
-        ))}
+      {/* Posts Grid - Em breve */}
+      <View style={styles.emptyState}>
+        <Text style={styles.emptyStateIcon}>📝</Text>
+        <Text style={styles.emptyStateTitle}>Nenhuma publicação ainda</Text>
+        <Text style={styles.emptyStateDescription}>
+          Suas publicações aparecerão aqui.
+        </Text>
       </View>
     </View>
   );
@@ -121,184 +145,204 @@ export default function ProfileScreen() {
   return (
     <View style={styles.container}>
       <StatusBar barStyle="light-content" backgroundColor="#000" />
-      <ScrollView showsVerticalScrollIndicator={false}>
-        {/* Header */}
-        <View style={styles.header}>
-          <TouchableOpacity
-            style={styles.backButton}
-            onPress={() => router.back()}
-          >
-            <Text style={styles.backButtonText}>←</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.settingsButton}
-            onPress={() => router.push("/settings")}
-          >
-            <Text style={styles.settingsIcon}>⚙️</Text>
-          </TouchableOpacity>
+      {loading ? (
+        <View style={styles.loadingContainer}>
+          <Text style={styles.loadingText}>Carregando...</Text>
         </View>
-
-        {/* Banner */}
-        <View style={styles.banner} />
-
-        {/* Profile Info */}
-        <View style={styles.profileSection}>
-          <View style={styles.avatarContainer}>
-            <View style={styles.avatar}>
-              <Text style={styles.avatarText}>
-                {user.usuario.substring(0, 2).toUpperCase()}
-              </Text>
-            </View>
+      ) : !user ? (
+        <View style={styles.loadingContainer}>
+          <Text style={styles.loadingText}>Erro ao carregar perfil</Text>
+        </View>
+      ) : (
+        <ScrollView showsVerticalScrollIndicator={false}>
+          {/* Header */}
+          <View style={styles.header}>
+            <TouchableOpacity
+              style={styles.backButton}
+              onPress={() => router.back()}
+            >
+              <Text style={styles.backButtonText}>←</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.settingsButton}
+              onPress={() => router.push("/settings")}
+            >
+              <Text style={styles.settingsIcon}>⚙️</Text>
+            </TouchableOpacity>
           </View>
 
-          {isEditing ? (
-            <View style={styles.editForm}>
-              <TextInput
-                style={styles.input}
-                value={editForm.usuario}
-                onChangeText={(text) =>
-                  setEditForm({ ...editForm, usuario: text })
-                }
-                placeholder="Nome de usuário"
-                placeholderTextColor="#666"
-              />
-              <TextInput
-                style={styles.input}
-                value={editForm.telefone}
-                onChangeText={(text) =>
-                  setEditForm({ ...editForm, telefone: text })
-                }
-                placeholder="Telefone"
-                placeholderTextColor="#666"
-              />
-              <TextInput
-                style={styles.input}
-                value={editForm.local_atuacao}
-                onChangeText={(text) =>
-                  setEditForm({ ...editForm, local_atuacao: text })
-                }
-                placeholder="Localização"
-                placeholderTextColor="#666"
-              />
-              <TextInput
-                style={[styles.input, styles.textArea]}
-                value={editForm.descricao}
-                onChangeText={(text) =>
-                  setEditForm({ ...editForm, descricao: text })
-                }
-                placeholder="Descrição"
-                placeholderTextColor="#666"
-                multiline
-                numberOfLines={4}
-              />
-              <View style={styles.editActions}>
-                <TouchableOpacity
-                  style={[styles.editButton, styles.cancelButton]}
-                  onPress={() => setIsEditing(false)}
-                >
-                  <Text style={styles.cancelButtonText}>Cancelar</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={[styles.editButton, styles.saveButton]}
-                  onPress={handleSave}
-                >
-                  <Text style={styles.saveButtonText}>Salvar</Text>
-                </TouchableOpacity>
+          {/* Banner */}
+          <View style={styles.banner} />
+
+          {/* Profile Info */}
+          <View style={styles.profileSection}>
+            <View style={styles.avatarContainer}>
+              <View style={styles.avatar}>
+                <Text style={styles.avatarText}>
+                  {user.usuario.substring(0, 2).toUpperCase()}
+                </Text>
               </View>
             </View>
-          ) : (
-            <>
-              <Text style={styles.userName}>{user.usuario}</Text>
-              <Text style={styles.userType}>{user.tipo_usuario}</Text>
-              {user.local_atuacao && (
-                <Text style={styles.userLocation}>📍 {user.local_atuacao}</Text>
-              )}
-              {user.descricao && (
-                <Text style={styles.userBio}>{user.descricao}</Text>
-              )}
 
-              <View style={styles.stats}>
-                <View style={styles.statItem}>
-                  <Text style={styles.statValue}>{mockPosts.length}</Text>
-                  <Text style={styles.statLabel}>Posts</Text>
-                </View>
-                <View style={styles.statItem}>
-                  <Text style={styles.statValue}>0</Text>
-                  <Text style={styles.statLabel}>Eventos</Text>
-                </View>
-                <View style={styles.statItem}>
-                  <Text style={styles.statValue}>5.0</Text>
-                  <Text style={styles.statLabel}>Avaliação</Text>
+            {isEditing ? (
+              <View style={styles.editForm}>
+                <TextInput
+                  style={styles.input}
+                  value={editForm.usuario}
+                  onChangeText={(text) =>
+                    setEditForm({ ...editForm, usuario: text })
+                  }
+                  placeholder="Nome de usuário"
+                  placeholderTextColor="#666"
+                />
+                <TextInput
+                  style={styles.input}
+                  value={editForm.telefone}
+                  onChangeText={(text) =>
+                    setEditForm({ ...editForm, telefone: text })
+                  }
+                  placeholder="Telefone"
+                  placeholderTextColor="#666"
+                />
+                <TextInput
+                  style={styles.input}
+                  value={editForm.local_atuacao}
+                  onChangeText={(text) =>
+                    setEditForm({ ...editForm, local_atuacao: text })
+                  }
+                  placeholder="Localização"
+                  placeholderTextColor="#666"
+                />
+                <TextInput
+                  style={[styles.input, styles.textArea]}
+                  value={editForm.descricao}
+                  onChangeText={(text) =>
+                    setEditForm({ ...editForm, descricao: text })
+                  }
+                  placeholder="Descrição"
+                  placeholderTextColor="#666"
+                  multiline
+                  numberOfLines={4}
+                />
+                <View style={styles.editActions}>
+                  <TouchableOpacity
+                    style={[styles.editButton, styles.cancelButton]}
+                    onPress={() => setIsEditing(false)}
+                  >
+                    <Text style={styles.cancelButtonText}>Cancelar</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={[styles.editButton, styles.saveButton]}
+                    onPress={handleSave}
+                  >
+                    <Text style={styles.saveButtonText}>Salvar</Text>
+                  </TouchableOpacity>
                 </View>
               </View>
+            ) : (
+              <>
+                <Text style={styles.userName}>{user.usuario}</Text>
+                <Text style={styles.userType}>{user.tipo_usuario}</Text>
+                {user.local_atuacao && (
+                  <Text style={styles.userLocation}>
+                    📍 {user.local_atuacao}
+                  </Text>
+                )}
+                {user.descricao && (
+                  <Text style={styles.userBio}>{user.descricao}</Text>
+                )}
 
-              <TouchableOpacity
-                style={styles.editProfileButton}
-                onPress={() => router.push("/edit-profile")}
-              >
-                <Text style={styles.editProfileButtonText}>Editar Perfil</Text>
-              </TouchableOpacity>
+                <View style={styles.stats}>
+                  <View style={styles.statItem}>
+                    <Text style={styles.statValue}>0</Text>
+                    <Text style={styles.statLabel}>Posts</Text>
+                  </View>
+                  <View style={styles.statItem}>
+                    <Text style={styles.statValue}>0</Text>
+                    <Text style={styles.statLabel}>Eventos</Text>
+                  </View>
+                  <View style={styles.statItem}>
+                    <Text style={styles.statValue}>5.0</Text>
+                    <Text style={styles.statLabel}>Avaliação</Text>
+                  </View>
+                </View>
+
+                <TouchableOpacity
+                  style={styles.editProfileButton}
+                  onPress={() => router.push("/edit-profile")}
+                >
+                  <Text style={styles.editProfileButtonText}>
+                    Editar Perfil
+                  </Text>
+                </TouchableOpacity>
+              </>
+            )}
+          </View>
+
+          {/* Tabs */}
+          {!isEditing && (
+            <>
+              <View style={styles.tabs}>
+                <TouchableOpacity
+                  style={[
+                    styles.tab,
+                    activeTab === "publicacoes" && styles.tabActive,
+                  ]}
+                  onPress={() => setActiveTab("publicacoes")}
+                >
+                  <Text
+                    style={[
+                      styles.tabText,
+                      activeTab === "publicacoes" && styles.tabTextActive,
+                    ]}
+                  >
+                    Publicações
+                  </Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={[
+                    styles.tab,
+                    activeTab === "agenda" && styles.tabActive,
+                  ]}
+                  onPress={() => setActiveTab("agenda")}
+                >
+                  <Text
+                    style={[
+                      styles.tabText,
+                      activeTab === "agenda" && styles.tabTextActive,
+                    ]}
+                  >
+                    Agenda
+                  </Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={[
+                    styles.tab,
+                    activeTab === "sobre" && styles.tabActive,
+                  ]}
+                  onPress={() => setActiveTab("sobre")}
+                >
+                  <Text
+                    style={[
+                      styles.tabText,
+                      activeTab === "sobre" && styles.tabTextActive,
+                    ]}
+                  >
+                    Sobre
+                  </Text>
+                </TouchableOpacity>
+              </View>
+
+              {/* Tab Content */}
+              <View style={styles.tabContent}>
+                {activeTab === "publicacoes" && renderPublicacoes()}
+                {activeTab === "agenda" && renderAgenda()}
+                {activeTab === "sobre" && renderSobre()}
+              </View>
             </>
           )}
-        </View>
-
-        {/* Tabs */}
-        {!isEditing && (
-          <>
-            <View style={styles.tabs}>
-              <TouchableOpacity
-                style={[
-                  styles.tab,
-                  activeTab === "publicacoes" && styles.tabActive,
-                ]}
-                onPress={() => setActiveTab("publicacoes")}
-              >
-                <Text
-                  style={[
-                    styles.tabText,
-                    activeTab === "publicacoes" && styles.tabTextActive,
-                  ]}
-                >
-                  Publicações
-                </Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={[styles.tab, activeTab === "agenda" && styles.tabActive]}
-                onPress={() => setActiveTab("agenda")}
-              >
-                <Text
-                  style={[
-                    styles.tabText,
-                    activeTab === "agenda" && styles.tabTextActive,
-                  ]}
-                >
-                  Agenda
-                </Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={[styles.tab, activeTab === "sobre" && styles.tabActive]}
-                onPress={() => setActiveTab("sobre")}
-              >
-                <Text
-                  style={[
-                    styles.tabText,
-                    activeTab === "sobre" && styles.tabTextActive,
-                  ]}
-                >
-                  Sobre
-                </Text>
-              </TouchableOpacity>
-            </View>
-
-            {/* Tab Content */}
-            <View style={styles.tabContent}>
-              {activeTab === "publicacoes" && renderPublicacoes()}
-              {activeTab === "agenda" && renderAgenda()}
-              {activeTab === "sobre" && renderSobre()}
-            </View>
-          </>
-        )}
-      </ScrollView>
+        </ScrollView>
+      )}
     </View>
   );
 }
@@ -591,6 +635,15 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: "#666",
     textAlign: "center",
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  loadingText: {
+    color: "#fff",
+    fontSize: 16,
   },
   aboutSection: {
     gap: 16,

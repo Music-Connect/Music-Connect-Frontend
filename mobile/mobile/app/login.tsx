@@ -8,33 +8,56 @@ import {
   StatusBar,
   ScrollView,
   Alert,
+  ActivityIndicator,
 } from "react-native";
 import { useRouter } from "expo-router";
+import api from "../services/api";
 
 export default function LoginScreen() {
   const router = useRouter();
   const [formLogin, setFormLogin] = useState({
     email: "",
-    password: "",
+    senha: "",
   });
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleChange = (field: string, value: string) => {
     setFormLogin({ ...formLogin, [field]: value });
   };
 
-  const handleLogin = () => {
-    if (!formLogin.email || !formLogin.password) {
+  const handleLogin = async () => {
+    if (!formLogin.email || !formLogin.senha) {
       Alert.alert("Erro", "Por favor, preencha todos os campos");
       return;
     }
 
-    // Mock login - em produção conectar com a API
-    Alert.alert("Sucesso", "Login realizado!", [
-      {
-        text: "OK",
-        onPress: () => router.replace("/(tabs)"),
-      },
-    ]);
+    setIsLoading(true);
+    try {
+      const response = await api.login({
+        email: formLogin.email,
+        senha: formLogin.senha,
+      });
+
+      if (response.success && response.data?.user) {
+        Alert.alert("Sucesso", "Login realizado com sucesso!", [
+          {
+            text: "OK",
+            onPress: () => router.replace("/(tabs)"),
+          },
+        ]);
+      } else {
+        Alert.alert("Erro", response.error || "Erro ao fazer login");
+      }
+    } catch (error) {
+      Alert.alert(
+        "Erro",
+        error instanceof Error
+          ? error.message
+          : "Erro ao conectar com o servidor",
+      );
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -83,8 +106,8 @@ export default function LoginScreen() {
               style={styles.input}
               placeholder="••••••••"
               placeholderTextColor="#666"
-              value={formLogin.password}
-              onChangeText={(text) => handleChange("password", text)}
+              value={formLogin.senha}
+              onChangeText={(text) => handleChange("senha", text)}
               secureTextEntry
             />
           </View>
@@ -93,8 +116,19 @@ export default function LoginScreen() {
             <Text style={styles.forgotPassword}>Esqueci minha senha</Text>
           </TouchableOpacity>
 
-          <TouchableOpacity style={styles.loginButton} onPress={handleLogin}>
-            <Text style={styles.loginButtonText}>Entrar</Text>
+          <TouchableOpacity
+            style={[
+              styles.loginButton,
+              isLoading && styles.loginButtonDisabled,
+            ]}
+            onPress={handleLogin}
+            disabled={isLoading}
+          >
+            {isLoading ? (
+              <ActivityIndicator color="#fff" />
+            ) : (
+              <Text style={styles.loginButtonText}>Entrar</Text>
+            )}
           </TouchableOpacity>
 
           <View style={styles.divider}>
@@ -195,6 +229,9 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     alignItems: "center",
     marginTop: 8,
+  },
+  loginButtonDisabled: {
+    opacity: 0.6,
   },
   loginButtonText: {
     color: "#fff",

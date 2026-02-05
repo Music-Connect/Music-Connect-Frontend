@@ -8,9 +8,10 @@ import {
   TouchableOpacity,
   TextInput,
   FlatList,
+  ActivityIndicator,
 } from "react-native";
 import { useRouter } from "expo-router";
-import { mockArtists } from "@/constants/mockData";
+import api from "@/services/api";
 import Header from "@/components/shared/Header";
 import Card from "@/components/shared/Card";
 import Badge from "@/components/shared/Badge";
@@ -18,8 +19,7 @@ import Button from "@/components/shared/Button";
 
 interface SearchFilters {
   search: string;
-  tipo: "todos" | "Artista" | "Banda";
-  genero: string[];
+  tipo: "todos" | "artista" | "banda";
   local: string;
 }
 
@@ -39,64 +39,58 @@ export default function AdvancedSearchScreen() {
   const [filters, setFilters] = useState<SearchFilters>({
     search: "",
     tipo: "todos",
-    genero: [],
     local: "",
   });
 
-  const [results, setResults] = useState(mockArtists);
+  const [results, setResults] = useState<any[]>([]);
+  const [loading, setLoading] = useState(false);
 
-  const applyFilters = () => {
-    let filtered = mockArtists;
+  const applyFilters = async () => {
+    setLoading(true);
+    try {
+      const response = await api.listarArtistas();
+      if (response.success && response.data?.artistas) {
+        let filtered = response.data.artistas;
 
-    // Filter by search
-    if (filters.search) {
-      filtered = filtered.filter((a) =>
-        a.usuario.toLowerCase().includes(filters.search.toLowerCase()),
-      );
+        // Filter by search
+        if (filters.search) {
+          filtered = filtered.filter((a: any) =>
+            a.usuario?.toLowerCase().includes(filters.search.toLowerCase()),
+          );
+        }
+
+        // Filter by type
+        if (filters.tipo !== "todos") {
+          filtered = filtered.filter(
+            (a: any) => a.tipo_usuario === filters.tipo,
+          );
+        }
+
+        // Filter by location
+        if (filters.local) {
+          filtered = filtered.filter((a: any) =>
+            a.local_atuacao
+              ?.toLowerCase()
+              .includes(filters.local.toLowerCase()),
+          );
+        }
+
+        setResults(filtered);
+      }
+    } catch (error) {
+      console.error("Erro ao buscar artistas:", error);
+    } finally {
+      setLoading(false);
     }
-
-    // Filter by type
-    if (filters.tipo !== "todos") {
-      filtered = filtered.filter((a) => a.tipo_usuario === filters.tipo);
-    }
-
-    // Filter by genre (mock - based on description)
-    if (filters.genero.length > 0) {
-      filtered = filtered.filter((a) => {
-        const hasGenre = filters.genero.some((g) =>
-          a.descricao?.toLowerCase().includes(g.toLowerCase()),
-        );
-        return hasGenre || filters.genero.includes("🎵 Todos");
-      });
-    }
-
-    // Filter by location
-    if (filters.local) {
-      filtered = filtered.filter((a) =>
-        a.local_atuacao?.toLowerCase().includes(filters.local.toLowerCase()),
-      );
-    }
-
-    setResults(filtered);
   };
 
   const clearFilters = () => {
     setFilters({
       search: "",
       tipo: "todos",
-      genero: [],
       local: "",
     });
-    setResults(mockArtists);
-  };
-
-  const toggleGenre = (genre: string) => {
-    setFilters((prev) => ({
-      ...prev,
-      genero: prev.genero.includes(genre)
-        ? prev.genero.filter((g) => g !== genre)
-        : [...prev.genero, genre],
-    }));
+    setResults([]);
   };
 
   const renderArtist = ({ item }: { item: (typeof mockArtists)[0] }) => (
@@ -166,7 +160,12 @@ export default function AdvancedSearchScreen() {
                   styles.typeButton,
                   filters.tipo === type && styles.typeButtonActive,
                 ]}
-                onPress={() => setFilters((prev) => ({ ...prev, tipo: type }))}
+                onPress={() =>
+                  setFilters((prev) => ({
+                    ...prev,
+                    tipo: (type === "todos" ? "todos" : type) as any,
+                  }))
+                }
               >
                 <Text
                   style={[
@@ -175,32 +174,6 @@ export default function AdvancedSearchScreen() {
                   ]}
                 >
                   {type === "todos" ? "Todos" : type}
-                </Text>
-              </TouchableOpacity>
-            ))}
-          </View>
-        </View>
-
-        {/* Genre Filter */}
-        <View style={styles.filterSection}>
-          <Text style={styles.filterLabel}>Gênero Musical</Text>
-          <View style={styles.genreGrid}>
-            {GENRES.map((genre) => (
-              <TouchableOpacity
-                key={genre}
-                style={[
-                  styles.genreTag,
-                  filters.genero.includes(genre) && styles.genreTagActive,
-                ]}
-                onPress={() => toggleGenre(genre)}
-              >
-                <Text
-                  style={[
-                    styles.genreText,
-                    filters.genero.includes(genre) && styles.genreTextActive,
-                  ]}
-                >
-                  {genre}
                 </Text>
               </TouchableOpacity>
             ))}
@@ -244,7 +217,11 @@ export default function AdvancedSearchScreen() {
             {results.length !== 1 ? "s" : ""}
           </Text>
 
-          {results.length > 0 ? (
+          {loading ? (
+            <View style={styles.loadingContainer}>
+              <ActivityIndicator size="large" color="#FF6B35" />
+            </View>
+          ) : results.length > 0 ? (
             <FlatList
               data={results}
               renderItem={renderArtist}

@@ -250,6 +250,49 @@ export const getUsuarioById = async (
   }
 };
 
+export const getCurrentUser = async (
+  req: Request,
+  res: Response,
+): Promise<void> => {
+  try {
+    // Get user ID from auth middleware (req.user is set by authMiddleware)
+    const userId = (req as any).user?.id_usuario;
+
+    if (!userId) {
+      res.status(401).json({
+        success: false,
+        error: "Usuário não autenticado",
+      });
+      return;
+    }
+
+    const result: QueryResult<Usuario> = await pool.query(
+      "SELECT * FROM usuarios WHERE id_usuario = $1",
+      [userId],
+    );
+
+    if (result.rows.length === 0) {
+      res.status(404).json({
+        success: false,
+        error: "Usuário não encontrado",
+      });
+      return;
+    }
+
+    const userWithoutPassword = removePasswordFromUser(result.rows[0]);
+
+    const response: ApiResponse<Omit<Usuario, "senha">> = {
+      success: true,
+      data: userWithoutPassword,
+    };
+
+    res.json(response);
+  } catch (error) {
+    console.error("Erro ao buscar usuário atual:", error);
+    res.status(500).json({ success: false, error: "Erro ao buscar usuário" });
+  }
+};
+
 export const updateUsuario = async (
   req: Request,
   res: Response,

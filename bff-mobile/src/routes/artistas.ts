@@ -89,9 +89,16 @@ export function setupArtistasRoutes(app: Express, backendUrl: string) {
   // Create artist profile
   app.post("/api/mobile/artistas", async (req: Request, res: Response) => {
     try {
+      const authorization = req.headers.authorization || "";
+
       const response = await axios.post<ApiResponse<Usuario>>(
         `${backendUrl}/api/artistas`,
         req.body,
+        {
+          headers: {
+            ...(authorization && { Authorization: authorization }),
+          },
+        },
       );
 
       res.status(201).json(response.data);
@@ -114,9 +121,16 @@ export function setupArtistasRoutes(app: Express, backendUrl: string) {
   app.put("/api/mobile/artistas/:id", async (req: Request, res: Response) => {
     try {
       const { id } = req.params;
+      const authorization = req.headers.authorization || "";
+
       const response = await axios.put<ApiResponse<Usuario>>(
         `${backendUrl}/api/artistas/${id}`,
         req.body,
+        {
+          headers: {
+            ...(authorization && { Authorization: authorization }),
+          },
+        },
       );
 
       res.json(response.data);

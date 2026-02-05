@@ -8,27 +8,29 @@ import {
   StatusBar,
   ScrollView,
   Alert,
+  ActivityIndicator,
 } from "react-native";
 import { useRouter } from "expo-router";
+import api from "../services/api";
 
 export default function RegisterContractorScreen() {
   const router = useRouter();
   const [form, setForm] = useState({
-    usuario: "",
+    nome: "",
     email: "",
     senha: "",
     confirmarSenha: "",
     telefone: "",
-    organizacao: "",
-    localAtuacao: "",
+    tipo: "contratante" as const,
   });
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleChange = (field: string, value: string) => {
     setForm({ ...form, [field]: value });
   };
 
-  const handleRegister = () => {
-    if (!form.usuario || !form.email || !form.senha) {
+  const handleRegister = async () => {
+    if (!form.nome || !form.email || !form.senha) {
       Alert.alert("Erro", "Por favor, preencha todos os campos obrigatórios");
       return;
     }
@@ -38,13 +40,41 @@ export default function RegisterContractorScreen() {
       return;
     }
 
-    // Mock register - em produção conectar com a API
-    Alert.alert("Sucesso", "Conta criada com sucesso!", [
-      {
-        text: "OK",
-        onPress: () => router.replace("/(tabs)"),
-      },
-    ]);
+    if (form.senha.length < 6) {
+      Alert.alert("Erro", "A senha deve ter no mínimo 6 caracteres");
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      const response = await api.registerContratante({
+        nome: form.nome,
+        email: form.email,
+        senha: form.senha,
+        tipo: "contratante",
+        telefone: form.telefone,
+      });
+
+      if (response.success && response.data?.user) {
+        Alert.alert("Sucesso", "Conta criada com sucesso!", [
+          {
+            text: "OK",
+            onPress: () => router.replace("/(tabs)"),
+          },
+        ]);
+      } else {
+        Alert.alert("Erro", response.error || "Erro ao registrar");
+      }
+    } catch (error) {
+      Alert.alert(
+        "Erro",
+        error instanceof Error
+          ? error.message
+          : "Erro ao conectar com o servidor",
+      );
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -81,8 +111,8 @@ export default function RegisterContractorScreen() {
               style={styles.input}
               placeholder="Seu nome"
               placeholderTextColor="#666"
-              value={form.usuario}
-              onChangeText={(text) => handleChange("usuario", text)}
+              value={form.nome}
+              onChangeText={(text) => handleChange("nome", text)}
             />
           </View>
 
@@ -107,7 +137,7 @@ export default function RegisterContractorScreen() {
             </Text>
             <TextInput
               style={styles.input}
-              placeholder="Mínimo 8 caracteres"
+              placeholder="Mínimo 6 caracteres"
               placeholderTextColor="#666"
               value={form.senha}
               onChangeText={(text) => handleChange("senha", text)}
@@ -141,33 +171,19 @@ export default function RegisterContractorScreen() {
             />
           </View>
 
-          <View style={styles.inputGroup}>
-            <Text style={styles.label}>Organização/Empresa</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="Nome da sua empresa"
-              placeholderTextColor="#666"
-              value={form.organizacao}
-              onChangeText={(text) => handleChange("organizacao", text)}
-            />
-          </View>
-
-          <View style={styles.inputGroup}>
-            <Text style={styles.label}>Localização</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="Ex: São Paulo, SP"
-              placeholderTextColor="#666"
-              value={form.localAtuacao}
-              onChangeText={(text) => handleChange("localAtuacao", text)}
-            />
-          </View>
-
           <TouchableOpacity
-            style={styles.registerButton}
+            style={[
+              styles.registerButton,
+              isLoading && styles.registerButtonDisabled,
+            ]}
             onPress={handleRegister}
+            disabled={isLoading}
           >
-            <Text style={styles.registerButtonText}>Criar Conta</Text>
+            {isLoading ? (
+              <ActivityIndicator color="#000" />
+            ) : (
+              <Text style={styles.registerButtonText}>Criar Conta</Text>
+            )}
           </TouchableOpacity>
 
           <View style={styles.footer}>
@@ -261,6 +277,9 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     alignItems: "center",
     marginTop: 8,
+  },
+  registerButtonDisabled: {
+    opacity: 0.6,
   },
   registerButtonText: {
     color: "#000",

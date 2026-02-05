@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 
 interface SidebarProps {
@@ -23,7 +22,7 @@ export default function Sidebar({
   return (
     <aside className="w-64 hidden md:flex flex-col p-8 border-r border-zinc-900 bg-black">
       <div className="text-2xl font-black mb-10">
-        <span className="text-transparent bg-clip-text bg-gradient-to-r from-yellow-300 to-pink-500">
+        <span className="text-transparent bg-clip-text bg-linear-to-r from-yellow-300 to-pink-500">
           Music Connect
         </span>
       </div>

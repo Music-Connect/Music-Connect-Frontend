@@ -106,6 +106,56 @@ export function setupPropostasRoutes(app: Express, backendUrl: string) {
     },
   );
 
+  // Get my proposals (current user)
+  app.get("/api/mobile/propostas/me", async (req: Request, res: Response) => {
+    try {
+      // Forward Authorization header to backend
+      const authorization = req.headers.authorization || "";
+
+      // eslint-disable-next-line no-console
+      console.log(
+        "[BFF] GET /propostas/me - Authorization:",
+        authorization ? `${authorization.substring(0, 30)}...` : "NONE",
+      );
+
+      // Since we can't determine user ID from token on BFF, we need to fetch from a backend endpoint
+      // that uses the auth middleware to return current user's proposals
+      const response = await axios.get<ApiResponse<{ propostas: any[] }>>(
+        `${backendUrl}/api/propostas/minhas`,
+        {
+          headers: {
+            ...(authorization && { Authorization: authorization }),
+          },
+        },
+      );
+
+      // eslint-disable-next-line no-console
+      console.log(
+        "[BFF] Backend /propostas/minhas response:",
+        response.data.success,
+      );
+
+      res.json({
+        success: true,
+        data: {
+          propostas: response.data.data?.propostas || response.data.data || [],
+        },
+      });
+    } catch (error) {
+      if (axios.isAxiosError(error) && error.response) {
+        res.status(error.response.status).json({
+          success: false,
+          error: error.response.data.error || "Erro ao buscar propostas",
+        });
+      } else {
+        res.status(500).json({
+          success: false,
+          error: "Erro ao conectar com o servidor",
+        });
+      }
+    }
+  });
+
   // Get proposal by ID
   app.get("/api/mobile/propostas/:id", async (req: Request, res: Response) => {
     try {
@@ -133,9 +183,16 @@ export function setupPropostasRoutes(app: Express, backendUrl: string) {
   // Create proposal
   app.post("/api/mobile/propostas", async (req: Request, res: Response) => {
     try {
+      const authorization = req.headers.authorization || "";
+
       const response = await axios.post<ApiResponse<PropostaComDetalhes>>(
         `${backendUrl}/api/propostas`,
         req.body,
+        {
+          headers: {
+            ...(authorization && { Authorization: authorization }),
+          },
+        },
       );
 
       res.status(201).json({
@@ -164,9 +221,16 @@ export function setupPropostasRoutes(app: Express, backendUrl: string) {
     async (req: Request, res: Response) => {
       try {
         const { id } = req.params;
+        const authorization = req.headers.authorization || "";
+
         const response = await axios.put<ApiResponse<PropostaComDetalhes>>(
           `${backendUrl}/api/propostas/${id}/status`,
           req.body,
+          {
+            headers: {
+              ...(authorization && { Authorization: authorization }),
+            },
+          },
         );
 
         res.json({

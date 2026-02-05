@@ -1,6 +1,6 @@
 import { Express, Request, Response } from "express";
 import axios from "axios";
-import { ApiResponse, Usuario } from "../types/index";
+import { BackendAuthResponse } from "../types/index";
 
 export function setupAuthRoutes(app: Express, backendUrl: string) {
   // Login - Mobile optimized response
@@ -16,16 +16,25 @@ export function setupAuthRoutes(app: Express, backendUrl: string) {
         return;
       }
 
-      const response = await axios.post<
-        ApiResponse<{ user: Usuario; token: string }>
-      >(`${backendUrl}/api/usuarios/auth/login`, { email, senha });
+      const response = await axios.post<BackendAuthResponse>(
+        `${backendUrl}/api/usuarios/auth/login`,
+        { email, senha },
+      );
+
+      // eslint-disable-next-line no-console
+      console.log(
+        "[BFF] Backend login response:",
+        JSON.stringify(response.data, null, 2),
+      );
+      // eslint-disable-next-line no-console
+      console.log("[BFF] Token from backend:", response.data.token);
 
       // Mobile-optimized response
       res.json({
         success: true,
         data: {
-          token: response.data.data?.token,
-          user: response.data.data?.user,
+          token: response.data.token,
+          user: response.data.user,
           // Mobile-specific metadata
           loginTime: new Date().toISOString(),
           deviceType: "mobile",
@@ -49,15 +58,24 @@ export function setupAuthRoutes(app: Express, backendUrl: string) {
   // Register - Mobile optimized
   app.post("/api/mobile/auth/register", async (req: Request, res: Response) => {
     try {
-      const response = await axios.post<
-        ApiResponse<{ user: Usuario; token: string }>
-      >(`${backendUrl}/api/usuarios/auth/register`, req.body);
+      const response = await axios.post<BackendAuthResponse>(
+        `${backendUrl}/api/usuarios/auth/register`,
+        req.body,
+      );
+
+      // eslint-disable-next-line no-console
+      console.log(
+        "[BFF] Backend register response:",
+        JSON.stringify(response.data, null, 2),
+      );
+      // eslint-disable-next-line no-console
+      console.log("[BFF] Token from backend:", response.data.token);
 
       res.status(201).json({
         success: true,
         data: {
-          token: response.data.data?.token,
-          user: response.data.data?.user,
+          token: response.data.token,
+          user: response.data.user,
           registeredAt: new Date().toISOString(),
         },
       });

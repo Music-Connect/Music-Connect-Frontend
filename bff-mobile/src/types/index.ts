@@ -56,6 +56,15 @@ export interface ApiResponse<T> {
   message?: string;
 }
 
+// Backend Auth Response (direct structure, not wrapped in data)
+export interface BackendAuthResponse {
+  success: boolean;
+  user?: Usuario;
+  token?: string;
+  type?: string;
+  error?: string;
+}
+
 // Mobile-specific response types
 export interface MobileUserProfile extends Usuario {
   avaliacoes_recebidas?: Avaliacao[];

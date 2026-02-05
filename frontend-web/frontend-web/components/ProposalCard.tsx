@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { Proposta } from "@/lib/api";
 
 interface ProposalCardProps {
@@ -50,9 +51,11 @@ export default function ProposalCard({
         <div className="mb-4">
           <div className="w-12 h-12 rounded-full bg-zinc-800 mb-3 flex items-center justify-center text-xl overflow-hidden">
             {item.imagem_perfil_url ? (
-              <img
+              <Image
                 src={item.imagem_perfil_url}
                 alt="Avatar"
+                width={48}
+                height={48}
                 className="w-full h-full object-cover"
               />
             ) : isArtist ? (

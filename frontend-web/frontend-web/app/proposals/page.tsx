@@ -86,7 +86,7 @@ export default function ProposalsPage() {
             : p,
         ),
       );
-    } catch (_error) {
+    } catch {
       alert("Erro ao atualizar status.");
     }
   };

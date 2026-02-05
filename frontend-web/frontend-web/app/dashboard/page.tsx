@@ -91,7 +91,7 @@ export default function DashboardPage() {
             : p,
         ),
       );
-    } catch (_error) {
+    } catch {
       alert("Erro ao atualizar status.");
     }
   };

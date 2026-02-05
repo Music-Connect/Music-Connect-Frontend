@@ -26,7 +26,7 @@ export default function DashboardBanner({ isArtist }: DashboardBannerProps) {
       };
 
   return (
-    <div className="relative bg-gradient-to-br from-zinc-900 via-zinc-900 to-black border border-zinc-800 rounded-2xl p-8 mb-8 overflow-hidden">
+    <div className="relative bg-linear-to-br from-zinc-900 via-zinc-900 to-black border border-zinc-800 rounded-2xl p-8 mb-8 overflow-hidden">
       <div className="absolute top-0 right-0 w-64 h-64 bg-pink-500/5 rounded-full blur-3xl"></div>
       <div className="absolute bottom-0 left-0 w-64 h-64 bg-yellow-300/5 rounded-full blur-3xl"></div>
 

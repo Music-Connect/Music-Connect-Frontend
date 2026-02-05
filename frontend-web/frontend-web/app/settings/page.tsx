@@ -76,7 +76,7 @@ export default function SettingsPage() {
       setUser(updatedUser);
       localStorage.setItem("user", JSON.stringify(updatedUser));
       alert("Configurações salvas com sucesso!");
-    } catch (error) {
+    } catch {
       alert("Erro ao salvar configurações");
     }
   };
@@ -137,7 +137,7 @@ export default function SettingsPage() {
               </h2>
 
               <div className="flex items-center gap-6 mb-8">
-                <div className="w-20 h-20 rounded-full bg-gradient-to-tr from-yellow-300 to-pink-500 p-[2px]">
+                <div className="w-20 h-20 rounded-full bg-linear-to-tr from-yellow-300 to-pink-500 p-0.5">
                   <div className="w-full h-full rounded-full bg-zinc-900 flex items-center justify-center font-bold text-2xl">
                     {user.usuario.substring(0, 2).toUpperCase()}
                   </div>
@@ -186,7 +186,7 @@ export default function SettingsPage() {
 
               <button
                 onClick={handleSave}
-                className="mt-6 px-6 py-2.5 rounded-full bg-gradient-to-r from-yellow-300 to-pink-500 text-black font-bold hover:opacity-90 transition"
+                className="mt-6 px-6 py-2.5 rounded-full bg-linear-to-r from-yellow-300 to-pink-500 text-black font-bold hover:opacity-90 transition"
               >
                 Salvar Alterações
               </button>

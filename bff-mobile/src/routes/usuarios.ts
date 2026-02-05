@@ -8,6 +8,54 @@ import {
 } from "../types/index";
 
 export function setupUsuariosRoutes(app: Express, backendUrl: string) {
+  // Get current authenticated user (using cookie/token)
+  app.get("/api/mobile/usuarios/me", async (req: Request, res: Response) => {
+    try {
+      // Forward both cookies AND Authorization header from mobile client to backend
+      const cookies = req.headers.cookie || "";
+      const authorization = req.headers.authorization || "";
+
+      // eslint-disable-next-line no-console
+      console.log(
+        "[BFF] GET /usuarios/me - Authorization:",
+        authorization ? `${authorization.substring(0, 30)}...` : "NONE",
+      );
+
+      const response = await axios.get<ApiResponse<Usuario>>(
+        `${backendUrl}/api/usuarios/me`,
+        {
+          headers: {
+            ...(cookies && { Cookie: cookies }),
+            ...(authorization && { Authorization: authorization }),
+          },
+        },
+      );
+
+      // eslint-disable-next-line no-console
+      console.log("[BFF] Backend response success:", response.data.success);
+
+      // Return in mobile-friendly format
+      res.json({
+        success: true,
+        data: {
+          user: response.data.data,
+        },
+      });
+    } catch (error) {
+      if (axios.isAxiosError(error) && error.response) {
+        res.status(error.response.status).json({
+          success: false,
+          error: error.response.data.error || "Erro ao buscar usuário",
+        });
+      } else {
+        res.status(500).json({
+          success: false,
+          error: "Erro ao conectar com o servidor",
+        });
+      }
+    }
+  });
+
   // Get user profile with aggregated data (mobile optimized)
   app.get("/api/mobile/usuarios/:id", async (req: Request, res: Response) => {
     try {
@@ -56,9 +104,16 @@ export function setupUsuariosRoutes(app: Express, backendUrl: string) {
   app.put("/api/mobile/usuarios/:id", async (req: Request, res: Response) => {
     try {
       const { id } = req.params;
+      const authorization = req.headers.authorization || "";
+
       const response = await axios.put<ApiResponse<Usuario>>(
         `${backendUrl}/api/usuarios/${id}`,
         req.body,
+        {
+          headers: {
+            ...(authorization && { Authorization: authorization }),
+          },
+        },
       );
 
       res.json(response.data);

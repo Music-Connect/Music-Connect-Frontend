@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState } from "react";
 import {
   View,
   Text,
@@ -9,13 +9,15 @@ import {
   FlatList,
   TextInput,
   Alert,
-} from 'react-native';
+  ActivityIndicator,
+} from "react-native";
+import { useFocusEffect } from "expo-router";
 import Header from "@/components/shared/Header";
 import Card from "@/components/shared/Card";
 import Button from "@/components/shared/Button";
 
 interface Review {
-  id: number;
+  id: string;
   author: string;
   rating: number;
   text: string;
@@ -23,49 +25,42 @@ interface Review {
   type: "enviado" | "recebido";
 }
 
-const mockReviews: Review[] = [
-  {
-    id: 1,
-    author: "Maria Santos",
-    rating: 5,
-    text: "Excelente profissional! Muito pontual e tocou maravilhosamente.",
-    date: "2026-02-01",
-    type: "recebido",
-  },
-  {
-    id: 2,
-    author: "Carlos Mendes",
-    rating: 4,
-    text: "Ótimo show, trouxe muita energia para o casamento.",
-    date: "2026-01-28",
-    type: "recebido",
-  },
-  {
-    id: 3,
-    author: "João Silva",
-    rating: 5,
-    text: "Profissional responsável e criativo. Recomendo!",
-    date: "2026-01-15",
-    type: "recebido",
-  },
-];
-
 export default function ReviewsScreen() {
   const [filter, setFilter] = useState<"todos" | "recebido" | "enviado">(
     "todos",
   );
+  const [reviews, setReviews] = useState<Review[]>([]);
+  const [loading, setLoading] = useState(true);
   const [newReview, setNewReview] = useState("");
   const [rating, setRating] = useState(0);
   const [showForm, setShowForm] = useState(false);
 
-  const filteredReviews = mockReviews.filter((r) =>
+  useFocusEffect(
+    React.useCallback(() => {
+      loadReviews();
+    }, []),
+  );
+
+  const loadReviews = async () => {
+    try {
+      setLoading(true);
+      // Placeholder - backend endpoint for reviews not yet implemented
+      setReviews([]);
+    } catch (error) {
+      console.error("Erro ao carregar avaliações:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const filteredReviews = reviews.filter((r) =>
     filter === "todos" ? true : r.type === filter,
   );
 
   const averageRating =
-    mockReviews.length > 0
+    reviews.length > 0
       ? (
-          mockReviews.reduce((sum, r) => sum + r.rating, 0) / mockReviews.length
+          reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length
         ).toFixed(1)
       : 0;
 
@@ -130,7 +125,7 @@ export default function ReviewsScreen() {
             <View style={styles.ratingDetails}>
               {renderStars(Math.round(parseFloat(averageRating as string)))}
               <Text style={styles.reviewCount}>
-                ({mockReviews.length} avaliações)
+                ({reviews.length} avaliações)
               </Text>
             </View>
           </View>
@@ -222,7 +217,11 @@ export default function ReviewsScreen() {
         )}
 
         {/* Reviews List */}
-        {filteredReviews.length > 0 ? (
+        {loading ? (
+          <View style={styles.loadingContainer}>
+            <ActivityIndicator size="large" color="#FF6B35" />
+          </View>
+        ) : filteredReviews.length > 0 ? (
           <View style={styles.reviewsList}>
             <Text style={styles.listTitle}>
               {filter === "todos"
@@ -412,5 +411,10 @@ const styles = StyleSheet.create({
   emptyText: {
     fontSize: 14,
     color: "#999",
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
   },
 });
