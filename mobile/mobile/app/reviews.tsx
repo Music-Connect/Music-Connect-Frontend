@@ -60,9 +60,10 @@ export default function ReviewsScreen() {
   const averageRating =
     reviews.length > 0
       ? (
-          reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length
+          reviews.reduce((sum, r) => sum + Number(r.rating || 0), 0) /
+          reviews.length
         ).toFixed(1)
-      : 0;
+      : "0.0";
 
   const handleSubmitReview = () => {
     if (!newReview || rating === 0) {

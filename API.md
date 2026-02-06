@@ -128,6 +128,77 @@ curl -X GET http://localhost:3001/api/propostas/recebidas \
 
 ---
 
+### POST `/usuarios/auth/forgot-password`
+
+**Descrição**: Solicitar recuperação de senha
+
+**Acesso**: Público
+
+**Body**:
+
+```json
+{
+  "email": "joao@example.com"
+}
+```
+
+**Resposta (200)**:
+
+```json
+{
+  "success": true,
+  "message": "Se o email existir, você receberá instruções para redefinir sua senha"
+}
+```
+
+**Comportamento**:
+
+- Se as variáveis `EMAIL_USER` e `EMAIL_PASSWORD` estiverem configuradas, envia email com link de recuperação
+- Se não configuradas, o token é exibido no console do backend (para desenvolvimento)
+- Em ambiente de desenvolvimento sem email configurado, retorna `resetToken` na resposta
+
+**Notas**:
+
+- Não informa se o email existe (por segurança, previne enumeração de emails)
+- Token expira em 1 hora
+- Apenas um token ativo por usuário (tokens anteriores são invalidados)
+
+**Configuração de Email**: Veja [EMAIL_SETUP.md](EMAIL_SETUP.md) para instruções de como configurar Gmail SMTP.
+
+---
+
+### POST `/usuarios/auth/reset-password`
+
+**Descrição**: Redefinir senha com token
+
+**Acesso**: Público
+
+**Body**:
+
+```json
+{
+  "token": "abc123...",
+  "novaSenha": "minhaNovaSenha123"
+}
+```
+
+**Resposta (200)**:
+
+```json
+{
+  "success": true,
+  "message": "Senha alterada com sucesso"
+}
+```
+
+**Erros**:
+
+- `400`: Token e nova senha são obrigatórios
+- `400`: Token inválido ou expirado
+- `400`: A senha deve ter pelo menos 6 caracteres
+
+---
+
 ### GET `/usuarios`
 
 **Descrição**: Listar todos os usuários

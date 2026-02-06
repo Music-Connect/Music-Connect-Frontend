@@ -3,6 +3,7 @@ import dotenv from "dotenv";
 import cors from "cors";
 import cookieParser from "cookie-parser";
 import { testConnection } from "./database.js";
+import { verifyEmailConfig } from "./utils/emailService.js";
 
 // Import routes
 import usuariosRouter from "./routes/usuarios.js";
@@ -88,6 +89,17 @@ const startServer = async () => {
   if (!dbConnected) {
     console.error("❌ Falha ao conectar no banco de dados");
     process.exit(1);
+  }
+
+  // Check email configuration (non-blocking)
+  const emailConfigured = await verifyEmailConfig();
+  if (!emailConfigured) {
+    console.warn(
+      "⚠️  Email service not configured. Password reset emails will not be sent.",
+    );
+    console.warn(
+      "   Configure EMAIL_USER and EMAIL_PASSWORD in .env to enable email functionality.",
+    );
   }
 
   app.listen(PORT, () => {

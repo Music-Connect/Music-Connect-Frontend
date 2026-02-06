@@ -54,6 +54,14 @@ Guia de referência para todos os documentos do projeto.
 - Monitoramento com PM2
 - **Ideal para**: Deploy e operações
 
+### **[EMAIL_SETUP.md](EMAIL_SETUP.md)**
+
+- Configuração de email com Gmail
+- Geração de senha de aplicativo
+- Alternativas (SendGrid, Outlook, etc.)
+- Troubleshooting de email
+- **Ideal para**: Habilitar recuperação de senha
+
 ---
 
 ## Fluxo de Leitura Recomendado

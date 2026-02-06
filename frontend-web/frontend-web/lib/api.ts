@@ -21,6 +21,14 @@ export interface User {
   cor_banner?: string;
   imagem_perfil_url?: string;
   genero_musical?: string;
+  preco_minimo?: number;
+  preco_maximo?: number;
+  portfolio?: string[];
+  spotify_url?: string;
+  instagram_url?: string;
+  youtube_url?: string;
+  created_at?: string;
+  updated_at?: string;
 }
 
 export interface Proposta {
@@ -30,13 +38,25 @@ export interface Proposta {
   titulo: string;
   descricao: string;
   local_evento: string;
+  endereco_completo?: string;
+  tipo_evento?: string;
+  duracao_horas?: number;
+  publico_esperado?: number;
+  equipamento_incluso?: boolean;
+  nome_responsavel?: string;
+  telefone_contato?: string;
+  observacoes?: string;
   data_evento: string;
+  hora_evento?: string;
   valor_oferecido: number;
   status: "pendente" | "aceita" | "recusada" | "cancelada";
   mensagem_resposta?: string;
   created_at: string;
+  updated_at?: string;
   nome_outro?: string;
   imagem_perfil_url?: string;
+  nome_artista?: string;
+  nome_contratante?: string;
 }
 
 export interface Avaliacao {
@@ -95,6 +115,47 @@ export const api = {
     if (!response.ok) {
       throw new Error("Erro ao fazer logout");
     }
+  },
+
+  async forgotPassword(
+    email: string,
+  ): Promise<{ message: string; resetToken?: string }> {
+    const response = await fetch(
+      `${API_BASE_URL}/api/usuarios/auth/forgot-password`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email }),
+      },
+    );
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.error || "Erro ao solicitar recuperação de senha");
+    }
+
+    return response.json();
+  },
+
+  async resetPassword(
+    token: string,
+    novaSenha: string,
+  ): Promise<{ message: string }> {
+    const response = await fetch(
+      `${API_BASE_URL}/api/usuarios/auth/reset-password`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ token, novaSenha }),
+      },
+    );
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.error || "Erro ao redefinir senha");
+    }
+
+    return response.json();
   },
 
   // Users
@@ -272,6 +333,22 @@ export const api = {
 
     const data = await response.json();
     return data.data || [];
+  },
+
+  async getMediaAvaliacoes(
+    id: number,
+  ): Promise<{ total_avaliacoes: number; media_nota: number }> {
+    const response = await fetch(
+      `${API_BASE_URL}/api/avaliacoes/usuario/${id}/media`,
+      { credentials: "include" },
+    );
+
+    if (!response.ok) {
+      throw new Error("Erro ao buscar média de avaliações");
+    }
+
+    const data = await response.json();
+    return data.data || { total_avaliacoes: 0, media_nota: 0 };
   },
 
   async createAvaliacao(data: Partial<Avaliacao>): Promise<Avaliacao> {

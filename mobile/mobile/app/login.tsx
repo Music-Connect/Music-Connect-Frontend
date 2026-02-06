@@ -42,7 +42,7 @@ export default function LoginScreen() {
         Alert.alert("Sucesso", "Login realizado com sucesso!", [
           {
             text: "OK",
-            onPress: () => router.replace("/(tabs)"),
+            onPress: () => router.replace("/redirect"),
           },
         ]);
       } else {

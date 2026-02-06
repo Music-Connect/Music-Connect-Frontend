@@ -46,6 +46,17 @@ export function setupAuthRoutes(app: Express, backendUrl: string) {
   // Register
   app.post("/api/web/auth/register", async (req: Request, res: Response) => {
     try {
+      const { usuario, email, senha, tipo_usuario } = req.body;
+
+      // Validate required fields
+      if (!usuario || !email || !senha || !tipo_usuario) {
+        res.status(400).json({
+          success: false,
+          error: "Campos obrigatórios: usuario, email, senha, tipo_usuario",
+        });
+        return;
+      }
+
       const response = await axios.post<
         ApiResponse<{ user: Usuario; token: string }>
       >(`${backendUrl}/api/usuarios/auth/register`, req.body);
@@ -88,6 +99,93 @@ export function setupAuthRoutes(app: Express, backendUrl: string) {
       authenticated: true,
     });
   });
+
+  // Forgot Password
+  app.post(
+    "/api/web/auth/forgot-password",
+    async (req: Request, res: Response) => {
+      try {
+        const { email } = req.body;
+
+        if (!email) {
+          res.status(400).json({
+            success: false,
+            error: "Email é obrigatório",
+          });
+          return;
+        }
+
+        const response = await axios.post(
+          `${backendUrl}/api/usuarios/auth/forgot-password`,
+          { email },
+        );
+
+        res.json({
+          success: true,
+          message:
+            response.data.message ||
+            "Se o email existir, você receberá instruções para redefinir sua senha",
+          ...(response.data.resetToken && {
+            resetToken: response.data.resetToken,
+          }),
+        });
+      } catch (error) {
+        if (axios.isAxiosError(error) && error.response) {
+          res.status(error.response.status).json({
+            success: false,
+            error:
+              error.response.data.error ||
+              "Erro ao solicitar recuperação de senha",
+          });
+        } else {
+          res.status(500).json({
+            success: false,
+            error: "Erro ao conectar com o servidor",
+          });
+        }
+      }
+    },
+  );
+
+  // Reset Password
+  app.post(
+    "/api/web/auth/reset-password",
+    async (req: Request, res: Response) => {
+      try {
+        const { token, novaSenha } = req.body;
+
+        if (!token || !novaSenha) {
+          res.status(400).json({
+            success: false,
+            error: "Token e nova senha são obrigatórios",
+          });
+          return;
+        }
+
+        const response = await axios.post(
+          `${backendUrl}/api/usuarios/auth/reset-password`,
+          { token, novaSenha },
+        );
+
+        res.json({
+          success: true,
+          message: response.data.message || "Senha alterada com sucesso",
+        });
+      } catch (error) {
+        if (axios.isAxiosError(error) && error.response) {
+          res.status(error.response.status).json({
+            success: false,
+            error: error.response.data.error || "Erro ao redefinir senha",
+          });
+        } else {
+          res.status(500).json({
+            success: false,
+            error: "Erro ao conectar com o servidor",
+          });
+        }
+      }
+    },
+  );
 
   // Logout
   app.post("/api/web/auth/logout", (req: Request, res: Response) => {

@@ -60,7 +60,14 @@ DATABASE_URL=postgresql://music_user:postgres@localhost:5433/music_connect_db
 JWT_SECRET=seu-secret-seguro-aqui
 NODE_ENV=development
 PORT=3001
+
+# Email (Opcional - apenas se quiser testar recuperação de senha)
+# EMAIL_USER=seu_email@gmail.com
+# EMAIL_PASSWORD=sua_senha_de_aplicativo
+# FRONTEND_URL=http://localhost:3000
 ```
+
+> 💡 **Recuperação de Senha**: O email é opcional. Sem configuração, o token aparece no console do backend para testes. Para configurar Gmail, veja [EMAIL_SETUP.md](EMAIL_SETUP.md).
 
 **Frontend Web** - Criar `frontend-web/frontend-web/.env.local`:
 

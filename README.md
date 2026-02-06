@@ -86,7 +86,17 @@ DB_NAME=music_connect_db
 JWT_SECRET=seu_segredo_super_secreto_aqui_mudar_em_producao
 JWT_EXPIRES_IN=7d
 CORS_ORIGIN=http://localhost:3000,http://localhost:5173
+
+# Email (Opcional - para recuperação de senha)
+# Veja EMAIL_SETUP.md para instruções detalhadas
+EMAIL_HOST=smtp.gmail.com
+EMAIL_PORT=587
+EMAIL_USER=seu_email@gmail.com
+EMAIL_PASSWORD=sua_senha_de_aplicativo
+FRONTEND_URL=http://localhost:3000
 ```
+
+**⚠️ Recuperação de Senha**: Para habilitar o envio de emails de recuperação de senha, configure as variáveis EMAIL\_\* no `.env`. Veja [EMAIL_SETUP.md](EMAIL_SETUP.md) para instruções detalhadas de como configurar com Gmail.
 
 ### Executar Serviços
 
@@ -202,6 +212,8 @@ req.user = decoded;
 - `POST /api/usuarios/auth/login` - Login
 - `POST /api/usuarios/auth/register` - Registro
 - `POST /api/usuarios/auth/logout` - Logout (limpa cookie)
+- `POST /api/usuarios/auth/forgot-password` - Solicitar recuperação de senha
+- `POST /api/usuarios/auth/reset-password` - Redefinir senha com token
 
 ### Usuários
 

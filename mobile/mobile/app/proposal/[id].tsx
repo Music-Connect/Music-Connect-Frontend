@@ -18,6 +18,7 @@ export default function ProposalDetailScreen() {
   const { id } = useLocalSearchParams();
   const router = useRouter();
   const [proposal, setProposal] = useState<any>(null);
+  const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [status, setStatus] = useState<ProposalStatus>("pendente");
 
@@ -32,10 +33,18 @@ export default function ProposalDetailScreen() {
   const loadProposal = async () => {
     try {
       setLoading(true);
+
+      // ✅ Carregar usuário logado
+      const userResponse = await api.getCurrentUser();
+      const currentUser = userResponse.data?.user;
+      if (currentUser) {
+        setUser(currentUser);
+      }
+
       const response = await api.listarMinhasPropostas();
       if (response.success && response.data?.propostas) {
         const found = response.data.propostas.find(
-          (p: any) => p.id_proposta === id,
+          (p: any) => p.id_proposta.toString() === id.toString(),
         );
         if (found) {
           setProposal(found);
@@ -141,7 +150,9 @@ export default function ProposalDetailScreen() {
 
   // Formatar data
   const formatDate = (dateString: string) => {
+    if (!dateString) return "Data não informada";
     const date = new Date(dateString);
+    if (isNaN(date.getTime())) return "Data inválida";
     return date.toLocaleDateString("pt-BR", {
       weekday: "long",
       year: "numeric",
@@ -240,31 +251,97 @@ export default function ProposalDetailScreen() {
           <Text style={styles.sectionTitle}>Detalhes Adicionais</Text>
 
           <View style={styles.detailsGrid}>
-            <View style={styles.detailItem}>
-              <Text style={styles.detailIcon}>🎯</Text>
-              <Text style={styles.detailLabel}>Tipo de Evento</Text>
-              <Text style={styles.detailValue}>Show/Apresentação</Text>
-            </View>
-            <View style={styles.detailItem}>
-              <Text style={styles.detailIcon}>👥</Text>
-              <Text style={styles.detailLabel}>Público</Text>
-              <Text style={styles.detailValue}>Variado</Text>
-            </View>
-            <View style={styles.detailItem}>
-              <Text style={styles.detailIcon}>🎵</Text>
-              <Text style={styles.detailLabel}>Duração</Text>
-              <Text style={styles.detailValue}>2 horas</Text>
-            </View>
+            {proposal.tipo_evento && (
+              <View style={styles.detailItem}>
+                <Text style={styles.detailIcon}>🎯</Text>
+                <Text style={styles.detailLabel}>Tipo de Evento</Text>
+                <Text style={styles.detailValue}>{proposal.tipo_evento}</Text>
+              </View>
+            )}
+            {proposal.publico_esperado && (
+              <View style={styles.detailItem}>
+                <Text style={styles.detailIcon}>👥</Text>
+                <Text style={styles.detailLabel}>Público Esperado</Text>
+                <Text style={styles.detailValue}>
+                  {proposal.publico_esperado} pessoas
+                </Text>
+              </View>
+            )}
+            {proposal.duracao_horas && (
+              <View style={styles.detailItem}>
+                <Text style={styles.detailIcon}>⏱️</Text>
+                <Text style={styles.detailLabel}>Duração</Text>
+                <Text style={styles.detailValue}>
+                  {proposal.duracao_horas}h
+                </Text>
+              </View>
+            )}
             <View style={styles.detailItem}>
               <Text style={styles.detailIcon}>📍</Text>
               <Text style={styles.detailLabel}>Local</Text>
-              <Text style={styles.detailValue}>A confirmar</Text>
+              <Text style={styles.detailValue}>{proposal.local}</Text>
             </View>
+            {proposal.endereco_completo && (
+              <View style={styles.detailItem}>
+                <Text style={styles.detailIcon}>🗺️</Text>
+                <Text style={styles.detailLabel}>Endereço</Text>
+                <Text style={styles.detailValue}>
+                  {proposal.endereco_completo}
+                </Text>
+              </View>
+            )}
+            {proposal.equipamento_incluso !== undefined && (
+              <View style={styles.detailItem}>
+                <Text style={styles.detailIcon}>
+                  {proposal.equipamento_incluso ? "✅" : "❌"}
+                </Text>
+                <Text style={styles.detailLabel}>Equipamento</Text>
+                <Text style={styles.detailValue}>
+                  {proposal.equipamento_incluso
+                    ? "Incluso (som/luz)"
+                    : "Não incluso"}
+                </Text>
+              </View>
+            )}
           </View>
+
+          {(proposal.nome_responsavel || proposal.telefone_contato) && (
+            <>
+              <Text style={[styles.sectionTitle, { marginTop: 20 }]}>
+                Contato do Responsável
+              </Text>
+              {proposal.nome_responsavel && (
+                <View style={styles.contactInfo}>
+                  <Text style={styles.contactIcon}>👤</Text>
+                  <Text style={styles.contactText}>
+                    {proposal.nome_responsavel}
+                  </Text>
+                </View>
+              )}
+              {proposal.telefone_contato && (
+                <View style={styles.contactInfo}>
+                  <Text style={styles.contactIcon}>📞</Text>
+                  <Text style={styles.contactText}>
+                    {proposal.telefone_contato}
+                  </Text>
+                </View>
+              )}
+            </>
+          )}
+
+          {proposal.observacoes && (
+            <>
+              <Text style={[styles.sectionTitle, { marginTop: 20 }]}>
+                Observações
+              </Text>
+              <Text style={styles.observacoesText}>{proposal.observacoes}</Text>
+            </>
+          )}
         </View>
 
         {/* Actions */}
-        {status === "pendente" && (
+        {/* ✅ Apenas artista pode aceitar/recusar */}
+        {status === "pendente" && user?.tipo_usuario === "artista" && (
           <View style={styles.actionsCard}>
             <TouchableOpacity
               style={styles.acceptButton}
@@ -287,7 +364,25 @@ export default function ProposalDetailScreen() {
           </View>
         )}
 
-        {status !== "pendente" && (
+        {/* ✅ Contratante vê apenas botão de contato */}
+        {user?.tipo_usuario === "contratante" && (
+          <View style={styles.actionsCard}>
+            <TouchableOpacity
+              style={styles.contactButton}
+              onPress={handleContact}
+            >
+              <Text style={styles.contactButtonText}>💬 Entrar em Contato</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.backToListButton}
+              onPress={() => router.back()}
+            >
+              <Text style={styles.backToListText}>Voltar para Propostas</Text>
+            </TouchableOpacity>
+          </View>
+        )}
+
+        {status !== "pendente" && user?.tipo_usuario === "artista" && (
           <View style={styles.actionsCard}>
             <TouchableOpacity
               style={styles.contactButton}
@@ -545,5 +640,32 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontSize: 16,
     fontWeight: "600",
+  },
+  contactInfo: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    backgroundColor: "#18181B",
+    borderRadius: 8,
+    marginBottom: 8,
+  },
+  contactIcon: {
+    fontSize: 18,
+    marginRight: 12,
+  },
+  contactText: {
+    fontSize: 14,
+    color: "#fff",
+    flex: 1,
+  },
+  observacoesText: {
+    fontSize: 14,
+    color: "#999",
+    lineHeight: 20,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    backgroundColor: "#18181B",
+    borderRadius: 8,
   },
 });

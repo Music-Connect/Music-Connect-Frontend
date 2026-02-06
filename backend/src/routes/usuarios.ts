@@ -2,6 +2,8 @@ import { Router } from "express";
 import {
   login,
   register,
+  forgotPassword,
+  resetPassword,
   getAllUsuarios,
   getUsuarioById,
   getCurrentUser,
@@ -15,6 +17,8 @@ const router = Router();
 // Auth routes (públicas)
 router.post("/auth/login", login);
 router.post("/auth/register", register);
+router.post("/auth/forgot-password", forgotPassword);
+router.post("/auth/reset-password", resetPassword);
 router.post("/auth/logout", (req, res) => {
   res.clearCookie("token");
   res.json({ success: true, message: "Logout realizado com sucesso" });

@@ -14,6 +14,12 @@ export interface Usuario {
   cor_tema?: string;
   cor_banner?: string;
   imagem_perfil_url?: string;
+  preco_minimo?: number;
+  preco_maximo?: number;
+  portfolio?: string[];
+  spotify_url?: string;
+  instagram_url?: string;
+  youtube_url?: string;
   created_at?: Date;
   updated_at?: Date;
 }
@@ -40,6 +46,12 @@ export interface UpdateUsuarioDTO {
   cor_tema?: string;
   cor_banner?: string;
   imagem_perfil_url?: string;
+  preco_minimo?: number;
+  preco_maximo?: number;
+  portfolio?: string[];
+  spotify_url?: string;
+  instagram_url?: string;
+  youtube_url?: string;
 }
 
 export interface LoginDTO {
@@ -54,7 +66,16 @@ export interface Proposta {
   titulo: string;
   descricao: string;
   local_evento: string;
+  endereco_completo?: string;
+  tipo_evento?: string;
+  duracao_horas?: number;
+  publico_esperado?: number;
+  equipamento_incluso?: boolean;
+  nome_responsavel?: string;
+  telefone_contato?: string;
+  observacoes?: string;
   data_evento: string;
+  hora_evento?: string;
   valor_oferecido: number;
   status: "pendente" | "aceita" | "recusada" | "cancelada";
   mensagem_resposta?: string;
@@ -68,7 +89,16 @@ export interface CreatePropostaDTO {
   titulo: string;
   descricao: string;
   local_evento: string;
+  endereco_completo?: string;
+  tipo_evento?: string;
+  duracao_horas?: number;
+  publico_esperado?: number;
+  equipamento_incluso?: boolean;
+  nome_responsavel?: string;
+  telefone_contato?: string;
+  observacoes?: string;
   data_evento: string;
+  hora_evento?: string;
   valor_oferecido: number;
 }
 

@@ -9,6 +9,7 @@ export const getAllArtistas = async (
   res: Response,
 ): Promise<void> => {
   try {
+    console.log("[BACKEND] GET /api/artistas - Query params:", req.query);
     const { genero, local, cidade, estado }: QueryParams = req.query;
 
     let query = "SELECT * FROM usuarios WHERE tipo_usuario = 'artista'";
@@ -41,8 +42,11 @@ export const getAllArtistas = async (
 
     query += " ORDER BY created_at DESC";
 
+    console.log("[BACKEND] Executing query:", query);
+    console.log("[BACKEND] Query params:", params);
     const result: QueryResult<Usuario> = await pool.query(query, params);
 
+    console.log("[BACKEND] Found", result.rows.length, "artistas");
     const artistasWithoutPassword = result.rows.map((artista) =>
       removePasswordFromUser(artista),
     );
@@ -52,6 +56,11 @@ export const getAllArtistas = async (
       data: artistasWithoutPassword,
     };
 
+    console.log(
+      "[BACKEND] Sending response with",
+      artistasWithoutPassword.length,
+      "artistas",
+    );
     res.json(response);
   } catch (error) {
     console.error("Erro ao buscar artistas:", error);

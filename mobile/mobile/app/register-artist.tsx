@@ -59,7 +59,7 @@ export default function RegisterArtistScreen() {
         Alert.alert("Sucesso", "Conta criada com sucesso!", [
           {
             text: "OK",
-            onPress: () => router.replace("/(tabs)"),
+            onPress: () => router.replace("/redirect"),
           },
         ]);
       } else {

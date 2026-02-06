@@ -10,7 +10,7 @@ import "react-native-reanimated";
 import { useColorScheme } from "@/hooks/use-color-scheme";
 
 export const unstable_settings = {
-  initialRouteName: "index",
+  initialRouteName: "redirect",
 };
 
 export default function RootLayout() {
@@ -19,6 +19,7 @@ export default function RootLayout() {
   return (
     <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
       <Stack>
+        <Stack.Screen name="redirect" options={{ headerShown: false }} />
         <Stack.Screen name="index" options={{ headerShown: false }} />
         <Stack.Screen name="login" options={{ headerShown: false }} />
         <Stack.Screen
@@ -32,6 +33,11 @@ export default function RootLayout() {
         />
         <Stack.Screen name="forgot-password" options={{ headerShown: false }} />
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+        <Stack.Screen name="(artist-tabs)" options={{ headerShown: false }} />
+        <Stack.Screen
+          name="(contractor-tabs)"
+          options={{ headerShown: false }}
+        />
         <Stack.Screen name="artist/[id]" options={{ headerShown: false }} />
         <Stack.Screen name="proposal/[id]" options={{ headerShown: false }} />
         <Stack.Screen name="proposals-sent" options={{ headerShown: false }} />

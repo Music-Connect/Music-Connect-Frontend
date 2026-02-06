@@ -52,7 +52,16 @@ CREATE TABLE propostas (
   titulo VARCHAR(255) NOT NULL,
   descricao TEXT NOT NULL,
   data_evento DATE NOT NULL,
+  hora_evento TIME,
   local_evento VARCHAR(255) NOT NULL,
+  endereco_completo TEXT,
+  tipo_evento VARCHAR(100),
+  duracao_horas DECIMAL(3, 1),
+  publico_esperado INTEGER,
+  equipamento_incluso BOOLEAN DEFAULT false,
+  nome_responsavel VARCHAR(255),
+  telefone_contato VARCHAR(20),
+  observacoes TEXT,
   valor_oferecido DECIMAL(10, 2) NOT NULL,
   status status_proposta DEFAULT 'pendente',
   mensagem_resposta TEXT,
@@ -90,6 +99,19 @@ CREATE INDEX idx_propostas_data_evento ON propostas(data_evento);
 
 CREATE INDEX idx_avaliacoes_avaliado ON avaliacoes(id_avaliado);
 CREATE INDEX idx_avaliacoes_avaliador ON avaliacoes(id_avaliador);
+
+-- Password reset tokens table
+CREATE TABLE password_reset_tokens (
+  id SERIAL PRIMARY KEY,
+  id_usuario INTEGER NOT NULL REFERENCES usuarios(id_usuario) ON DELETE CASCADE,
+  token VARCHAR(255) NOT NULL UNIQUE,
+  expires_at TIMESTAMP NOT NULL,
+  used BOOLEAN DEFAULT FALSE,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX idx_password_reset_token ON password_reset_tokens(token);
+CREATE INDEX idx_password_reset_user ON password_reset_tokens(id_usuario);
 
 -- Function to update updated_at timestamp
 CREATE OR REPLACE FUNCTION update_updated_at_column()

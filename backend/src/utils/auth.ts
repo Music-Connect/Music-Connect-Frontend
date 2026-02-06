@@ -1,5 +1,6 @@
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
+import crypto from "crypto";
 import { Usuario } from "../types/index.js";
 
 const JWT_SECRET = process.env.JWT_SECRET || "your-secret-key-change-this";
@@ -43,4 +44,12 @@ export const removePasswordFromUser = (
 ): Omit<Usuario, "senha"> => {
   const { senha, ...userWithoutPassword } = user;
   return userWithoutPassword;
+};
+
+export const generateResetToken = (): string => {
+  return crypto.randomBytes(32).toString("hex");
+};
+
+export const hashResetToken = (token: string): string => {
+  return crypto.createHash("sha256").update(token).digest("hex");
 };

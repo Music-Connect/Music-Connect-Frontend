@@ -42,13 +42,22 @@ export const createAvaliacao = async (
   res: Response,
 ): Promise<void> => {
   try {
-    const { id_avaliador, id_avaliado, nota, comentario }: CreateAvaliacaoDTO =
-      req.body;
+    // ✅ ID do avaliador vem do token, não do body!
+    const id_avaliador = (req as any).user?.id_usuario;
+    const { id_avaliado, nota, comentario } = req.body;
 
-    if (!id_avaliador || !id_avaliado || !nota) {
+    if (!id_avaliador) {
+      res.status(401).json({
+        success: false,
+        error: "Usuário não autenticado",
+      });
+      return;
+    }
+
+    if (!id_avaliado || !nota) {
       res.status(400).json({
         success: false,
-        error: "Campos obrigatórios: id_avaliador, id_avaliado, nota",
+        error: "Campos obrigatórios: id_avaliado, nota",
       });
       return;
     }

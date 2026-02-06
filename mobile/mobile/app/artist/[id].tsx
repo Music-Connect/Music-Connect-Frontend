@@ -31,12 +31,18 @@ export default function PublicProfileScreen() {
   const loadArtist = async () => {
     try {
       setLoading(true);
+      console.log("[ARTIST] Loading artist with ID:", id);
       const response = await api.getArtistaDetalhes(id as string);
+      console.log("[ARTIST] Response:", JSON.stringify(response, null, 2));
+
       if (response.success && response.data?.artista) {
+        console.log("[ARTIST] Artist loaded:", response.data.artista);
         setArtist(response.data.artista);
+      } else {
+        console.error("[ARTIST] Invalid response structure:", response);
       }
     } catch (error) {
-      console.error("Erro ao carregar artista:", error);
+      console.error("[ARTIST] Error loading artist:", error);
     } finally {
       setLoading(false);
     }
@@ -56,35 +62,48 @@ export default function PublicProfileScreen() {
     </View>
   );
 
-  const renderSobre = () => (
-    <View style={styles.aboutSection}>
-      <View style={styles.infoCard}>
-        <View style={styles.infoItem}>
-          <Text style={styles.infoIcon}>�</Text>
-          <View style={styles.infoContent}>
-            <Text style={styles.infoLabel}>LOCALIZAÇÃO</Text>
-            <Text style={styles.infoValue}>
-              {artist.local_atuacao || "Não informado"}
-            </Text>
-          </View>
-        </View>
-        <View style={styles.infoItem}>
-          <Text style={styles.infoIcon}>💼</Text>
-          <View style={styles.infoContent}>
-            <Text style={styles.infoLabel}>TIPO</Text>
-            <Text style={styles.infoValue}>{artist.tipo_usuario}</Text>
-          </View>
-        </View>
-      </View>
+  const renderSobre = () => {
+    const location = [artist.cidade, artist.estado].filter(Boolean).join(", ");
 
-      {artist.descricao && (
-        <View style={styles.descriptionCard}>
-          <Text style={styles.descriptionTitle}>Sobre</Text>
-          <Text style={styles.descriptionText}>{artist.descricao}</Text>
+    return (
+      <View style={styles.aboutSection}>
+        <View style={styles.infoCard}>
+          <View style={styles.infoItem}>
+            <Text style={styles.infoIcon}>📍</Text>
+            <View style={styles.infoContent}>
+              <Text style={styles.infoLabel}>LOCALIZAÇÃO</Text>
+              <Text style={styles.infoValue}>
+                {location || "Não informado"}
+              </Text>
+            </View>
+          </View>
+          <View style={styles.infoItem}>
+            <Text style={styles.infoIcon}>💼</Text>
+            <View style={styles.infoContent}>
+              <Text style={styles.infoLabel}>TIPO</Text>
+              <Text style={styles.infoValue}>{artist.tipo_usuario}</Text>
+            </View>
+          </View>
+          {artist.genero_musical && (
+            <View style={styles.infoItem}>
+              <Text style={styles.infoIcon}>🎵</Text>
+              <View style={styles.infoContent}>
+                <Text style={styles.infoLabel}>GÊNERO</Text>
+                <Text style={styles.infoValue}>{artist.genero_musical}</Text>
+              </View>
+            </View>
+          )}
         </View>
-      )}
-    </View>
-  );
+
+        {artist.descricao && (
+          <View style={styles.descriptionCard}>
+            <Text style={styles.descriptionTitle}>Sobre</Text>
+            <Text style={styles.descriptionText}>{artist.descricao}</Text>
+          </View>
+        )}
+      </View>
+    );
+  };
 
   const renderAgenda = () => (
     <View style={styles.emptyState}>
@@ -134,39 +153,14 @@ export default function PublicProfileScreen() {
 
             <Text style={styles.artistName}>{artist.usuario}</Text>
             <Text style={styles.artistType}>{artist.tipo_usuario}</Text>
-            {artist.local_atuacao && (
+            {(artist.cidade || artist.estado) && (
               <Text style={styles.artistLocation}>
-                📍 {artist.local_atuacao}
+                📍 {[artist.cidade, artist.estado].filter(Boolean).join(", ")}
               </Text>
             )}
-
-            <View
-              style={[
-                styles.statusBadge,
-                artist.disponivel
-                  ? styles.statusAvailable
-                  : styles.statusUnavailable,
-              ]}
-            >
-              <View
-                style={[
-                  styles.statusDot,
-                  artist.disponivel
-                    ? styles.statusDotAvailable
-                    : styles.statusDotUnavailable,
-                ]}
-              />
-              <Text
-                style={[
-                  styles.statusText,
-                  artist.disponivel
-                    ? styles.statusTextAvailable
-                    : styles.statusTextUnavailable,
-                ]}
-              >
-                {artist.disponivel ? "Disponível" : "Indisponível"}
-              </Text>
-            </View>
+            {artist.genero_musical && (
+              <Text style={styles.artistGenre}>🎵 {artist.genero_musical}</Text>
+            )}
 
             {artist.descricao && (
               <Text style={styles.artistBio}>{artist.descricao}</Text>
@@ -182,8 +176,14 @@ export default function PublicProfileScreen() {
                 <Text style={styles.statLabel}>Eventos</Text>
               </View>
               <View style={styles.statItem}>
-                <Text style={styles.statValue}>5.0</Text>
-                <Text style={styles.statLabel}>Avaliação</Text>
+                <Text style={styles.statValue}>
+                  {artist.media_avaliacoes
+                    ? Number(artist.media_avaliacoes).toFixed(1)
+                    : "0.0"}
+                </Text>
+                <Text style={styles.statLabel}>
+                  Avaliação ({artist.total_avaliacoes || 0})
+                </Text>
               </View>
             </View>
 
@@ -344,6 +344,12 @@ const styles = StyleSheet.create({
   artistLocation: {
     fontSize: 14,
     color: "#999",
+    marginBottom: 8,
+  },
+  artistGenre: {
+    fontSize: 14,
+    color: "#EC4899",
+    fontWeight: "600",
     marginBottom: 12,
   },
   statusBadge: {

@@ -13,7 +13,10 @@ import {
   comparePassword,
   generateToken,
   removePasswordFromUser,
+  generateResetToken,
+  hashResetToken,
 } from "../utils/auth.js";
+import { sendPasswordResetEmail } from "../utils/emailService.js";
 import { QueryResult } from "pg";
 
 export const login = async (req: Request, res: Response): Promise<void> => {
@@ -77,8 +80,160 @@ export const login = async (req: Request, res: Response): Promise<void> => {
   }
 };
 
+export const forgotPassword = async (
+  req: Request,
+  res: Response,
+): Promise<void> => {
+  try {
+    const { email } = req.body;
+
+    if (!email) {
+      res.status(400).json({
+        success: false,
+        error: "Email é obrigatório",
+      });
+      return;
+    }
+
+    // Check if user exists
+    const result: QueryResult<Usuario> = await pool.query(
+      "SELECT id_usuario, email FROM usuarios WHERE email = $1",
+      [email],
+    );
+
+    // Always return success to prevent email enumeration
+    if (result.rows.length === 0) {
+      res.json({
+        success: true,
+        message:
+          "Se o email existir, você receberá instruções para redefinir sua senha",
+      });
+      return;
+    }
+
+    const user = result.rows[0];
+
+    // Generate reset token
+    const resetToken = generateResetToken();
+    const hashedToken = hashResetToken(resetToken);
+    const expiresAt = new Date(Date.now() + 60 * 60 * 1000); // 1 hour
+
+    // Delete any existing tokens for this user
+    await pool.query(
+      "DELETE FROM password_reset_tokens WHERE id_usuario = $1",
+      [user.id_usuario],
+    );
+
+    // Save hashed token to database
+    await pool.query(
+      `INSERT INTO password_reset_tokens (id_usuario, token, expires_at)
+       VALUES ($1, $2, $3)`,
+      [user.id_usuario, hashedToken, expiresAt],
+    );
+
+    // Send password reset email
+    const emailSent = await sendPasswordResetEmail(email, resetToken);
+
+    if (!emailSent) {
+      // In development, log the token if email service is not configured
+      console.log(`[PASSWORD RESET] Token for ${email}: ${resetToken}`);
+      console.log(
+        `[PASSWORD RESET] Reset URL: /reset-password?token=${resetToken}`,
+      );
+    }
+
+    res.json({
+      success: true,
+      message:
+        "Se o email existir, você receberá instruções para redefinir sua senha",
+      // Only for development - remove in production!
+      ...(process.env.NODE_ENV !== "production" &&
+        !emailSent && { resetToken }),
+    });
+  } catch (error) {
+    console.error("Erro ao solicitar reset de senha:", error);
+    res.status(500).json({
+      success: false,
+      error: "Erro ao processar solicitação",
+    });
+  }
+};
+
+export const resetPassword = async (
+  req: Request,
+  res: Response,
+): Promise<void> => {
+  try {
+    const { token, novaSenha } = req.body;
+
+    if (!token || !novaSenha) {
+      res.status(400).json({
+        success: false,
+        error: "Token e nova senha são obrigatórios",
+      });
+      return;
+    }
+
+    if (novaSenha.length < 6) {
+      res.status(400).json({
+        success: false,
+        error: "A senha deve ter pelo menos 6 caracteres",
+      });
+      return;
+    }
+
+    const hashedToken = hashResetToken(token);
+
+    // Find valid token
+    const tokenResult: QueryResult = await pool.query(
+      `SELECT id_usuario FROM password_reset_tokens 
+       WHERE token = $1 AND expires_at > CURRENT_TIMESTAMP AND used = FALSE`,
+      [hashedToken],
+    );
+
+    if (tokenResult.rows.length === 0) {
+      res.status(400).json({
+        success: false,
+        error: "Token inválido ou expirado",
+      });
+      return;
+    }
+
+    const userId = tokenResult.rows[0].id_usuario;
+    const hashedPassword = await hashPassword(novaSenha);
+
+    // Update password
+    await pool.query(
+      "UPDATE usuarios SET senha = $1, updated_at = CURRENT_TIMESTAMP WHERE id_usuario = $2",
+      [hashedPassword, userId],
+    );
+
+    // Mark token as used
+    await pool.query(
+      "UPDATE password_reset_tokens SET used = TRUE WHERE token = $1",
+      [hashedToken],
+    );
+
+    res.json({
+      success: true,
+      message: "Senha alterada com sucesso",
+    });
+  } catch (error) {
+    console.error("Erro ao redefinir senha:", error);
+    res.status(500).json({
+      success: false,
+      error: "Erro ao redefinir senha",
+    });
+  }
+};
+
 export const register = async (req: Request, res: Response): Promise<void> => {
   try {
+    console.log(
+      "[BACKEND] Received registration request:",
+      JSON.stringify({ ...req.body, senha: "***" }, null, 2),
+    );
+
     const {
       usuario,
       email,
@@ -91,18 +246,30 @@ export const register = async (req: Request, res: Response): Promise<void> => {
       genero_musical,
     }: CreateUsuarioDTO = req.body;
 
+    console.log("[BACKEND] Extracted fields:", {
+      usuario,
+      email,
+      senha: "***",
+      tipo_usuario,
+      telefone,
+      cidade,
+      estado,
+    });
+
     // Validações
     if (!usuario || !email || !senha || !tipo_usuario) {
+      console.error("[BACKEND] Validation failed - missing required fields:", {
+        usuario: !!usuario,
+        email: !!email,
+        senha: !!senha,
+        tipo_usuario: !!tipo_usuario,
+      });
       res.status(400).json({
         success: false,
         error: "Campos obrigatórios: usuario, email, senha, tipo_usuario",
       });
       return;
     }
-
-    // Combinar cidade e estado em local
-    const local =
-      cidade && estado ? `${cidade}, ${estado}` : cidade || estado || null;
 
     if (!["artista", "contratante"].includes(tipo_usuario)) {
       res.status(400).json({
@@ -113,12 +280,14 @@ export const register = async (req: Request, res: Response): Promise<void> => {
     }
 
     // Verificar se email já existe
+    console.log("[BACKEND] Checking if email exists:", email);
     const emailCheck: QueryResult = await pool.query(
       "SELECT id_usuario FROM usuarios WHERE email = $1",
       [email],
     );
 
     if (emailCheck.rows.length > 0) {
+      console.warn("[BACKEND] Email already exists:", email);
       res.status(400).json({
         success: false,
         error: "Email já cadastrado",
@@ -126,12 +295,24 @@ export const register = async (req: Request, res: Response): Promise<void> => {
       return;
     }
 
+    console.log("[BACKEND] Hashing password...");
     const hashedPassword = await hashPassword(senha);
+
+    console.log("[BACKEND] Inserting user into database...");
+    console.log("[BACKEND] Insert values:", {
+      usuario,
+      email,
+      tipo_usuario,
+      telefone,
+      cidade,
+      estado,
+      genero_musical,
+    });
 
     const result: QueryResult<Usuario> = await pool.query(
       `INSERT INTO usuarios 
-       (nome, email, senha, tipo_usuario, bio, telefone, local, genero)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+       (usuario, email, senha, tipo_usuario, descricao, telefone, cidade, estado, genero_musical)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
        RETURNING *`,
       [
         usuario,
@@ -140,13 +321,21 @@ export const register = async (req: Request, res: Response): Promise<void> => {
         tipo_usuario,
         descricao || null,
         telefone || null,
-        local,
+        cidade || null,
+        estado || null,
         genero_musical || null,
       ],
     );
 
+    console.log(
+      "[BACKEND] User inserted successfully, ID:",
+      result.rows[0]?.id_usuario,
+    );
     const newUser = result.rows[0];
+    console.log("[BACKEND] Removing password from user object...");
     const userWithoutPassword = removePasswordFromUser(newUser);
+
+    console.log("[BACKEND] Generating JWT token...");
     const token = generateToken(userWithoutPassword);
 
     // Set httpOnly cookie
@@ -164,9 +353,14 @@ export const register = async (req: Request, res: Response): Promise<void> => {
       type: newUser.tipo_usuario,
     };
 
+    console.log("[BACKEND] Registration successful, sending response");
     res.status(201).json(response);
   } catch (error) {
-    console.error("Erro ao registrar:", error);
+    console.error("[BACKEND] ERROR during registration:", error);
+    console.error(
+      "[BACKEND] Error stack:",
+      error instanceof Error ? error.stack : "N/A",
+    );
     res
       .status(500)
       .json({ success: false, error: "Erro ao registrar usuário" });
@@ -258,7 +452,10 @@ export const getCurrentUser = async (
     // Get user ID from auth middleware (req.user is set by authMiddleware)
     const userId = (req as any).user?.id_usuario;
 
+    console.log("[BACKEND] GET /api/usuarios/me - User ID from token:", userId);
+
     if (!userId) {
+      console.error("[BACKEND] User not authenticated - no userId in token");
       res.status(401).json({
         success: false,
         error: "Usuário não autenticado",
@@ -272,6 +469,7 @@ export const getCurrentUser = async (
     );
 
     if (result.rows.length === 0) {
+      console.error("[BACKEND] User not found in database:", userId);
       res.status(404).json({
         success: false,
         error: "Usuário não encontrado",
@@ -280,6 +478,12 @@ export const getCurrentUser = async (
     }
 
     const userWithoutPassword = removePasswordFromUser(result.rows[0]);
+
+    console.log(
+      "[BACKEND] Sending user data:",
+      userWithoutPassword.id_usuario,
+      userWithoutPassword.usuario,
+    );
 
     const response: ApiResponse<Omit<Usuario, "senha">> = {
       success: true,
@@ -311,6 +515,12 @@ export const updateUsuario = async (
       "cor_tema",
       "cor_banner",
       "imagem_perfil_url",
+      "preco_minimo",
+      "preco_maximo",
+      "portfolio",
+      "spotify_url",
+      "instagram_url",
+      "youtube_url",
     ];
 
     const updateFields: string[] = [];

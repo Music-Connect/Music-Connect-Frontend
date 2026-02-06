@@ -20,16 +20,27 @@ export default function Sidebar({
   };
 
   return (
-    <aside className="w-64 hidden md:flex flex-col p-8 border-r border-zinc-900 bg-black">
-      <div className="text-2xl font-black mb-10">
-        <span className="text-transparent bg-clip-text bg-linear-to-r from-yellow-300 to-pink-500">
-          Music Connect
+    <aside className="relative hidden w-72 md:flex flex-col px-8 py-7 border-r border-zinc-800/70 bg-[#0A0A0A]">
+      <div className="absolute inset-x-0 top-0 h-32 bg-radial from-pink-500/20 via-transparent to-transparent" />
+
+      <div className="relative mb-10">
+        <div className="text-[22px] font-black tracking-tight">
+          <span className="text-transparent bg-clip-text bg-linear-to-r from-amber-300 via-rose-400 to-fuchsia-500">
+            Music Connect
+          </span>
+        </div>
+        <p className="mt-2 text-xs uppercase tracking-[0.2em] text-zinc-500">
+          {isArtist ? "Artist Hub" : "Hiring Desk"}
+        </p>
+        <span className="mt-4 inline-flex items-center gap-2 rounded-full bg-zinc-900/70 px-3 py-1 text-[11px] font-semibold text-zinc-300">
+          <span className="h-2 w-2 rounded-full bg-emerald-400" />
+          {isArtist ? "Perfil Artista" : "Perfil Contratante"}
         </span>
       </div>
 
-      <nav className="flex flex-col gap-6 text-sm font-medium text-zinc-400">
+      <nav className="relative flex flex-col gap-6 text-sm font-medium text-zinc-400">
         <div className="space-y-4">
-          <p className="text-xs font-bold text-zinc-600 uppercase tracking-wider">
+          <p className="text-[11px] font-bold text-zinc-600 uppercase tracking-[0.28em]">
             Painel
           </p>
 
@@ -56,7 +67,7 @@ export default function Sidebar({
         </div>
 
         <div className="space-y-4 mt-6">
-          <p className="text-xs font-bold text-zinc-600 uppercase tracking-wider">
+          <p className="text-[11px] font-bold text-zinc-600 uppercase tracking-[0.28em]">
             {isArtist ? "Perfil" : "Organização"}
           </p>
           <div onClick={() => navigate("/profile")}>
@@ -72,12 +83,15 @@ export default function Sidebar({
         </div>
       </nav>
 
-      <button
-        onClick={onLogout}
-        className="mt-auto flex items-center gap-3 text-sm text-zinc-500 hover:text-white transition-colors"
-      >
-        Sair da conta
-      </button>
+      <div className="mt-auto pt-6">
+        <button
+          onClick={onLogout}
+          className="flex w-full items-center justify-between rounded-xl border border-zinc-800/70 bg-zinc-950/70 px-4 py-3 text-sm font-semibold text-zinc-400 transition hover:border-zinc-600/70 hover:text-white"
+        >
+          Sair da conta
+          <span className="text-base">↗</span>
+        </button>
+      </div>
     </aside>
   );
 }
@@ -91,14 +105,19 @@ interface NavItemProps {
 function NavItem({ children, icon, active }: NavItemProps) {
   return (
     <div
-      className={`flex items-center gap-3 cursor-pointer py-2 px-3 rounded-lg transition-all duration-200 ${
+      className={`group flex items-center gap-3 cursor-pointer rounded-xl px-4 py-3 transition-all duration-200 ${
         active
-          ? "text-white bg-zinc-900 border-r-2 border-pink-500"
-          : "hover:text-white hover:bg-zinc-900/50"
+          ? "bg-gradient-to-r from-zinc-900 via-zinc-900/90 to-transparent text-white shadow-[0_0_0_1px_rgba(255,255,255,0.04)]"
+          : "hover:bg-zinc-900/60 hover:text-white"
       }`}
     >
-      <span>{icon}</span>
-      <span>{children}</span>
+      <span className="text-base">{icon}</span>
+      <span className="flex-1">{children}</span>
+      <span
+        className={`h-2 w-2 rounded-full ${
+          active ? "bg-amber-300" : "bg-transparent group-hover:bg-zinc-600"
+        }`}
+      />
     </div>
   );
 }

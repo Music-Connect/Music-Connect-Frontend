@@ -8,30 +8,46 @@ import {
   StatusBar,
   ScrollView,
   Alert,
+  ActivityIndicator,
 } from "react-native";
 import { useRouter } from "expo-router";
+import api from "../services/api";
 
 export default function ForgotPasswordScreen() {
   const router = useRouter();
   const [email, setEmail] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handleReset = () => {
+  const handleReset = async () => {
     if (!email) {
       Alert.alert("Erro", "Por favor, insira seu e-mail");
       return;
     }
 
-    // Mock - em produção enviar email de recuperação
-    Alert.alert(
-      "E-mail enviado!",
-      "Enviamos um link de recuperação para seu e-mail. Verifique sua caixa de entrada.",
-      [
-        {
-          text: "OK",
-          onPress: () => router.back(),
-        },
-      ],
-    );
+    setIsLoading(true);
+    try {
+      const response = await api.forgotPassword(email);
+      Alert.alert(
+        "E-mail enviado!",
+        response.message ||
+          "Se o email existir, você receberá instruções para redefinir sua senha.",
+        [
+          {
+            text: "OK",
+            onPress: () => router.back(),
+          },
+        ],
+      );
+    } catch (error) {
+      Alert.alert(
+        "Erro",
+        error instanceof Error
+          ? error.message
+          : "Erro ao solicitar recuperação de senha",
+      );
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -76,10 +92,21 @@ export default function ForgotPasswordScreen() {
             />
           </View>
 
-          <TouchableOpacity style={styles.resetButton} onPress={handleReset}>
-            <Text style={styles.resetButtonText}>
-              Enviar Link de Recuperação
-            </Text>
+          <TouchableOpacity
+            style={[
+              styles.resetButton,
+              isLoading && styles.resetButtonDisabled,
+            ]}
+            onPress={handleReset}
+            disabled={isLoading}
+          >
+            {isLoading ? (
+              <ActivityIndicator color="#fff" />
+            ) : (
+              <Text style={styles.resetButtonText}>
+                Enviar Link de Recuperação
+              </Text>
+            )}
           </TouchableOpacity>
 
           <TouchableOpacity
@@ -171,6 +198,9 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     alignItems: "center",
     marginTop: 8,
+  },
+  resetButtonDisabled: {
+    opacity: 0.6,
   },
   resetButtonText: {
     color: "#fff",
