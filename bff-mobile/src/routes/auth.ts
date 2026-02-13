@@ -234,11 +234,93 @@ export function setupAuthRoutes(app: Express, backendUrl: string) {
     },
   );
 
+  // Verify Email
+  app.post(
+    "/api/mobile/auth/verify-email",
+    async (req: Request, res: Response) => {
+      try {
+        const { token } = req.body;
+
+        if (!token) {
+          res.status(400).json({
+            success: false,
+            error: "Token e obrigatorio",
+          });
+          return;
+        }
+
+        const response = await axios.post(
+          `${backendUrl}/api/usuarios/auth/verify-email`,
+          { token },
+        );
+
+        res.json(response.data);
+      } catch (error) {
+        if (axios.isAxiosError(error) && error.response) {
+          res.status(error.response.status).json({
+            success: false,
+            error: error.response.data.error || "Erro ao verificar email",
+          });
+        } else {
+          res.status(500).json({
+            success: false,
+            error: "Erro ao conectar com o servidor",
+          });
+        }
+      }
+    },
+  );
+
+  // Resend Verification
+  app.post(
+    "/api/mobile/auth/resend-verification",
+    async (req: Request, res: Response) => {
+      try {
+        const { email } = req.body;
+
+        if (!email) {
+          res.status(400).json({
+            success: false,
+            error: "Email e obrigatorio",
+          });
+          return;
+        }
+
+        const response = await axios.post(
+          `${backendUrl}/api/usuarios/auth/resend-verification`,
+          { email },
+        );
+
+        res.json(response.data);
+      } catch (error) {
+        if (axios.isAxiosError(error) && error.response) {
+          res.status(error.response.status).json({
+            success: false,
+            error: error.response.data.error || "Erro ao reenviar verificacao",
+          });
+        } else {
+          res.status(500).json({
+            success: false,
+            error: "Erro ao conectar com o servidor",
+          });
+        }
+      }
+    },
+  );
+
   // Logout (stateless, just for logging purposes)
   app.post("/api/mobile/auth/logout", (req: Request, res: Response) => {
+    // Limpa cookie httpOnly se existir
+    res.clearCookie("token", {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+    });
+
     res.json({
       success: true,
       message: "Logout realizado com sucesso",
+      instructions: "Por favor, limpe o token do AsyncStorage no cliente",
       timestamp: new Date().toISOString(),
     });
   });

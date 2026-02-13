@@ -4,6 +4,7 @@
 -- Drop tables if they exist (for development only)
 DROP TABLE IF EXISTS avaliacoes CASCADE;
 DROP TABLE IF EXISTS propostas CASCADE;
+DROP TABLE IF EXISTS email_verification_tokens CASCADE;
 DROP TABLE IF EXISTS usuarios CASCADE;
 
 -- Drop types if they exist
@@ -20,6 +21,8 @@ CREATE TABLE usuarios (
   usuario VARCHAR(255) NOT NULL,
   email VARCHAR(255) UNIQUE NOT NULL,
   senha VARCHAR(255) NOT NULL,
+  email_verificado BOOLEAN DEFAULT FALSE,
+  email_verificado_em TIMESTAMP,
   tipo_usuario tipo_usuario NOT NULL,
   telefone VARCHAR(20),
   imagem_perfil_url TEXT,
@@ -100,6 +103,19 @@ CREATE INDEX idx_propostas_data_evento ON propostas(data_evento);
 CREATE INDEX idx_avaliacoes_avaliado ON avaliacoes(id_avaliado);
 CREATE INDEX idx_avaliacoes_avaliador ON avaliacoes(id_avaliador);
 
+-- Email verification tokens table
+CREATE TABLE email_verification_tokens (
+  id SERIAL PRIMARY KEY,
+  id_usuario INTEGER NOT NULL REFERENCES usuarios(id_usuario) ON DELETE CASCADE,
+  token VARCHAR(255) NOT NULL UNIQUE,
+  expires_at TIMESTAMP NOT NULL,
+  used BOOLEAN DEFAULT FALSE,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX idx_email_verification_token ON email_verification_tokens(token);
+CREATE INDEX idx_email_verification_user ON email_verification_tokens(id_usuario);
+
 -- Password reset tokens table
 CREATE TABLE password_reset_tokens (
   id SERIAL PRIMARY KEY,
@@ -134,11 +150,11 @@ CREATE TRIGGER update_propostas_updated_at
   EXECUTE FUNCTION update_updated_at_column();
 
 -- Insert sample data for testing
-INSERT INTO usuarios (usuario, email, senha, tipo_usuario, telefone, cidade, estado, descricao, genero_musical, preco_minimo, preco_maximo, spotify_url, instagram_url) VALUES
-('DJ Zé', 'dj.ze@example.com', '$2a$10$XQNpZz.qJlZ0QJnJZ0QJnO.qJlZ0QJnJZ0QJnO.qJlZ0QJnJZ0QJn', 'artista', '11987654321', 'São Paulo', 'SP', 'DJ especializado em festas e eventos corporativos', 'Eletrônica', 1500.00, 5000.00, 'https://spotify.com/djze', '@djze'),
-('Ana Silva', 'ana.silva@example.com', '$2a$10$XQNpZz.qJlZ0QJnJZ0QJnO.qJlZ0QJnJZ0QJnO.qJlZ0QJnJZ0QJn', 'contratante', '11912345678', 'São Paulo', 'SP', 'Organizadora de eventos', NULL, NULL, NULL, NULL, NULL),
-('Banda Rock Brasil', 'contato@rockbrasil.com', '$2a$10$XQNpZz.qJlZ0QJnJZ0QJnO.qJlZ0QJnJZ0QJnO.qJlZ0QJnJZ0QJn', 'artista', '11999887766', 'Rio de Janeiro', 'RJ', 'Banda de rock com 10 anos de estrada', 'Rock', 3000.00, 10000.00, 'https://spotify.com/rockbrasil', '@rockbrasil'),
-('Maria Santos', 'maria.santos@example.com', '$2a$10$XQNpZz.qJlZ0QJnJZ0QJnO.qJlZ0QJnJZ0QJnO.qJlZ0QJnJZ0QJn', 'artista', '11988776655', 'Belo Horizonte', 'MG', 'Cantora de MPB e samba', 'MPB', 2000.00, 6000.00, 'https://spotify.com/mariasantos', '@mariasantosmusic');
+INSERT INTO usuarios (usuario, email, senha, email_verificado, email_verificado_em, tipo_usuario, telefone, cidade, estado, descricao, genero_musical, preco_minimo, preco_maximo, spotify_url, instagram_url) VALUES
+('DJ Zé', 'dj.ze@example.com', '$2a$10$XQNpZz.qJlZ0QJnJZ0QJnO.qJlZ0QJnJZ0QJnO.qJlZ0QJnJZ0QJn', TRUE, CURRENT_TIMESTAMP, 'artista', '11987654321', 'São Paulo', 'SP', 'DJ especializado em festas e eventos corporativos', 'Eletrônica', 1500.00, 5000.00, 'https://spotify.com/djze', '@djze'),
+('Ana Silva', 'ana.silva@example.com', '$2a$10$XQNpZz.qJlZ0QJnJZ0QJnO.qJlZ0QJnJZ0QJnO.qJlZ0QJnJZ0QJn', TRUE, CURRENT_TIMESTAMP, 'contratante', '11912345678', 'São Paulo', 'SP', 'Organizadora de eventos', NULL, NULL, NULL, NULL, NULL),
+('Banda Rock Brasil', 'contato@rockbrasil.com', '$2a$10$XQNpZz.qJlZ0QJnJZ0QJnO.qJlZ0QJnJZ0QJnO.qJlZ0QJnJZ0QJn', TRUE, CURRENT_TIMESTAMP, 'artista', '11999887766', 'Rio de Janeiro', 'RJ', 'Banda de rock com 10 anos de estrada', 'Rock', 3000.00, 10000.00, 'https://spotify.com/rockbrasil', '@rockbrasil'),
+('Maria Santos', 'maria.santos@example.com', '$2a$10$XQNpZz.qJlZ0QJnJZ0QJnO.qJlZ0QJnJZ0QJnO.qJlZ0QJnJZ0QJn', TRUE, CURRENT_TIMESTAMP, 'artista', '11988776655', 'Belo Horizonte', 'MG', 'Cantora de MPB e samba', 'MPB', 2000.00, 6000.00, 'https://spotify.com/mariasantos', '@mariasantosmusic');
 
 INSERT INTO propostas (id_contratante, id_artista, titulo, descricao, data_evento, local_evento, valor_oferecido, status) VALUES
 (2, 1, 'Festa de Aniversário', 'Preciso de um DJ para festa de 30 anos, aproximadamente 150 pessoas', '2024-06-15', 'Salão de Festas - Av. Paulista, 1000', 2500.00, 'pendente'),

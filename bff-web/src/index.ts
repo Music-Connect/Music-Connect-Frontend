@@ -12,9 +12,16 @@ import { setupDashboardRoutes } from "./routes/dashboard";
 const app = express();
 const PORT = process.env.PORT || 3003;
 const BACKEND_URL = process.env.BACKEND_URL || "http://localhost:3001";
+const CORS_ORIGIN = process.env.CORS_ORIGIN || "http://localhost:3000";
+const corsOrigins = CORS_ORIGIN.split(",").map((origin) => origin.trim());
 
 // Middleware
-app.use(cors());
+app.use(
+  cors({
+    origin: corsOrigins,
+    credentials: true,
+  }),
+);
 app.use(express.json());
 
 // Health check

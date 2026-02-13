@@ -81,8 +81,7 @@ export function setupAuthRoutes(app: Express, backendUrl: string) {
   });
 
   // Session check (for Next.js middleware)
-  app.get("/api/web/auth/session", (req: Request, res: Response) => {
-    // This would validate JWT token from headers
+  app.get("/api/web/auth/session", async (req: Request, res: Response) => {
     const authHeader = req.headers.authorization;
 
     if (!authHeader) {
@@ -93,11 +92,34 @@ export function setupAuthRoutes(app: Express, backendUrl: string) {
       return;
     }
 
-    // In production, validate JWT here
-    res.json({
-      success: true,
-      authenticated: true,
-    });
+    try {
+      const response = await axios.get<ApiResponse<Usuario>>(
+        `${backendUrl}/api/usuarios/me`,
+        {
+          headers: {
+            Authorization: authHeader,
+          },
+        },
+      );
+
+      res.json({
+        success: true,
+        authenticated: true,
+        user: response.data.data,
+      });
+    } catch (error) {
+      if (axios.isAxiosError(error) && error.response) {
+        res.status(error.response.status).json({
+          success: false,
+          error: error.response.data.error || "Não autenticado",
+        });
+      } else {
+        res.status(500).json({
+          success: false,
+          error: "Erro ao conectar com o servidor",
+        });
+      }
+    }
   });
 
   // Forgot Password
@@ -187,11 +209,93 @@ export function setupAuthRoutes(app: Express, backendUrl: string) {
     },
   );
 
+  // Verify Email
+  app.post(
+    "/api/web/auth/verify-email",
+    async (req: Request, res: Response) => {
+      try {
+        const { token } = req.body;
+
+        if (!token) {
+          res.status(400).json({
+            success: false,
+            error: "Token e obrigatorio",
+          });
+          return;
+        }
+
+        const response = await axios.post(
+          `${backendUrl}/api/usuarios/auth/verify-email`,
+          { token },
+        );
+
+        res.json(response.data);
+      } catch (error) {
+        if (axios.isAxiosError(error) && error.response) {
+          res.status(error.response.status).json({
+            success: false,
+            error: error.response.data.error || "Erro ao verificar email",
+          });
+        } else {
+          res.status(500).json({
+            success: false,
+            error: "Erro ao conectar com o servidor",
+          });
+        }
+      }
+    },
+  );
+
+  // Resend Verification
+  app.post(
+    "/api/web/auth/resend-verification",
+    async (req: Request, res: Response) => {
+      try {
+        const { email } = req.body;
+
+        if (!email) {
+          res.status(400).json({
+            success: false,
+            error: "Email e obrigatorio",
+          });
+          return;
+        }
+
+        const response = await axios.post(
+          `${backendUrl}/api/usuarios/auth/resend-verification`,
+          { email },
+        );
+
+        res.json(response.data);
+      } catch (error) {
+        if (axios.isAxiosError(error) && error.response) {
+          res.status(error.response.status).json({
+            success: false,
+            error: error.response.data.error || "Erro ao reenviar verificacao",
+          });
+        } else {
+          res.status(500).json({
+            success: false,
+            error: "Erro ao conectar com o servidor",
+          });
+        }
+      }
+    },
+  );
+
   // Logout
   app.post("/api/web/auth/logout", (req: Request, res: Response) => {
+    // Limpa cookie httpOnly se existir
+    res.clearCookie("token", {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+    });
+
     res.json({
       success: true,
       message: "Logout realizado com sucesso",
+      instructions: "Por favor, limpe o token do localStorage no cliente",
     });
   });
 }

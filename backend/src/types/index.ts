@@ -5,6 +5,8 @@ export interface Usuario {
   usuario: string;
   email: string;
   senha?: string; // Opcional porque não retornamos em respostas
+  email_verificado?: boolean;
+  email_verificado_em?: Date;
   tipo_usuario: "artista" | "contratante";
   descricao?: string;
   telefone?: string;

@@ -16,7 +16,10 @@ import {
   generateResetToken,
   hashResetToken,
 } from "../utils/auth.js";
-import { sendPasswordResetEmail } from "../utils/emailService.js";
+import {
+  sendPasswordResetEmail,
+  sendEmailVerificationEmail,
+} from "../utils/emailService.js";
 import { QueryResult } from "pg";
 
 export const login = async (req: Request, res: Response): Promise<void> => {
@@ -66,11 +69,14 @@ export const login = async (req: Request, res: Response): Promise<void> => {
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
     });
 
-    const response: AuthResponse = {
+    const response: AuthResponse & { message?: string } = {
       success: true,
       user: userWithoutPassword,
       token, // Still send in response for backward compatibility
       type: user.tipo_usuario,
+      message: userWithoutPassword.email_verificado
+        ? undefined
+        : "Email ainda nao verificado",
     };
 
     res.json(response);
@@ -346,15 +352,54 @@ export const register = async (req: Request, res: Response): Promise<void> => {
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
     });
 
-    const response: AuthResponse = {
+    const verificationToken = generateResetToken();
+    const hashedVerificationToken = hashResetToken(verificationToken);
+    const verificationExpiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000);
+
+    await pool.query(
+      "DELETE FROM email_verification_tokens WHERE id_usuario = $1",
+      [newUser.id_usuario],
+    );
+
+    await pool.query(
+      `INSERT INTO email_verification_tokens (id_usuario, token, expires_at)
+       VALUES ($1, $2, $3)`,
+      [newUser.id_usuario, hashedVerificationToken, verificationExpiresAt],
+    );
+
+    const emailSent = await sendEmailVerificationEmail(
+      newUser.email,
+      verificationToken,
+    );
+
+    if (!emailSent) {
+      console.log(
+        `[EMAIL VERIFICATION] Token for ${newUser.email}: ${verificationToken}`,
+      );
+      console.log(
+        `[EMAIL VERIFICATION] Verify URL: /verify-email?token=${verificationToken}`,
+      );
+    }
+
+    const response: AuthResponse & { message?: string } = {
       success: true,
       user: userWithoutPassword,
       token, // Still send in response for backward compatibility
       type: newUser.tipo_usuario,
+      message: userWithoutPassword.email_verificado
+        ? undefined
+        : "Email ainda nao verificado",
+    };
+
+    const responseWithToken = {
+      ...response,
+      ...(process.env.NODE_ENV !== "production" && !emailSent
+        ? { verificationToken }
+        : {}),
     };
 
     console.log("[BACKEND] Registration successful, sending response");
-    res.status(201).json(response);
+    res.status(201).json(responseWithToken);
   } catch (error) {
     console.error("[BACKEND] ERROR during registration:", error);
     console.error(
@@ -364,6 +409,140 @@ export const register = async (req: Request, res: Response): Promise<void> => {
     res
       .status(500)
       .json({ success: false, error: "Erro ao registrar usuário" });
+  }
+};
+
+export const verifyEmail = async (
+  req: Request,
+  res: Response,
+): Promise<void> => {
+  try {
+    const { token } = req.body;
+
+    if (!token) {
+      res.status(400).json({
+        success: false,
+        error: "Token e obrigatorio",
+      });
+      return;
+    }
+
+    const hashedToken = hashResetToken(token);
+
+    const tokenResult: QueryResult = await pool.query(
+      `SELECT id_usuario FROM email_verification_tokens
+       WHERE token = $1 AND expires_at > CURRENT_TIMESTAMP AND used = FALSE`,
+      [hashedToken],
+    );
+
+    if (tokenResult.rows.length === 0) {
+      res.status(400).json({
+        success: false,
+        error: "Token invalido ou expirado",
+      });
+      return;
+    }
+
+    const userId = tokenResult.rows[0].id_usuario;
+
+    await pool.query(
+      `UPDATE usuarios
+       SET email_verificado = TRUE, email_verificado_em = CURRENT_TIMESTAMP
+       WHERE id_usuario = $1`,
+      [userId],
+    );
+
+    await pool.query(
+      "UPDATE email_verification_tokens SET used = TRUE WHERE token = $1",
+      [hashedToken],
+    );
+
+    res.json({
+      success: true,
+      message: "Email verificado com sucesso",
+    });
+  } catch (error) {
+    console.error("Erro ao verificar email:", error);
+    res.status(500).json({
+      success: false,
+      error: "Erro ao verificar email",
+    });
+  }
+};
+
+export const resendVerification = async (
+  req: Request,
+  res: Response,
+): Promise<void> => {
+  try {
+    const { email } = req.body;
+
+    if (!email) {
+      res.status(400).json({
+        success: false,
+        error: "Email e obrigatorio",
+      });
+      return;
+    }
+
+    const result: QueryResult<Usuario> = await pool.query(
+      "SELECT id_usuario, email, email_verificado FROM usuarios WHERE email = $1",
+      [email],
+    );
+
+    if (result.rows.length === 0 || result.rows[0].email_verificado) {
+      res.json({
+        success: true,
+        message:
+          "Se o email existir, voce recebera instrucoes para verificar sua conta",
+      });
+      return;
+    }
+
+    const user = result.rows[0];
+    const verificationToken = generateResetToken();
+    const hashedVerificationToken = hashResetToken(verificationToken);
+    const verificationExpiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000);
+
+    await pool.query(
+      "DELETE FROM email_verification_tokens WHERE id_usuario = $1",
+      [user.id_usuario],
+    );
+
+    await pool.query(
+      `INSERT INTO email_verification_tokens (id_usuario, token, expires_at)
+       VALUES ($1, $2, $3)`,
+      [user.id_usuario, hashedVerificationToken, verificationExpiresAt],
+    );
+
+    const emailSent = await sendEmailVerificationEmail(
+      user.email,
+      verificationToken,
+    );
+
+    if (!emailSent) {
+      console.log(
+        `[EMAIL VERIFICATION] Token for ${user.email}: ${verificationToken}`,
+      );
+      console.log(
+        `[EMAIL VERIFICATION] Verify URL: /verify-email?token=${verificationToken}`,
+      );
+    }
+
+    res.json({
+      success: true,
+      message:
+        "Se o email existir, voce recebera instrucoes para verificar sua conta",
+      ...(process.env.NODE_ENV !== "production" && !emailSent
+        ? { verificationToken }
+        : {}),
+    });
+  } catch (error) {
+    console.error("Erro ao reenviar verificacao de email:", error);
+    res.status(500).json({
+      success: false,
+      error: "Erro ao reenviar verificacao de email",
+    });
   }
 };
 
@@ -398,9 +577,14 @@ export const getAllUsuarios = async (
       removePasswordFromUser(user),
     );
 
-    const response: ApiResponse<Omit<Usuario, "senha">[]> = {
+    const publicUsers = usersWithoutPassword.map((user) => {
+      const { email, ...rest } = user;
+      return rest;
+    });
+
+    const response: ApiResponse<Omit<Usuario, "senha" | "email">[]> = {
       success: true,
-      data: usersWithoutPassword,
+      data: publicUsers,
     };
 
     res.json(response);
@@ -504,6 +688,23 @@ export const updateUsuario = async (
   try {
     const id = req.params.id as string;
     const updates: UpdateUsuarioDTO = req.body;
+    const userId = (req as any).user?.id_usuario;
+
+    if (!userId) {
+      res.status(401).json({
+        success: false,
+        error: "Usuário não autenticado",
+      });
+      return;
+    }
+
+    if (userId !== parseInt(id)) {
+      res.status(403).json({
+        success: false,
+        error: "Você não pode atualizar outro usuário",
+      });
+      return;
+    }
 
     const allowedFields = [
       "usuario",
@@ -584,6 +785,23 @@ export const deleteUsuario = async (
 ): Promise<void> => {
   try {
     const { id } = req.params;
+    const userId = (req as any).user?.id_usuario;
+
+    if (!userId) {
+      res.status(401).json({
+        success: false,
+        error: "Usuário não autenticado",
+      });
+      return;
+    }
+
+    if (userId !== parseInt(id)) {
+      res.status(403).json({
+        success: false,
+        error: "Você não pode deletar outro usuário",
+      });
+      return;
+    }
 
     const result: QueryResult = await pool.query(
       "DELETE FROM usuarios WHERE id_usuario = $1 RETURNING id_usuario",

@@ -10,9 +10,16 @@ import { setupAvaliacoesRoutes } from "./routes/avaliacoes";
 const app = express();
 const PORT = Number(process.env.PORT) || 3002;
 const BACKEND_URL = process.env.BACKEND_URL || "http://localhost:3001";
+const CORS_ORIGIN = process.env.CORS_ORIGIN || "http://localhost:19006";
+const corsOrigins = CORS_ORIGIN.split(",").map((origin) => origin.trim());
 
 // Middleware
-app.use(cors());
+app.use(
+  cors({
+    origin: corsOrigins,
+    credentials: true,
+  }),
+);
 app.use(express.json());
 
 // Health check

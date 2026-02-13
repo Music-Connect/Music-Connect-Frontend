@@ -107,13 +107,22 @@ export const api = {
   },
 
   async logout(): Promise<void> {
-    const response = await fetch(`${API_BASE_URL}/api/usuarios/auth/logout`, {
-      method: "POST",
-      credentials: "include",
-    });
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/usuarios/auth/logout`, {
+        method: "POST",
+        credentials: "include",
+      });
 
-    if (!response.ok) {
-      throw new Error("Erro ao fazer logout");
+      if (!response.ok) {
+        console.warn("Aviso ao fazer logout no servidor");
+      }
+    } catch (error) {
+      console.warn("Erro ao conectar com servidor de logout:", error);
+    } finally {
+      // Sempre limpa o token localmente, mesmo com erro
+      if (typeof window !== "undefined") {
+        localStorage.removeItem("token");
+      }
     }
   },
 

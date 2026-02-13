@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import pool from "../database.js";
 import { Usuario, ApiResponse, QueryParams } from "../types/index.js";
-import { removePasswordFromUser } from "../utils/auth.js";
+import { hashPassword, removePasswordFromUser } from "../utils/auth.js";
 import { QueryResult } from "pg";
 
 export const getAllArtistas = async (
@@ -140,6 +140,8 @@ export const createArtista = async (
       return;
     }
 
+    const hashedPassword = await hashPassword(senha);
+
     const result: QueryResult<Usuario> = await pool.query(
       `INSERT INTO usuarios 
        (usuario, email, senha, tipo_usuario, descricao, telefone, cidade, estado, genero_musical)
@@ -148,7 +150,7 @@ export const createArtista = async (
       [
         usuario,
         email,
-        senha,
+        hashedPassword,
         descricao || null,
         telefone || null,
         cidade || null,
@@ -178,6 +180,23 @@ export const updateArtista = async (
   try {
     const id = req.params.id as string;
     const updates = req.body;
+    const userId = (req as any).user?.id_usuario;
+
+    if (!userId) {
+      res.status(401).json({
+        success: false,
+        error: "Usuário não autenticado",
+      });
+      return;
+    }
+
+    if (userId !== parseInt(id)) {
+      res.status(403).json({
+        success: false,
+        error: "Você não pode atualizar outro artista",
+      });
+      return;
+    }
 
     const allowedFields = [
       "usuario",

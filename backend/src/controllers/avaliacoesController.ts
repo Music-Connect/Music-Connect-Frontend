@@ -92,6 +92,23 @@ export const createAvaliacao = async (
       return;
     }
 
+    const relacaoCheck: QueryResult = await pool.query(
+      `SELECT 1 FROM propostas
+       WHERE status = 'aceita'
+         AND ((id_contratante = $1 AND id_artista = $2)
+           OR (id_contratante = $2 AND id_artista = $1))
+       LIMIT 1`,
+      [id_avaliador, id_avaliado],
+    );
+
+    if (relacaoCheck.rows.length === 0) {
+      res.status(403).json({
+        success: false,
+        error: "Avaliacao permitida apenas entre usuarios com proposta aceita",
+      });
+      return;
+    }
+
     const result: QueryResult<Avaliacao> = await pool.query(
       `INSERT INTO avaliacoes 
        (id_avaliador, id_avaliado, nota, comentario)

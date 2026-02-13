@@ -54,11 +54,18 @@ curl -X GET http://localhost:3001/api/propostas/recebidas \
     "id_usuario": 1,
     "usuario": "joao_silva",
     "email": "joao@example.com",
-    "tipo_usuario": "artista"
+    "tipo_usuario": "artista",
+    "email_verificado": false
   },
-  "token": "eyJhbGc..."
+  "token": "eyJhbGc...",
+  "message": "Email ainda nao verificado"
 }
 ```
+
+**Notas**:
+
+- Em desenvolvimento, pode retornar `verificationToken` quando o email nao esta configurado.
+- O link de verificacao expira em 24 horas.
 
 **Erros**:
 
@@ -91,10 +98,12 @@ curl -X GET http://localhost:3001/api/propostas/recebidas \
     "usuario": "joao_silva",
     "email": "joao@example.com",
     "tipo_usuario": "artista",
+    "email_verificado": false,
     "telefone": null,
     "cidade": null
   },
-  "token": "eyJhbGc..."
+  "token": "eyJhbGc...",
+  "message": "Email ainda nao verificado"
 }
 ```
 
@@ -199,6 +208,64 @@ curl -X GET http://localhost:3001/api/propostas/recebidas \
 
 ---
 
+### POST `/usuarios/auth/verify-email`
+
+**Descricao**: Verificar email com token
+
+**Acesso**: Publico
+
+**Body**:
+
+```json
+{
+  "token": "abc123..."
+}
+```
+
+**Resposta (200)**:
+
+```json
+{
+  "success": true,
+  "message": "Email verificado com sucesso"
+}
+```
+
+**Erros**:
+
+- `400`: Token invalido ou expirado
+
+---
+
+### POST `/usuarios/auth/resend-verification`
+
+**Descricao**: Reenviar email de verificacao
+
+**Acesso**: Publico
+
+**Body**:
+
+```json
+{
+  "email": "joao@example.com"
+}
+```
+
+**Resposta (200)**:
+
+```json
+{
+  "success": true,
+  "message": "Se o email existir, voce recebera instrucoes para verificar sua conta"
+}
+```
+
+**Notas**:
+
+- Em desenvolvimento, pode retornar `verificationToken` quando o email nao esta configurado.
+
+---
+
 ### GET `/usuarios`
 
 **Descrição**: Listar todos os usuários
@@ -223,7 +290,6 @@ GET /usuarios?search=joao
     {
       "id_usuario": 1,
       "usuario": "joao_silva",
-      "email": "joao@example.com",
       "tipo_usuario": "artista",
       "cidade": "São Paulo",
       "genero_musical": "Rock"

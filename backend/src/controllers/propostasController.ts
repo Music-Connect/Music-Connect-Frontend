@@ -82,14 +82,34 @@ export const getPropostasRecebidas = async (
   res: Response,
 ): Promise<void> => {
   try {
+    const userId = (req as any).user?.id_usuario;
     const { id_artista } = req.query;
 
-    if (!id_artista) {
-      res.status(400).json({
+    if (!userId) {
+      res.status(401).json({
         success: false,
-        error: "id_artista é obrigatório",
+        error: "Usuário não autenticado",
       });
       return;
+    }
+
+    if (id_artista !== undefined) {
+      const requestedId = Number(id_artista);
+      if (Number.isNaN(requestedId)) {
+        res.status(400).json({
+          success: false,
+          error: "id_artista inválido",
+        });
+        return;
+      }
+
+      if (requestedId !== userId) {
+        res.status(403).json({
+          success: false,
+          error: "Você não pode acessar propostas de outro artista",
+        });
+        return;
+      }
     }
 
     const query = `
@@ -105,12 +125,19 @@ export const getPropostasRecebidas = async (
     `;
 
     const result: QueryResult<PropostaComDetalhes> = await pool.query(query, [
-      id_artista,
+      userId,
     ]);
 
-    const response: ApiResponse<PropostaComDetalhes[]> = {
+    const publicPropostas = result.rows.map((row) => {
+      const { email_contratante, email_artista, ...rest } = row as any;
+      return rest;
+    });
+
+    const response: ApiResponse<
+      Array<Omit<PropostaComDetalhes, "email_contratante" | "email_artista">>
+    > = {
       success: true,
-      data: result.rows,
+      data: publicPropostas,
     };
 
     res.json(response);
@@ -127,14 +154,34 @@ export const getPropostasEnviadas = async (
   res: Response,
 ): Promise<void> => {
   try {
+    const userId = (req as any).user?.id_usuario;
     const { id_contratante } = req.query;
 
-    if (!id_contratante) {
-      res.status(400).json({
+    if (!userId) {
+      res.status(401).json({
         success: false,
-        error: "id_contratante é obrigatório",
+        error: "Usuário não autenticado",
       });
       return;
+    }
+
+    if (id_contratante !== undefined) {
+      const requestedId = Number(id_contratante);
+      if (Number.isNaN(requestedId)) {
+        res.status(400).json({
+          success: false,
+          error: "id_contratante inválido",
+        });
+        return;
+      }
+
+      if (requestedId !== userId) {
+        res.status(403).json({
+          success: false,
+          error: "Você não pode acessar propostas de outro contratante",
+        });
+        return;
+      }
     }
 
     const query = `
@@ -150,7 +197,7 @@ export const getPropostasEnviadas = async (
     `;
 
     const result: QueryResult<PropostaComDetalhes> = await pool.query(query, [
-      id_contratante,
+      userId,
     ]);
 
     const response: ApiResponse<PropostaComDetalhes[]> = {
@@ -173,6 +220,15 @@ export const getPropostaById = async (
 ): Promise<void> => {
   try {
     const { id } = req.params;
+    const userId = (req as any).user?.id_usuario;
+
+    if (!userId) {
+      res.status(401).json({
+        success: false,
+        error: "Usuário não autenticado",
+      });
+      return;
+    }
 
     const query = `
       SELECT 
@@ -185,10 +241,12 @@ export const getPropostaById = async (
       LEFT JOIN usuarios a ON a.id_usuario = p.id_artista
       LEFT JOIN usuarios c ON c.id_usuario = p.id_contratante
       WHERE p.id_proposta = $1
+        AND (p.id_artista = $2 OR p.id_contratante = $2)
     `;
 
     const result: QueryResult<PropostaComDetalhes> = await pool.query(query, [
       id,
+      userId,
     ]);
 
     if (result.rows.length === 0) {
