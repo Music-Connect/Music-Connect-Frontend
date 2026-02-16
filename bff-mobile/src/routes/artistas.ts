@@ -1,6 +1,11 @@
 import { Express, Request, Response } from "express";
 import axios from "axios";
-import { ApiResponse, Usuario, Avaliacao } from "../types/index";
+import {
+  ApiResponse,
+  Usuario,
+  Avaliacao,
+  BackendMediaAvaliacoes,
+} from "../types/index";
 
 export function setupArtistasRoutes(app: Express, backendUrl: string) {
   // Get all artists with mobile-optimized pagination
@@ -96,9 +101,11 @@ export function setupArtistasRoutes(app: Express, backendUrl: string) {
             .catch(() => ({ data: { data: [] } })),
           axios
             .get<
-              ApiResponse<{ media: number; total: number }>
+              ApiResponse<BackendMediaAvaliacoes>
             >(`${backendUrl}/api/avaliacoes/usuario/${id}/media`)
-            .catch(() => ({ data: { data: { media: 0, total: 0 } } })),
+            .catch(() => ({
+              data: { data: { media_nota: 0, total_avaliacoes: 0 } },
+            })),
         ]);
 
       console.log(
@@ -112,8 +119,8 @@ export function setupArtistasRoutes(app: Express, backendUrl: string) {
           artista: {
             ...artistaResponse.data.data,
             avaliacoes: avaliacoesResponse.data.data?.slice(0, 10) || [], // Limit for mobile
-            media_avaliacoes: mediaResponse.data.data?.media || 0,
-            total_avaliacoes: mediaResponse.data.data?.total || 0,
+            media_avaliacoes: mediaResponse.data.data?.media_nota || 0,
+            total_avaliacoes: mediaResponse.data.data?.total_avaliacoes || 0,
           },
         },
       });

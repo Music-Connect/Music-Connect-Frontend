@@ -5,6 +5,7 @@ import {
   Usuario,
   WebExploreData,
   Avaliacao,
+  BackendMediaAvaliacoes,
 } from "../types/index";
 
 export function setupArtistasRoutes(app: Express, backendUrl: string) {
@@ -75,7 +76,7 @@ export function setupArtistasRoutes(app: Express, backendUrl: string) {
           axios.get<ApiResponse<Avaliacao[]>>(
             `${backendUrl}/api/avaliacoes/usuario/${id}`,
           ),
-          axios.get<ApiResponse<{ media: number; total: number }>>(
+          axios.get<ApiResponse<BackendMediaAvaliacoes>>(
             `${backendUrl}/api/avaliacoes/usuario/${id}/media`,
           ),
         ]);
@@ -85,8 +86,8 @@ export function setupArtistasRoutes(app: Express, backendUrl: string) {
         data: {
           ...artistaResponse.data.data,
           avaliacoes: avaliacoesResponse.data.data, // All for web
-          media_avaliacoes: mediaResponse.data.data?.media,
-          total_avaliacoes: mediaResponse.data.data?.total,
+          media_avaliacoes: mediaResponse.data.data?.media_nota,
+          total_avaliacoes: mediaResponse.data.data?.total_avaliacoes,
         },
       });
     } catch (error) {

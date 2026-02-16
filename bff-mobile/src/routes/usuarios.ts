@@ -5,6 +5,7 @@ import {
   Usuario,
   MobileUserProfile,
   Avaliacao,
+  BackendMediaAvaliacoes,
 } from "../types/index";
 
 export function setupUsuariosRoutes(app: Express, backendUrl: string) {
@@ -68,17 +69,18 @@ export function setupUsuariosRoutes(app: Express, backendUrl: string) {
           axios.get<ApiResponse<Avaliacao[]>>(
             `${backendUrl}/api/avaliacoes/usuario/${id}`,
           ),
-          axios.get<ApiResponse<{ media: number; total: number }>>(
+          axios.get<ApiResponse<BackendMediaAvaliacoes>>(
             `${backendUrl}/api/avaliacoes/usuario/${id}/media`,
           ),
         ]);
 
       // Aggregate data for mobile
+      // Backend returns media_nota and total_avaliacoes
       const mobileProfile: MobileUserProfile = {
         ...userResponse.data.data!,
         avaliacoes_recebidas: avaliacoesResponse.data.data?.slice(0, 5), // Only last 5 for mobile
-        media_avaliacoes: mediaResponse.data.data?.media,
-        total_avaliacoes: mediaResponse.data.data?.total,
+        media_avaliacoes: mediaResponse.data.data?.media_nota,
+        total_avaliacoes: mediaResponse.data.data?.total_avaliacoes,
       };
 
       res.json({

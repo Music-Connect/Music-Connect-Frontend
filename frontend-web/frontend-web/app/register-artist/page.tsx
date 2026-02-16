@@ -5,6 +5,11 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { api } from "@/lib/api";
 
+const inputClass =
+  "w-full rounded-xl border border-zinc-800/60 bg-zinc-900/50 px-4 py-3 text-sm text-white placeholder-zinc-600 outline-none transition-all duration-200 focus:border-zinc-700 focus:bg-zinc-900/80 focus:ring-1 focus:ring-zinc-700/50";
+
+const labelClass = "mb-1.5 block text-[13px] font-medium text-zinc-400";
+
 export default function RegisterArtistPage() {
   const router = useRouter();
   const [formData, setFormData] = useState({
@@ -47,7 +52,6 @@ export default function RegisterArtistPage() {
       };
 
       await api.register(data);
-
       alert("Cadastro realizado com sucesso!");
       router.push("/login");
     } catch (err: unknown) {
@@ -58,218 +62,248 @@ export default function RegisterArtistPage() {
   };
 
   return (
-    <div className="min-h-screen w-full flex items-center justify-center bg-black py-12">
-      <div className="w-full h-full flex flex-col items-center justify-center p-8">
-        <h1 className="text-5xl font-bold mb-10 text-center">
-          <span className="bg-linear-to-r from-yellow-300 to-pink-500 text-transparent bg-clip-text">
-            Cadastro de Artista
-          </span>
-        </h1>
+    <div className="relative flex min-h-screen items-center justify-center bg-black overflow-hidden py-12">
+      {/* Background blobs */}
+      <div className="pointer-events-none fixed inset-0">
+        <div className="absolute -top-40 left-1/4 h-150 w-150 rounded-full bg-linear-to-br from-rose-600/6 to-transparent blur-3xl" />
+        <div className="absolute -bottom-40 right-1/4 h-100 w-100 rounded-full bg-linear-to-tl from-fuchsia-500/5 to-transparent blur-3xl" />
+      </div>
 
-        <form onSubmit={handleSubmit} className="w-full max-w-2xl space-y-6">
-          {error && (
-            <div className="bg-red-500/10 border border-red-500/20 text-red-500 px-4 py-3 rounded-lg text-sm">
-              {error}
-            </div>
-          )}
+      <div className="relative z-10 w-full max-w-2xl px-6">
+        {/* Header */}
+        <div className="fade-in-up mb-8 text-center">
+          <Link href="/" className="inline-block mb-4">
+            <span className="text-sm font-bold bg-linear-to-r from-amber-300 via-rose-400 to-fuchsia-500 bg-clip-text text-transparent">
+              Music Connect
+            </span>
+          </Link>
+          <h1 className="text-2xl font-black tracking-tight sm:text-3xl">
+            Cadastro de{" "}
+            <span className="bg-linear-to-r from-rose-400 to-fuchsia-400 bg-clip-text text-transparent">
+              Artista
+            </span>
+          </h1>
+          <p className="mt-2 text-sm text-zinc-500">
+            Crie sua conta e mostre seu talento ao mundo
+          </p>
+        </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {/* Form Card */}
+        <div
+          className="fade-in-up rounded-2xl border border-zinc-800/50 bg-zinc-900/40 p-6 sm:p-8 backdrop-blur-sm"
+          style={{ animationDelay: "80ms" }}
+        >
+          <form onSubmit={handleSubmit} className="space-y-6">
+            {error && (
+              <div className="flex items-center gap-2 rounded-xl border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm text-red-400">
+                <span>⚠️</span>
+                {error}
+              </div>
+            )}
+
+            {/* Section: Account */}
             <div>
-              <label
-                htmlFor="usuario"
-                className="block text-sm font-medium text-gray-300 mb-2 ml-2"
-              >
-                Nome de Usuário *
+              <p className="mb-4 text-[11px] font-bold uppercase tracking-[0.2em] text-zinc-600">
+                Conta
+              </p>
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <div>
+                  <label htmlFor="usuario" className={labelClass}>
+                    Nome Artístico *
+                  </label>
+                  <input
+                    type="text"
+                    name="usuario"
+                    id="usuario"
+                    placeholder="Ex: DJ Luna"
+                    value={formData.usuario}
+                    onChange={handleChange}
+                    required
+                    className={inputClass}
+                  />
+                </div>
+                <div>
+                  <label htmlFor="email" className={labelClass}>
+                    Email *
+                  </label>
+                  <input
+                    type="email"
+                    name="email"
+                    id="email"
+                    placeholder="seu@email.com"
+                    value={formData.email}
+                    onChange={handleChange}
+                    required
+                    className={inputClass}
+                  />
+                </div>
+                <div>
+                  <label htmlFor="senha" className={labelClass}>
+                    Senha *
+                  </label>
+                  <input
+                    type="password"
+                    name="senha"
+                    id="senha"
+                    placeholder="Mínimo 6 caracteres"
+                    value={formData.senha}
+                    onChange={handleChange}
+                    required
+                    minLength={6}
+                    className={inputClass}
+                  />
+                </div>
+                <div>
+                  <label htmlFor="confirmarSenha" className={labelClass}>
+                    Confirmar Senha *
+                  </label>
+                  <input
+                    type="password"
+                    name="confirmarSenha"
+                    id="confirmarSenha"
+                    placeholder="••••••••"
+                    value={formData.confirmarSenha}
+                    onChange={handleChange}
+                    required
+                    className={inputClass}
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Divider */}
+            <div className="h-px bg-linear-to-r from-transparent via-zinc-800 to-transparent" />
+
+            {/* Section: Profile */}
+            <div>
+              <p className="mb-4 text-[11px] font-bold uppercase tracking-[0.2em] text-zinc-600">
+                Perfil Musical
+              </p>
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <div>
+                  <label htmlFor="genero_musical" className={labelClass}>
+                    Gênero Musical *
+                  </label>
+                  <select
+                    name="genero_musical"
+                    id="genero_musical"
+                    value={formData.genero_musical}
+                    onChange={handleChange}
+                    required
+                    className={`${inputClass} appearance-none`}
+                  >
+                    <option value="">Selecione...</option>
+                    <option value="Rock">Rock</option>
+                    <option value="Pop">Pop</option>
+                    <option value="Sertanejo">Sertanejo</option>
+                    <option value="Eletrônica">Eletrônica</option>
+                    <option value="MPB">MPB</option>
+                    <option value="Jazz">Jazz</option>
+                    <option value="Funk">Funk</option>
+                    <option value="Rap">Rap</option>
+                    <option value="Outro">Outro</option>
+                  </select>
+                </div>
+                <div>
+                  <label htmlFor="telefone" className={labelClass}>
+                    Telefone
+                  </label>
+                  <input
+                    type="tel"
+                    name="telefone"
+                    id="telefone"
+                    placeholder="(11) 99999-9999"
+                    value={formData.telefone}
+                    onChange={handleChange}
+                    className={inputClass}
+                  />
+                </div>
+                <div>
+                  <label htmlFor="cidade" className={labelClass}>
+                    Cidade
+                  </label>
+                  <input
+                    type="text"
+                    name="cidade"
+                    id="cidade"
+                    placeholder="São Paulo"
+                    value={formData.cidade}
+                    onChange={handleChange}
+                    className={inputClass}
+                  />
+                </div>
+                <div>
+                  <label htmlFor="estado" className={labelClass}>
+                    Estado
+                  </label>
+                  <input
+                    type="text"
+                    name="estado"
+                    id="estado"
+                    placeholder="SP"
+                    value={formData.estado}
+                    onChange={handleChange}
+                    maxLength={2}
+                    className={inputClass}
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Divider */}
+            <div className="h-px bg-linear-to-r from-transparent via-zinc-800 to-transparent" />
+
+            {/* Description */}
+            <div>
+              <label htmlFor="descricao" className={labelClass}>
+                Sobre você
               </label>
-              <input
-                type="text"
-                name="usuario"
-                id="usuario"
-                placeholder="Seu nome artístico"
-                value={formData.usuario}
+              <textarea
+                name="descricao"
+                id="descricao"
+                placeholder="Conte um pouco sobre seu trabalho, estilo e experiência..."
+                value={formData.descricao}
                 onChange={handleChange}
-                required
-                className="w-full px-4 py-3 rounded-full bg-transparent border border-zinc-600 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-pink-400"
+                rows={4}
+                className="w-full rounded-xl border border-zinc-800/60 bg-zinc-900/50 px-4 py-3 text-sm text-white placeholder-zinc-600 outline-none transition-all duration-200 focus:border-zinc-700 focus:bg-zinc-900/80 focus:ring-1 focus:ring-zinc-700/50 resize-none"
               />
             </div>
 
-            <div>
-              <label
-                htmlFor="email"
-                className="block text-sm font-medium text-gray-300 mb-2 ml-2"
-              >
-                Email *
-              </label>
-              <input
-                type="email"
-                name="email"
-                id="email"
-                placeholder="seu@email.com"
-                value={formData.email}
-                onChange={handleChange}
-                required
-                className="w-full px-4 py-3 rounded-full bg-transparent border border-zinc-600 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-pink-400"
-              />
-            </div>
-
-            <div>
-              <label
-                htmlFor="senha"
-                className="block text-sm font-medium text-gray-300 mb-2 ml-2"
-              >
-                Senha *
-              </label>
-              <input
-                type="password"
-                name="senha"
-                id="senha"
-                placeholder="Mínimo 6 caracteres"
-                value={formData.senha}
-                onChange={handleChange}
-                required
-                minLength={6}
-                className="w-full px-4 py-3 rounded-full bg-transparent border border-zinc-600 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-pink-400"
-              />
-            </div>
-
-            <div>
-              <label
-                htmlFor="confirmarSenha"
-                className="block text-sm font-medium text-gray-300 mb-2 ml-2"
-              >
-                Confirmar Senha *
-              </label>
-              <input
-                type="password"
-                name="confirmarSenha"
-                id="confirmarSenha"
-                placeholder="Digite a senha novamente"
-                value={formData.confirmarSenha}
-                onChange={handleChange}
-                required
-                className="w-full px-4 py-3 rounded-full bg-transparent border border-zinc-600 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-pink-400"
-              />
-            </div>
-
-            <div>
-              <label
-                htmlFor="telefone"
-                className="block text-sm font-medium text-gray-300 mb-2 ml-2"
-              >
-                Telefone
-              </label>
-              <input
-                type="tel"
-                name="telefone"
-                id="telefone"
-                placeholder="(11) 99999-9999"
-                value={formData.telefone}
-                onChange={handleChange}
-                className="w-full px-4 py-3 rounded-full bg-transparent border border-zinc-600 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-pink-400"
-              />
-            </div>
-
-            <div>
-              <label
-                htmlFor="genero_musical"
-                className="block text-sm font-medium text-gray-300 mb-2 ml-2"
-              >
-                Gênero Musical *
-              </label>
-              <select
-                name="genero_musical"
-                id="genero_musical"
-                value={formData.genero_musical}
-                onChange={handleChange}
-                required
-                className="w-full px-4 py-3 rounded-full bg-zinc-900 border border-zinc-600 text-white focus:outline-none focus:ring-2 focus:ring-pink-400"
-              >
-                <option value="">Selecione...</option>
-                <option value="Rock">Rock</option>
-                <option value="Pop">Pop</option>
-                <option value="Sertanejo">Sertanejo</option>
-                <option value="Eletrônica">Eletrônica</option>
-                <option value="MPB">MPB</option>
-                <option value="Jazz">Jazz</option>
-                <option value="Funk">Funk</option>
-                <option value="Rap">Rap</option>
-                <option value="Outro">Outro</option>
-              </select>
-            </div>
-
-            <div>
-              <label
-                htmlFor="cidade"
-                className="block text-sm font-medium text-gray-300 mb-2 ml-2"
-              >
-                Cidade
-              </label>
-              <input
-                type="text"
-                name="cidade"
-                id="cidade"
-                placeholder="Sua cidade"
-                value={formData.cidade}
-                onChange={handleChange}
-                className="w-full px-4 py-3 rounded-full bg-transparent border border-zinc-600 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-pink-400"
-              />
-            </div>
-
-            <div>
-              <label
-                htmlFor="estado"
-                className="block text-sm font-medium text-gray-300 mb-2 ml-2"
-              >
-                Estado
-              </label>
-              <input
-                type="text"
-                name="estado"
-                id="estado"
-                placeholder="SP"
-                value={formData.estado}
-                onChange={handleChange}
-                maxLength={2}
-                className="w-full px-4 py-3 rounded-full bg-transparent border border-zinc-600 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-pink-400"
-              />
-            </div>
-          </div>
-
-          <div>
-            <label
-              htmlFor="descricao"
-              className="block text-sm font-medium text-gray-300 mb-2 ml-2"
+            <button
+              type="submit"
+              disabled={loading}
+              className="group flex w-full items-center justify-center gap-2 rounded-xl bg-white py-3 text-sm font-bold text-black shadow-lg shadow-white/5 transition-all duration-200 hover:shadow-white/10 hover:scale-[1.01] active:scale-[0.99] disabled:opacity-50 disabled:pointer-events-none"
             >
-              Descrição
-            </label>
-            <textarea
-              name="descricao"
-              id="descricao"
-              placeholder="Conte um pouco sobre você e seu trabalho..."
-              value={formData.descricao}
-              onChange={handleChange}
-              rows={4}
-              className="w-full px-4 py-3 rounded-2xl bg-transparent border border-zinc-600 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-pink-400"
-            />
-          </div>
+              {loading ? (
+                <>
+                  <span className="h-4 w-4 animate-spin rounded-full border-2 border-zinc-400 border-t-black" />
+                  Cadastrando...
+                </>
+              ) : (
+                <>
+                  Criar Conta de Artista
+                  <span className="transition-transform duration-200 group-hover:translate-x-0.5">
+                    →
+                  </span>
+                </>
+              )}
+            </button>
+          </form>
+        </div>
 
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full px-6 py-3 rounded-full bg-linear-to-r from-yellow-300 to-pink-500 text-black font-bold hover:opacity-90 transition disabled:opacity-50"
+        {/* Footer */}
+        <p
+          className="fade-in-up mt-8 text-center text-sm text-zinc-500"
+          style={{ animationDelay: "160ms" }}
+        >
+          Já tem uma conta?{" "}
+          <Link
+            href="/login"
+            className="font-semibold text-zinc-300 transition-colors hover:text-white"
           >
-            {loading ? "Cadastrando..." : "Cadastrar"}
-          </button>
-
-          <div className="text-center">
-            <p className="text-zinc-400">
-              Já tem uma conta?{" "}
-              <Link href="/login" className="text-pink-500 hover:underline">
-                Faça login
-              </Link>
-            </p>
-          </div>
-        </form>
+            Faça login
+          </Link>
+        </p>
       </div>
     </div>
   );

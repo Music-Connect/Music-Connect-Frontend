@@ -49,13 +49,18 @@ interface RegisterPayload {
 }
 
 interface Usuario {
-  id_usuario?: string;
+  id_usuario?: string | number;
   email: string;
-  nome: string;
-  tipo: string;
-  bio?: string;
-  foto_perfil?: string;
+  usuario?: string; // Canonical name from backend
+  tipo_usuario?: "artista" | "contratante"; // Canonical type from backend
+  descricao?: string; // Canonical description from backend
+  imagem_perfil_url?: string; // Canonical image URL from backend
   telefone?: string;
+  // Aliases for mobile backwards compatibility (deprecated)
+  nome?: string; // Alias for usuario
+  tipo?: string; // Alias for tipo_usuario
+  bio?: string; // Alias for descricao
+  foto_perfil?: string; // Alias for imagem_perfil_url
 }
 
 interface Artista extends Usuario {
@@ -66,14 +71,19 @@ interface Artista extends Usuario {
 }
 
 interface Proposta {
-  id_proposta: string;
-  id_contratante: string;
-  id_artista: string;
+  id_proposta: string | number;
+  id_contratante: string | number;
+  id_artista: string | number;
+  titulo?: string;
   descricao: string;
+  local_evento?: string;
+  data_evento?: string;
+  hora_evento?: string;
   valor_oferecido: number;
-  status: "pendente" | "aceita" | "rejeitada" | "concluida";
-  data_criacao: string;
-  data_atualizacao: string;
+  status: "pendente" | "aceita" | "recusada" | "cancelada";
+  mensagem_resposta?: string;
+  created_at?: string;
+  updated_at?: string;
 }
 
 interface Avaliacao {

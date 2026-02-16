@@ -1,6 +1,11 @@
 import { Express, Request, Response } from "express";
 import axios from "axios";
-import { ApiResponse, Usuario, Avaliacao } from "../types/index";
+import {
+  ApiResponse,
+  Usuario,
+  Avaliacao,
+  BackendMediaAvaliacoes,
+} from "../types/index";
 
 export function setupUsuariosRoutes(app: Express, backendUrl: string) {
   // Get all users (for admin or search)
@@ -38,19 +43,20 @@ export function setupUsuariosRoutes(app: Express, backendUrl: string) {
           axios.get<ApiResponse<Avaliacao[]>>(
             `${backendUrl}/api/avaliacoes/usuario/${id}`,
           ),
-          axios.get<ApiResponse<{ media: number; total: number }>>(
+          axios.get<ApiResponse<BackendMediaAvaliacoes>>(
             `${backendUrl}/api/avaliacoes/usuario/${id}/media`,
           ),
         ]);
 
       // Full profile for web
+      // Backend returns media_nota and total_avaliacoes in data object
       res.json({
         success: true,
         data: {
           ...userResponse.data.data,
           avaliacoes: avaliacoesResponse.data.data, // All reviews for web
-          media_avaliacoes: mediaResponse.data.data?.media,
-          total_avaliacoes: mediaResponse.data.data?.total,
+          media_avaliacoes: mediaResponse.data.data?.media_nota,
+          total_avaliacoes: mediaResponse.data.data?.total_avaliacoes,
         },
       });
     } catch (error) {

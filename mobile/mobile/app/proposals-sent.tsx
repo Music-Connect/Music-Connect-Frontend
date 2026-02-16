@@ -13,8 +13,9 @@ import {
 import { useRouter, useFocusEffect } from "expo-router";
 import api from "@/services/api";
 
-type ProposalStatus = "pendente" | "aceita" | "rejeitada" | "concluida";
-type FilterStatus = "todos" | "pendente" | "aceita" | "rejeitada";
+// Align with backend enums: pendente | aceita | recusada | cancelada
+type ProposalStatus = "pendente" | "aceita" | "recusada" | "cancelada";
+type FilterStatus = "todos" | "pendente" | "aceita" | "recusada";
 
 export default function ProposalsSentScreen() {
   const router = useRouter();
@@ -55,9 +56,9 @@ export default function ProposalsSentScreen() {
     switch (status) {
       case "aceita":
         return "#10B981";
-      case "rejeitada":
+      case "recusada":
         return "#EF4444";
-      case "concluida":
+      case "cancelada":
         return "#8B5CF6";
       case "pendente":
       default:
@@ -69,10 +70,10 @@ export default function ProposalsSentScreen() {
     switch (status) {
       case "aceita":
         return "Aceita";
-      case "rejeitada":
-        return "Rejeitada";
-      case "concluida":
-        return "Concluída";
+      case "recusada":
+        return "Recusada";
+      case "cancelada":
+        return "Cancelada";
       case "pendente":
       default:
         return "Pendente";
@@ -220,7 +221,7 @@ export default function ProposalsSentScreen() {
           showsHorizontalScrollIndicator={false}
           style={styles.filterContainer}
         >
-          {(["todos", "pendente", "aceita", "rejeitada"] as FilterStatus[]).map(
+          {(["todos", "pendente", "aceita", "recusada"] as FilterStatus[]).map(
             (f) => {
               let filterColor = "#999";
               let filterBgColor = "#18181B";
@@ -232,7 +233,7 @@ export default function ProposalsSentScreen() {
                 } else if (f === "aceita") {
                   filterColor = "#10B981";
                   filterBgColor = "#10B98120";
-                } else if (f === "rejeitada") {
+                } else if (f === "recusada") {
                   filterColor = "#EF4444";
                   filterBgColor = "#EF444420";
                 } else {
@@ -260,7 +261,7 @@ export default function ProposalsSentScreen() {
                         ? "⏳ Pendentes"
                         : f === "aceita"
                           ? "✅ Aceitas"
-                          : "❌ Rejeitadas"}
+                          : "❌ Recusadas"}
                   </Text>
                 </TouchableOpacity>
               );

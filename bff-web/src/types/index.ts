@@ -33,10 +33,14 @@ export interface Proposta {
 }
 
 export interface PropostaComDetalhes extends Proposta {
-  contratante_nome: string;
-  contratante_email: string;
-  artista_nome: string;
-  artista_email: string;
+  // Campos opcionais do backend (variam conforme contexto)
+  nome_contratante?: string;
+  email_contratante?: string;
+  nome_artista?: string;
+  email_artista?: string;
+  nome_outro?: string;
+  email_outro?: string;
+  imagem_perfil_url?: string;
   artista_genero?: string;
 }
 
@@ -59,6 +63,20 @@ export interface ApiResponse<T> {
   data?: T;
   error?: string;
   message?: string;
+}
+
+// Backend direct response types (not wrapped in data)
+export interface BackendAuthResponse {
+  success: boolean;
+  user: Omit<Usuario, "senha">;
+  token: string;
+  type: "artista" | "contratante";
+  message?: string;
+}
+
+export interface BackendMediaAvaliacoes {
+  total_avaliacoes: number;
+  media_nota: number;
 }
 
 // Web-specific response types

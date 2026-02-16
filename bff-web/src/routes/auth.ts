@@ -1,6 +1,6 @@
 import { Express, Request, Response } from "express";
 import axios from "axios";
-import { ApiResponse, Usuario } from "../types/index";
+import { ApiResponse, Usuario, BackendAuthResponse } from "../types/index";
 
 export function setupAuthRoutes(app: Express, backendUrl: string) {
   // Login - Web optimized (cookies, sessions)
@@ -16,16 +16,18 @@ export function setupAuthRoutes(app: Express, backendUrl: string) {
         return;
       }
 
-      const response = await axios.post<
-        ApiResponse<{ user: Usuario; token: string }>
-      >(`${backendUrl}/api/usuarios/auth/login`, { email, senha });
+      const response = await axios.post<BackendAuthResponse>(
+        `${backendUrl}/api/usuarios/auth/login`,
+        { email, senha },
+      );
 
       // Web-optimized response (ready for Next.js server actions)
+      // Backend returns { success, user, token } directly (not wrapped in data)
       res.json({
         success: true,
         data: {
-          token: response.data.data?.token,
-          user: response.data.data?.user,
+          token: response.data.token,
+          user: response.data.user,
         },
       });
     } catch (error) {
@@ -57,13 +59,18 @@ export function setupAuthRoutes(app: Express, backendUrl: string) {
         return;
       }
 
-      const response = await axios.post<
-        ApiResponse<{ user: Usuario; token: string }>
-      >(`${backendUrl}/api/usuarios/auth/register`, req.body);
+      const response = await axios.post<BackendAuthResponse>(
+        `${backendUrl}/api/usuarios/auth/register`,
+        req.body,
+      );
 
+      // Backend returns { success, user, token } directly (not wrapped in data)
       res.status(201).json({
         success: true,
-        data: response.data.data,
+        data: {
+          user: response.data.user,
+          token: response.data.token,
+        },
       });
     } catch (error) {
       if (axios.isAxiosError(error) && error.response) {

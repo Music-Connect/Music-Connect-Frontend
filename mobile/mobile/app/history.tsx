@@ -23,11 +23,11 @@ interface HistoryItem {
   contratante?: string;
   data: string;
   valor: string;
-  status: "pendente" | "aceita" | "rejeitada";
+  status: "pendente" | "aceita" | "recusada";
   type: "enviada" | "recebida";
 }
 
-type FilterType = "todos" | "aceita" | "rejeitada" | "pendente";
+type FilterType = "todos" | "aceita" | "recusada" | "pendente";
 
 export default function HistoryScreen() {
   const [filter, setFilter] = useState<FilterType>("todos");
@@ -72,7 +72,7 @@ export default function HistoryScreen() {
   const stats = {
     total: history.length,
     aceita: history.filter((h) => h.status === "aceita").length,
-    rejeitada: history.filter((h) => h.status === "rejeitada").length,
+    recusada: history.filter((h) => h.status === "recusada").length,
     pendente: history.filter((h) => h.status === "pendente").length,
   };
 
@@ -92,7 +92,7 @@ export default function HistoryScreen() {
           variant={
             item.status === "aceita"
               ? "success"
-              : item.status === "rejeitada"
+              : item.status === "recusada"
                 ? "error"
                 : "warning"
           }
@@ -135,7 +135,7 @@ export default function HistoryScreen() {
           </Card>
           <Card style={styles.statCard}>
             <Text style={[styles.statNumber, { color: "#EF4444" }]}>
-              {stats.rejeitada}
+              {stats.recusada}
             </Text>
             <Text style={styles.statLabel}>Recusadas</Text>
           </Card>
@@ -149,7 +149,7 @@ export default function HistoryScreen() {
 
         {/* Filters */}
         <View style={styles.filterContainer}>
-          {(["todos", "aceita", "rejeitada", "pendente"] as FilterType[]).map(
+          {(["todos", "aceita", "recusada", "pendente"] as FilterType[]).map(
             (f) => (
               <TouchableOpacity
                 key={f}
@@ -169,8 +169,8 @@ export default function HistoryScreen() {
                     ? "Todos"
                     : f === "aceita"
                       ? "✅ Aceitas"
-                      : f === "rejeitada"
-                        ? "❌ Rejeitadas"
+                      : f === "recusada"
+                        ? "❌ Recusadas"
                         : "⏳ Pendentes"}
                 </Text>
               </TouchableOpacity>

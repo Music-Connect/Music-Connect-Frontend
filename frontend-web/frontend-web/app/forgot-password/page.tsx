@@ -30,67 +30,104 @@ export default function ForgotPasswordPage() {
   };
 
   return (
-    <div className="min-h-screen w-full flex items-center justify-center bg-black">
-      <div className="w-full h-full flex flex-col items-center justify-center p-8">
-        <h1 className="text-5xl font-bold mb-10 text-center">
-          <span className="bg-linear-to-r from-yellow-300 to-pink-500 text-transparent bg-clip-text">
-            Recuperar Senha
-          </span>
-        </h1>
+    <div className="relative flex min-h-screen items-center justify-center bg-black overflow-hidden">
+      {/* Background blobs */}
+      <div className="pointer-events-none fixed inset-0">
+        <div className="absolute -top-40 -right-40 h-150 w-150 rounded-full bg-linear-to-bl from-fuchsia-600/6 to-transparent blur-3xl" />
+        <div className="absolute -bottom-40 -left-40 h-100 w-100 rounded-full bg-linear-to-tr from-amber-500/5 to-transparent blur-3xl" />
+      </div>
 
-        <p className="text-1xl text-zinc-300 pb-10 text-center max-w-md">
-          Digite seu email e enviaremos instruções para redefinir sua senha
-        </p>
+      <div className="relative z-10 w-full max-w-md px-6 py-12">
+        {/* Brand */}
+        <div className="fade-in-up mb-10 text-center">
+          <Link href="/" className="inline-block">
+            <h1 className="text-3xl font-black tracking-tight">
+              <span className="bg-linear-to-r from-amber-300 via-rose-400 to-fuchsia-500 bg-clip-text text-transparent">
+                Music Connect
+              </span>
+            </h1>
+          </Link>
+        </div>
 
-        {message && (
-          <div className="w-full max-w-md mb-6 p-4 rounded-lg bg-green-500/20 border border-green-500 text-green-300 text-center">
-            {message}
+        {/* Card */}
+        <div
+          className="fade-in-up rounded-2xl border border-zinc-800/50 bg-zinc-900/40 p-8 backdrop-blur-sm"
+          style={{ animationDelay: "80ms" }}
+        >
+          <div className="mb-6 text-center">
+            <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-zinc-800/60 text-2xl">
+              🔑
+            </div>
+            <h2 className="text-xl font-bold text-white">Recuperar Senha</h2>
+            <p className="mt-2 text-sm text-zinc-500">
+              Enviaremos um link de recuperação para o seu email
+            </p>
           </div>
-        )}
 
-        {error && (
-          <div className="w-full max-w-md mb-6 p-4 rounded-lg bg-red-500/20 border border-red-500 text-red-300 text-center">
-            {error}
-          </div>
-        )}
+          {message && (
+            <div className="mb-5 flex items-center gap-2 rounded-xl border border-emerald-500/20 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-400">
+              <span>✅</span>
+              {message}
+            </div>
+          )}
 
-        <form onSubmit={handleSubmit} className="w-full max-w-md space-y-6">
-          <div>
-            <label
-              htmlFor="email"
-              className="block text-sm font-medium text-gray-300 mb-2 ml-2"
+          {error && (
+            <div className="mb-5 flex items-center gap-2 rounded-xl border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm text-red-400">
+              <span>⚠️</span>
+              {error}
+            </div>
+          )}
+
+          <form onSubmit={handleSubmit} className="space-y-5">
+            <div>
+              <label
+                htmlFor="email"
+                className="mb-1.5 block text-[13px] font-medium text-zinc-400"
+              >
+                Email da sua conta
+              </label>
+              <input
+                type="email"
+                name="email"
+                id="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="seu@email.com"
+                required
+                className="w-full rounded-xl border border-zinc-800/60 bg-zinc-900/50 px-4 py-3 text-sm text-white placeholder-zinc-600 outline-none transition-all duration-200 focus:border-zinc-700 focus:bg-zinc-900/80 focus:ring-1 focus:ring-zinc-700/50"
+              />
+            </div>
+
+            <button
+              type="submit"
+              disabled={isLoading}
+              className="group flex w-full items-center justify-center gap-2 rounded-xl bg-white py-3 text-sm font-bold text-black shadow-lg shadow-white/5 transition-all duration-200 hover:shadow-white/10 hover:scale-[1.01] active:scale-[0.99] disabled:opacity-50 disabled:pointer-events-none"
             >
-              Email
-            </label>
-            <input
-              type="email"
-              name="email"
-              id="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="seu@email.com"
-              required
-              className="w-full px-4 py-3 rounded-full bg-transparent border border-zinc-600 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-pink-400"
-            />
-          </div>
+              {isLoading ? (
+                <>
+                  <span className="h-4 w-4 animate-spin rounded-full border-2 border-zinc-400 border-t-black" />
+                  Enviando...
+                </>
+              ) : (
+                "Enviar Link de Recuperação"
+              )}
+            </button>
+          </form>
+        </div>
 
-          <button
-            type="submit"
-            disabled={isLoading}
-            className="w-full px-6 py-3 rounded-full bg-linear-to-r from-yellow-300 to-pink-500 text-black font-bold hover:opacity-90 transition disabled:opacity-50"
+        {/* Footer */}
+        <p
+          className="fade-in-up mt-8 text-center text-sm text-zinc-500"
+          style={{ animationDelay: "160ms" }}
+        >
+          Lembrou a senha?{" "}
+          <Link
+            href="/login"
+            className="font-semibold text-zinc-300 transition-colors hover:text-white"
           >
-            {isLoading ? "Enviando..." : "Enviar Email"}
-          </button>
-
-          <div className="text-center">
-            <Link
-              href="/login"
-              className="text-sm text-zinc-400 hover:text-white"
-            >
-              Voltar para o login
-            </Link>
-          </div>
-        </form>
+            Voltar ao login
+          </Link>
+        </p>
       </div>
     </div>
   );

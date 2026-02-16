@@ -12,7 +12,7 @@ import {
 import { useLocalSearchParams, useRouter, useFocusEffect } from "expo-router";
 import api from "@/services/api";
 
-type ProposalStatus = "pendente" | "aceita" | "rejeitada";
+type ProposalStatus = "pendente" | "aceita" | "recusada";
 
 export default function ProposalSentDetailScreen() {
   const { id } = useLocalSearchParams();
