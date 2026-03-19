@@ -2,7 +2,7 @@
 
 interface HeaderProps {
   user: {
-    usuario: string;
+    name: string;
   };
   userType: string;
   searchTerm?: string;
@@ -57,13 +57,13 @@ export default function Header({
         <div className="flex items-center gap-3">
           <div className="text-right hidden sm:block">
             <p className="text-sm font-semibold text-white leading-tight">
-              {user.usuario}
+              {user.name}
             </p>
             <p className="text-[11px] text-zinc-500 capitalize">{userType}</p>
           </div>
           <div className="relative h-10 w-10 rounded-full bg-linear-to-br from-amber-300 via-rose-400 to-fuchsia-500 p-0.5 shadow-lg shadow-rose-500/10">
             <div className="flex h-full w-full items-center justify-center rounded-full bg-zinc-900 text-xs font-bold text-white">
-              {user.usuario ? user.usuario.substring(0, 2).toUpperCase() : "U"}
+              {user.name ? user.name.substring(0, 2).toUpperCase() : "U"}
             </div>
           </div>
         </div>

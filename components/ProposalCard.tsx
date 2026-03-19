@@ -70,9 +70,9 @@ export default function ProposalCard({
             {status.label}
           </span>
           <div className="h-10 w-10 shrink-0 rounded-full bg-zinc-800 flex items-center justify-center text-lg overflow-hidden ring-2 ring-zinc-800 transition-all duration-300 group-hover:ring-zinc-700">
-            {item.imagem_perfil_url ? (
+            {(isArtist ? item.contratante?.image : item.artista?.image) ? (
               <Image
-                src={item.imagem_perfil_url}
+                src={(isArtist ? item.contratante!.image : item.artista!.image)!}
                 alt="Avatar"
                 width={40}
                 height={40}
@@ -95,7 +95,9 @@ export default function ProposalCard({
         </h3>
         <p className="text-xs text-zinc-500 mb-4 truncate">
           {isArtist ? "De: " : "Para: "}
-          <span className="text-zinc-400">{item.nome_outro}</span>
+          <span className="text-zinc-400">
+            {isArtist ? item.contratante?.name : item.artista?.name}
+          </span>
         </p>
 
         {/* Details */}

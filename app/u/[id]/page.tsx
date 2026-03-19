@@ -5,6 +5,7 @@ import { useRouter, useParams } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import { api, User } from "@/lib/api";
+import { useAuthStore } from "@/lib/store";
 
 const inputClass =
   "w-full rounded-xl border border-zinc-800/60 bg-zinc-900/50 px-4 py-3 text-sm text-white placeholder-zinc-600 outline-none transition-all duration-200 focus:border-zinc-700 focus:bg-zinc-900/80 focus:ring-1 focus:ring-zinc-700/50";
@@ -27,19 +28,12 @@ export default function PublicProfilePage() {
   });
 
   /* Auth state — optional, never blocks rendering */
-  const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const currentUser = useAuthStore((s) => s.user);
 
   useEffect(() => {
-    try {
-      const storedUser = localStorage.getItem("user");
-      if (storedUser) setCurrentUser(JSON.parse(storedUser));
-    } catch {
-      /* not logged in */
-    }
-
     const fetchUser = async () => {
       try {
-        const user = await api.getUserById(parseInt(userId));
+        const user = await api.getUserById(userId);
         setProfileUser(user);
       } catch (error) {
         console.error("Erro ao buscar usuário:", error);
@@ -56,8 +50,8 @@ export default function PublicProfilePage() {
     setSending(true);
     try {
       await api.createProposta({
-        id_contratante: currentUser.id_usuario,
-        id_artista: profileUser.id_usuario,
+        id_contratante: currentUser.id,
+        id_artista: profileUser.id,
         descricao: proposalForm.descricao,
         local_evento: proposalForm.local_evento,
         data_evento: proposalForm.data_evento,
@@ -81,7 +75,7 @@ export default function PublicProfilePage() {
   const isLoggedIn = !!currentUser;
   const isArtistProfile = profileUser?.tipo_usuario === "artista";
   const isContractor = currentUser?.tipo_usuario === "contratante";
-  const isOwnProfile = currentUser?.id_usuario === profileUser?.id_usuario;
+  const isOwnProfile = currentUser?.id === profileUser?.id;
 
   /* ── Loading ── */
   if (loading) {
@@ -154,8 +148,8 @@ export default function PublicProfilePage() {
                 </button>
                 <div className="relative h-9 w-9 rounded-full bg-linear-to-br from-amber-300 via-rose-400 to-fuchsia-500 p-0.5 shadow-lg shadow-rose-500/10">
                   <div className="flex h-full w-full items-center justify-center rounded-full bg-zinc-900 text-xs font-bold text-white">
-                    {currentUser.usuario
-                      ? currentUser.usuario.substring(0, 2).toUpperCase()
+                    {currentUser.name
+                      ? currentUser.name.substring(0, 2).toUpperCase()
                       : "U"}
                   </div>
                 </div>
@@ -200,17 +194,17 @@ export default function PublicProfilePage() {
           {/* Avatar */}
           <div className="relative h-36 w-36 rounded-full bg-linear-to-br from-amber-300 via-rose-400 to-fuchsia-500 p-1 shadow-2xl shadow-rose-500/10 shrink-0">
             <div className="flex h-full w-full items-center justify-center rounded-full bg-zinc-900 text-4xl font-bold text-white border-4 border-black overflow-hidden">
-              {profileUser.imagem_perfil_url ? (
+              {profileUser.image ? (
                 <Image
-                  src={profileUser.imagem_perfil_url}
-                  alt={profileUser.usuario}
+                  src={profileUser.image}
+                  alt={profileUser.name}
                   width={160}
                   height={160}
                   className="w-full h-full object-cover"
                   priority
                 />
               ) : (
-                profileUser.usuario.substring(0, 2).toUpperCase()
+                profileUser.name.substring(0, 2).toUpperCase()
               )}
             </div>
           </div>
@@ -218,7 +212,7 @@ export default function PublicProfilePage() {
           {/* Name + meta */}
           <div className="flex-1 text-center sm:text-left">
             <h1 className="text-3xl sm:text-4xl font-black tracking-tight text-white">
-              {profileUser.usuario}
+              {profileUser.name}
             </h1>
             <p className="mt-1 text-sm text-zinc-500 capitalize">
               {profileUser.tipo_usuario}

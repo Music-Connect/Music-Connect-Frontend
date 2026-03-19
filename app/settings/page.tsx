@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { api, User } from "@/lib/api";
+import { useAuthStore } from "@/lib/store";
 
 const inputClass =
   "w-full rounded-xl border border-zinc-800/60 bg-zinc-900/50 px-4 py-3 text-sm text-white placeholder-zinc-600 outline-none transition-all duration-200 focus:border-zinc-700 focus:bg-zinc-900/80 focus:ring-1 focus:ring-zinc-700/50 disabled:opacity-40 disabled:cursor-not-allowed";
@@ -19,12 +20,13 @@ const tabs: { id: Tab; label: string; icon: string }[] = [
 
 export default function SettingsPage() {
   const router = useRouter();
+  const { user: storeUser, sessionLoaded } = useAuthStore();
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [activeTab, setActiveTab] = useState<Tab>("account");
   const [formData, setFormData] = useState({
-    usuario: "",
+    name: "",
     email: "",
     telefone: "",
     cidade: "",
@@ -32,18 +34,18 @@ export default function SettingsPage() {
   });
 
   useEffect(() => {
+    if (!sessionLoaded) return;
+    if (!storeUser) {
+      router.push("/login");
+      return;
+    }
+
     const loadUser = async () => {
       try {
-        const storedUser = localStorage.getItem("user");
-        if (!storedUser) {
-          router.push("/login");
-          return;
-        }
-        const userData = JSON.parse(storedUser);
-        const freshUserData = await api.getUserById(userData.id_usuario);
+        const freshUserData = await api.getUserById(storeUser.id);
         setUser(freshUserData);
         setFormData({
-          usuario: freshUserData.usuario || "",
+          name: freshUserData.name || "",
           email: freshUserData.email || "",
           telefone: freshUserData.telefone || "",
           cidade: freshUserData.cidade || "",
@@ -51,38 +53,20 @@ export default function SettingsPage() {
         });
       } catch (error: unknown) {
         console.error("Erro ao carregar configurações:", error);
-        if (error instanceof Error && error.message.includes("401")) {
-          localStorage.removeItem("user");
-          localStorage.removeItem("type");
-          router.push("/login");
-          return;
-        }
-        const storedUser = localStorage.getItem("user");
-        if (storedUser) {
-          const userData = JSON.parse(storedUser);
-          setUser(userData);
-          setFormData({
-            usuario: userData.usuario || "",
-            email: userData.email || "",
-            telefone: userData.telefone || "",
-            cidade: userData.cidade || "",
-            estado: userData.estado || "",
-          });
-        }
       } finally {
         setLoading(false);
       }
     };
+
     loadUser();
-  }, [router]);
+  }, [storeUser, sessionLoaded, router]);
 
   const handleSave = async () => {
-    if (!user) return;
+    if (!user || !storeUser) return;
     setSaving(true);
     try {
-      const updatedUser = await api.updateUser(user.id_usuario, formData);
+      const updatedUser = await api.updateUser(storeUser.id, formData);
       setUser(updatedUser);
-      localStorage.setItem("user", JSON.stringify(updatedUser));
     } catch {
       alert("Erro ao salvar configurações");
     } finally {
@@ -131,8 +115,8 @@ export default function SettingsPage() {
             </button>
             <div className="relative h-9 w-9 rounded-full bg-linear-to-br from-amber-300 via-rose-400 to-fuchsia-500 p-0.5 shadow-lg shadow-rose-500/10">
               <div className="flex h-full w-full items-center justify-center rounded-full bg-zinc-900 text-xs font-bold text-white">
-                {user.usuario
-                  ? user.usuario.substring(0, 2).toUpperCase()
+                {user.name
+                  ? user.name.substring(0, 2).toUpperCase()
                   : "U"}
               </div>
             </div>
@@ -194,11 +178,11 @@ export default function SettingsPage() {
                   <div className="mb-8 flex items-center gap-5">
                     <div className="relative h-16 w-16 rounded-full bg-linear-to-br from-amber-300 via-rose-400 to-fuchsia-500 p-0.5 shadow-lg shadow-rose-500/10">
                       <div className="flex h-full w-full items-center justify-center rounded-full bg-zinc-900 text-lg font-bold text-white">
-                        {user.usuario.substring(0, 2).toUpperCase()}
+                        {user.name.substring(0, 2).toUpperCase()}
                       </div>
                     </div>
                     <div>
-                      <p className="font-bold text-white">{user.usuario}</p>
+                      <p className="font-bold text-white">{user.name}</p>
                       <p className="text-xs text-zinc-500 capitalize">
                         {user.tipo_usuario}
                       </p>
@@ -210,9 +194,9 @@ export default function SettingsPage() {
                       <label className={labelClass}>Nome de Usuário</label>
                       <input
                         type="text"
-                        value={formData.usuario}
+                        value={formData.name}
                         onChange={(e) =>
-                          setFormData({ ...formData, usuario: e.target.value })
+                          setFormData({ ...formData, name: e.target.value })
                         }
                         className={inputClass}
                       />

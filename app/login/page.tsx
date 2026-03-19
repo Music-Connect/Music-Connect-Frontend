@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { api } from "@/lib/api";
+import { authClient } from "@/lib/auth-client";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -24,10 +24,11 @@ export default function LoginPage() {
     setLoading(true);
 
     try {
-      const response = await api.login(formLogin.email, formLogin.password);
-      localStorage.setItem("user", JSON.stringify(response.user));
-      localStorage.setItem("type", response.user.tipo_usuario);
-      localStorage.setItem("token", response.token);
+      const { error } = await authClient.signIn.email({
+        email: formLogin.email,
+        password: formLogin.password,
+      });
+      if (error) throw new Error(error.message || "Erro ao fazer login");
       router.push("/dashboard");
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Erro ao fazer login");

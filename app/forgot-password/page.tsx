@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { api } from "@/lib/api";
+import { authClient } from "@/lib/auth-client";
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState("");
@@ -17,11 +17,11 @@ export default function ForgotPasswordPage() {
     setMessage("");
 
     try {
-      const result = await api.forgotPassword(email);
-      setMessage(
-        result.message ||
-          "Se o email existir, você receberá instruções para redefinir sua senha.",
-      );
+      await authClient.requestPasswordReset({
+        email,
+        redirectTo: `${window.location.origin}/reset-password`,
+      });
+      setMessage("Se o email existir, você receberá instruções para redefinir sua senha.");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Erro ao enviar email");
     } finally {

@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useSearchParams, useRouter } from "next/navigation";
 import { useState, Suspense } from "react";
-import { api } from "@/lib/api";
+import { authClient } from "@/lib/auth-client";
 
 const inputClass =
   "w-full rounded-xl border border-zinc-800/60 bg-zinc-900/50 px-4 py-3 text-sm text-white placeholder-zinc-600 outline-none transition-all duration-200 focus:border-zinc-700 focus:bg-zinc-900/80 focus:ring-1 focus:ring-zinc-700/50";
@@ -39,10 +39,9 @@ function ResetPasswordForm() {
     }
 
     try {
-      const result = await api.resetPassword(token, novaSenha);
-      setMessage(
-        result.message || "Senha alterada com sucesso! Redirecionando...",
-      );
+      const { error } = await authClient.resetPassword({ newPassword: novaSenha, token });
+      if (error) throw new Error(error.message || "Erro ao redefinir senha");
+      setMessage("Senha alterada com sucesso! Redirecionando...");
       setTimeout(() => {
         router.push("/login");
       }, 2000);

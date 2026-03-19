@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import { Providers } from "./providers";
 
 export const metadata: Metadata = {
   title: "Music Connect - Conectando Artistas e Contratantes",
@@ -14,7 +15,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="pt-BR">
-      <body className="antialiased bg-black text-white">{children}</body>
+      <body className="antialiased bg-black text-white">
+        <Providers>{children}</Providers>
+      </body>
     </html>
   );
 }

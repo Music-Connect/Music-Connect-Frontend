@@ -4,36 +4,30 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Sidebar from "@/components/Sidebar";
 import ProposalCard from "@/components/ProposalCard";
-import { api, User, Proposta } from "@/lib/api";
+import { api, Proposta } from "@/lib/api";
+import { useAuthStore } from "@/lib/store";
+import { authClient } from "@/lib/auth-client";
 
 export default function ProposalsPage() {
   const router = useRouter();
-  const [user, setUser] = useState<User | null>(null);
+  const { user, sessionLoaded } = useAuthStore();
   const [proposals, setProposals] = useState<Proposta[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const loadData = async () => {
+    if (!sessionLoaded) return;
+    if (!user) {
+      router.push("/login");
+      return;
+    }
+
+    const loadProposals = async () => {
       try {
-        // Verify user data in localStorage
-        const storedUser = localStorage.getItem("user");
-        const storedType = localStorage.getItem("type");
-
-        if (!storedUser || !storedType) {
-          router.push("/login");
-          return;
-        }
-
-        const userData = JSON.parse(storedUser);
-        setUser(userData);
-
-        // Load all proposals (both sent and received)
         const [recebidas, enviadas] = await Promise.all([
           api.getPropostasRecebidas(),
           api.getPropostasEnviadas(),
         ]);
 
-        // Combine and sort by date
         const allProposals = [...recebidas, ...enviadas].sort(
           (a, b) =>
             new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
@@ -42,30 +36,17 @@ export default function ProposalsPage() {
         setProposals(allProposals);
       } catch (error: unknown) {
         console.error("Erro ao carregar propostas:", error);
-        // If cookie is invalid or expired, redirect to login
-        if (error instanceof Error && error.message.includes("401")) {
-          localStorage.removeItem("user");
-          localStorage.removeItem("type");
-          router.push("/login");
-        }
       } finally {
         setLoading(false);
       }
     };
 
-    loadData();
-  }, [router]);
+    loadProposals();
+  }, [user, sessionLoaded, router]);
 
   const handleLogout = async () => {
-    try {
-      await api.logout();
-    } catch (error) {
-      console.error("Erro ao fazer logout:", error);
-    } finally {
-      localStorage.removeItem("user");
-      localStorage.removeItem("type");
-      router.push("/login");
-    }
+    await authClient.signOut();
+    router.push("/login");
   };
 
   const handleAcceptDecline = async (id: number, status: string) => {
@@ -91,10 +72,9 @@ export default function ProposalsPage() {
     }
   };
 
-  if (!user) return null;
+  if (!sessionLoaded || !user) return null;
 
-  const userType = localStorage.getItem("type") || "";
-  const isArtist = userType === "artista";
+  const isArtist = user.tipo_usuario === "artista";
   const pageTitle = isArtist ? "Propostas Recebidas" : "Minhas Contratações";
 
   return (

@@ -5,6 +5,8 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import { api, User } from "@/lib/api";
+import { useAuthStore } from "@/lib/store";
+import { authClient } from "@/lib/auth-client";
 
 const inputClass =
   "w-full rounded-xl border border-zinc-800/60 bg-zinc-900/50 px-4 py-3 text-sm text-white placeholder-zinc-600 outline-none transition-all duration-200 focus:border-zinc-700 focus:bg-zinc-900/80 focus:ring-1 focus:ring-zinc-700/50";
@@ -12,6 +14,7 @@ const labelClass = "mb-1.5 block text-[13px] font-medium text-zinc-400";
 
 export default function ProfilePage() {
   const router = useRouter();
+  const { user: storeUser, sessionLoaded } = useAuthStore();
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<"sobre" | "portfolio">("sobre");
@@ -26,15 +29,15 @@ export default function ProfilePage() {
   });
 
   useEffect(() => {
+    if (!sessionLoaded) return;
+    if (!storeUser) {
+      router.push("/login");
+      return;
+    }
+
     const loadUser = async () => {
       try {
-        const storedUser = localStorage.getItem("user");
-        if (!storedUser) {
-          router.push("/login");
-          return;
-        }
-        const userData = JSON.parse(storedUser);
-        const freshUserData = await api.getUserById(userData.id_usuario);
+        const freshUserData = await api.getUserById(storeUser.id);
         setUser(freshUserData);
         setEditForm({
           descricao: freshUserData.descricao || "",
@@ -45,38 +48,20 @@ export default function ProfilePage() {
         });
       } catch (error: unknown) {
         console.error("Erro ao carregar perfil:", error);
-        if (error instanceof Error && error.message.includes("401")) {
-          localStorage.removeItem("user");
-          localStorage.removeItem("type");
-          router.push("/login");
-          return;
-        }
-        const storedUser = localStorage.getItem("user");
-        if (storedUser) {
-          const userData = JSON.parse(storedUser);
-          setUser(userData);
-          setEditForm({
-            descricao: userData.descricao || "",
-            telefone: userData.telefone || "",
-            cidade: userData.cidade || "",
-            estado: userData.estado || "",
-            genero_musical: userData.genero_musical || "",
-          });
-        }
       } finally {
         setLoading(false);
       }
     };
+
     loadUser();
-  }, [router]);
+  }, [storeUser, sessionLoaded, router]);
 
   const handleSave = async () => {
-    if (!user) return;
+    if (!user || !storeUser) return;
     setSaving(true);
     try {
-      const updatedUser = await api.updateUser(user.id_usuario, editForm);
+      const updatedUser = await api.updateUser(storeUser.id, editForm);
       setUser(updatedUser);
-      localStorage.setItem("user", JSON.stringify(updatedUser));
       setIsEditing(false);
     } catch {
       alert("Erro ao atualizar perfil");
@@ -129,8 +114,8 @@ export default function ProfilePage() {
             </button>
             <div className="relative h-9 w-9 rounded-full bg-linear-to-br from-amber-300 via-rose-400 to-fuchsia-500 p-0.5 shadow-lg shadow-rose-500/10">
               <div className="flex h-full w-full items-center justify-center rounded-full bg-zinc-900 text-xs font-bold text-white">
-                {user.usuario
-                  ? user.usuario.substring(0, 2).toUpperCase()
+                {user.name
+                  ? user.name.substring(0, 2).toUpperCase()
                   : "U"}
               </div>
             </div>
@@ -152,17 +137,17 @@ export default function ProfilePage() {
           {/* Avatar */}
           <div className="relative h-36 w-36 rounded-full bg-linear-to-br from-amber-300 via-rose-400 to-fuchsia-500 p-1 shadow-2xl shadow-rose-500/10 shrink-0">
             <div className="flex h-full w-full items-center justify-center rounded-full bg-zinc-900 text-4xl font-bold text-white border-4 border-black overflow-hidden">
-              {user.imagem_perfil_url ? (
+              {user.image ? (
                 <Image
-                  src={user.imagem_perfil_url}
-                  alt={user.usuario}
+                  src={user.image}
+                  alt={user.name}
                   width={160}
                   height={160}
                   className="w-full h-full object-cover"
                   priority
                 />
               ) : (
-                user.usuario.substring(0, 2).toUpperCase()
+                user.name.substring(0, 2).toUpperCase()
               )}
             </div>
           </div>
@@ -170,7 +155,7 @@ export default function ProfilePage() {
           {/* Name + meta */}
           <div className="flex-1 text-center sm:text-left">
             <h1 className="text-3xl sm:text-4xl font-black tracking-tight text-white">
-              {user.usuario}
+              {user.name}
             </h1>
             <p className="mt-1 text-sm text-zinc-500 capitalize">
               {user.tipo_usuario}
@@ -428,7 +413,7 @@ export default function ProfilePage() {
                 <div className="rounded-2xl border border-zinc-800/50 bg-zinc-900/40 p-6 backdrop-blur-sm">
                   <p className="text-sm text-zinc-400 leading-relaxed">
                     Esta é a página de perfil de{" "}
-                    <strong className="text-white">{user.usuario}</strong>.
+                    <strong className="text-white">{user.name}</strong>.
                     Adicione mais informações editando o perfil.
                   </p>
                 </div>

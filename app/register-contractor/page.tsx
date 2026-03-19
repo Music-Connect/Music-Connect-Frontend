@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { api } from "@/lib/api";
+import { authClient } from "@/lib/auth-client";
 
 const inputClass =
   "w-full rounded-xl border border-zinc-800/60 bg-zinc-900/50 px-4 py-3 text-sm text-white placeholder-zinc-600 outline-none transition-all duration-200 focus:border-zinc-700 focus:bg-zinc-900/80 focus:ring-1 focus:ring-zinc-700/50";
@@ -13,9 +13,9 @@ const labelClass = "mb-1.5 block text-[13px] font-medium text-zinc-400";
 export default function RegisterContractorPage() {
   const router = useRouter();
   const [formData, setFormData] = useState({
-    usuario: "",
+    name: "",
     email: "",
-    senha: "",
+    password: "",
     confirmarSenha: "",
     telefone: "",
     cidade: "",
@@ -35,7 +35,7 @@ export default function RegisterContractorPage() {
     e.preventDefault();
     setError("");
 
-    if (formData.senha !== formData.confirmarSenha) {
+    if (formData.password !== formData.confirmarSenha) {
       setError("As senhas não coincidem");
       return;
     }
@@ -43,13 +43,21 @@ export default function RegisterContractorPage() {
     setLoading(true);
 
     try {
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const { confirmarSenha: _confirmarSenha, ...data } = {
-        ...formData,
-        tipo_usuario: "contratante" as const,
-      };
+      const { confirmarSenha: _confirmarSenha, ...rest } = formData;
 
-      await api.register(data);
+      const { error } = await authClient.signUp.email({
+        email: rest.email,
+        password: rest.password,
+        name: rest.name,
+        // @ts-expect-error additional fields
+        tipo_usuario: "contratante",
+        telefone: rest.telefone || undefined,
+        cidade: rest.cidade || undefined,
+        estado: rest.estado || undefined,
+        descricao: rest.descricao || undefined,
+      });
+
+      if (error) throw new Error(error.message || "Erro ao cadastrar");
       alert("Cadastro realizado com sucesso!");
       router.push("/login");
     } catch (err: unknown) {
@@ -106,15 +114,15 @@ export default function RegisterContractorPage() {
               </p>
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <div>
-                  <label htmlFor="usuario" className={labelClass}>
+                  <label htmlFor="name" className={labelClass}>
                     Nome ou Empresa *
                   </label>
                   <input
                     type="text"
-                    name="usuario"
-                    id="usuario"
+                    name="name"
+                    id="name"
                     placeholder="Nome da empresa"
-                    value={formData.usuario}
+                    value={formData.name}
                     onChange={handleChange}
                     required
                     className={inputClass}
@@ -136,15 +144,15 @@ export default function RegisterContractorPage() {
                   />
                 </div>
                 <div>
-                  <label htmlFor="senha" className={labelClass}>
+                  <label htmlFor="password" className={labelClass}>
                     Senha *
                   </label>
                   <input
                     type="password"
-                    name="senha"
-                    id="senha"
+                    name="password"
+                    id="password"
                     placeholder="Mínimo 6 caracteres"
-                    value={formData.senha}
+                    value={formData.password}
                     onChange={handleChange}
                     required
                     minLength={6}

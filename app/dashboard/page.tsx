@@ -5,7 +5,9 @@ import { useRouter } from "next/navigation";
 import Sidebar from "@/components/Sidebar";
 import Header from "@/components/Header";
 import ProposalCard from "@/components/ProposalCard";
-import { api, User, Proposta } from "@/lib/api";
+import { api, Proposta } from "@/lib/api";
+import { useAuthStore } from "@/lib/store";
+import { authClient } from "@/lib/auth-client";
 
 function getGreeting() {
   const h = new Date().getHours();
@@ -117,58 +119,38 @@ function QuickAction({
 
 export default function DashboardPage() {
   const router = useRouter();
-  const [user, setUser] = useState<User | null>(null);
+  const { user, sessionLoaded } = useAuthStore();
   const [proposals, setProposals] = useState<Proposta[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
 
   useEffect(() => {
-    const loadData = async () => {
+    if (!sessionLoaded) return;
+    if (!user) {
+      router.push("/login");
+      return;
+    }
+
+    const loadProposals = async () => {
       try {
-        const storedUser = localStorage.getItem("user");
-        const storedType = localStorage.getItem("type");
-
-        if (!storedUser || !storedType) {
-          router.push("/login");
-          return;
-        }
-
-        const userData = JSON.parse(storedUser);
-        setUser(userData);
-
-        let proposalsData: Proposta[] = [];
-        if (storedType === "artista") {
-          proposalsData = await api.getPropostasRecebidas();
-        } else {
-          proposalsData = await api.getPropostasEnviadas();
-        }
-
+        const isArtist = user.tipo_usuario === "artista";
+        const proposalsData = isArtist
+          ? await api.getPropostasRecebidas()
+          : await api.getPropostasEnviadas();
         setProposals(proposalsData);
       } catch (error: unknown) {
-        console.error("Erro ao carregar dados:", error);
-        if (error instanceof Error && error.message.includes("401")) {
-          localStorage.removeItem("user");
-          localStorage.removeItem("type");
-          router.push("/login");
-        }
+        console.error("Erro ao carregar propostas:", error);
       } finally {
         setLoading(false);
       }
     };
 
-    loadData();
-  }, [router]);
+    loadProposals();
+  }, [user, sessionLoaded, router]);
 
   const handleLogout = async () => {
-    try {
-      await api.logout();
-    } catch (error) {
-      console.error("Erro ao fazer logout:", error);
-    } finally {
-      localStorage.removeItem("user");
-      localStorage.removeItem("type");
-      router.push("/login");
-    }
+    await authClient.signOut();
+    router.push("/login");
   };
 
   const handleSearch = () => {
@@ -242,10 +224,10 @@ export default function DashboardPage() {
 
   const maxMonthly = Math.max(...monthlyActivity.map(([, v]) => v), 1);
 
-  if (!user) return null;
+  if (!sessionLoaded || !user) return null;
 
-  const userType = localStorage.getItem("type") || "";
-  const isArtist = userType === "artista";
+  const isArtist = user.tipo_usuario === "artista";
+  const userType = user.tipo_usuario;
   const sectionTitle = isArtist ? "Propostas Recebidas" : "Propostas Enviadas";
   const recentProposals = proposals.slice(0, 8);
 
@@ -289,7 +271,7 @@ export default function DashboardPage() {
                 <h1 className="text-3xl font-black tracking-tight lg:text-4xl">
                   {getGreeting()},{" "}
                   <span className="bg-linear-to-r from-amber-300 via-rose-400 to-fuchsia-400 bg-clip-text text-transparent">
-                    {user.usuario}
+                    {user.name}
                   </span>
                 </h1>
                 <p className="mt-2 max-w-md text-sm leading-relaxed text-zinc-500">

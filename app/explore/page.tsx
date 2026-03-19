@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import { api, User } from "@/lib/api";
+import { useAuthStore } from "@/lib/store";
 
 const genres = [
   "Rock",
@@ -46,19 +47,7 @@ function ExploreContent() {
   const [mobileFilters, setMobileFilters] = useState(false);
 
   /* Auth state — optional, never blocks rendering */
-  const [currentUser, setCurrentUser] = useState<User | null>(null);
-
-  useEffect(() => {
-    try {
-      const stored = localStorage.getItem("token");
-      if (stored) {
-        const raw = localStorage.getItem("user");
-        if (raw) setCurrentUser(JSON.parse(raw));
-      }
-    } catch {
-      /* not logged in — fine */
-    }
-  }, []);
+  const currentUser = useAuthStore((s) => s.user);
 
   /* Fetch users (public endpoint) */
   const fetchUsers = async (term: string) => {
@@ -158,8 +147,8 @@ function ExploreContent() {
                 </button>
                 <div className="relative h-9 w-9 rounded-full bg-linear-to-br from-amber-300 via-rose-400 to-fuchsia-500 p-0.5 shadow-lg shadow-rose-500/10">
                   <div className="flex h-full w-full items-center justify-center rounded-full bg-zinc-900 text-xs font-bold text-white">
-                    {currentUser.usuario
-                      ? currentUser.usuario.substring(0, 2).toUpperCase()
+                    {currentUser.name
+                      ? currentUser.name.substring(0, 2).toUpperCase()
                       : "U"}
                   </div>
                 </div>
@@ -420,8 +409,8 @@ function ExploreContent() {
             <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-5">
               {filteredResults.map((user, i) => (
                 <div
-                  key={user.id_usuario}
-                  onClick={() => router.push(`/u/${user.id_usuario}`)}
+                  key={user.id}
+                  onClick={() => router.push(`/u/${user.id}`)}
                   className="fade-in-up group relative cursor-pointer overflow-hidden rounded-2xl border border-zinc-800/50 bg-zinc-900/40 p-4 backdrop-blur-sm transition-all duration-300 hover:border-zinc-700/80 hover:shadow-lg hover:shadow-black/20 hover:-translate-y-0.5"
                   style={{ animationDelay: `${Math.min(i * 60, 400)}ms` }}
                 >
@@ -432,10 +421,10 @@ function ExploreContent() {
                   <div className="relative aspect-square rounded-xl overflow-hidden mb-4 bg-zinc-800/60">
                     <div className="absolute inset-0 bg-linear-to-br from-zinc-800/80 to-zinc-900 group-hover:scale-105 transition-transform duration-500" />
                     <div className="absolute inset-0 flex items-center justify-center">
-                      {user.imagem_perfil_url ? (
+                      {user.image ? (
                         <Image
-                          src={user.imagem_perfil_url}
-                          alt={user.usuario}
+                          src={user.image}
+                          alt={user.name}
                           width={300}
                           height={300}
                           className="w-full h-full object-cover"
@@ -451,7 +440,7 @@ function ExploreContent() {
                   {/* Info */}
                   <div className="relative">
                     <h3 className="font-bold text-white text-base mb-0.5 truncate group-hover:text-white/90">
-                      {user.usuario}
+                      {user.name}
                     </h3>
                     <p className="text-xs text-zinc-500 capitalize mb-2.5">
                       {user.tipo_usuario}
