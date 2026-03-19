@@ -29,8 +29,8 @@ export default function ProposalsPage() {
 
         // Load all proposals (both sent and received)
         const [recebidas, enviadas] = await Promise.all([
-          api.getPropostasRecebidas(userData.id_usuario),
-          api.getPropostasEnviadas(userData.id_usuario),
+          api.getPropostasRecebidas(),
+          api.getPropostasEnviadas(),
         ]);
 
         // Combine and sort by date

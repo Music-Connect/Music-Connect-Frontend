@@ -138,9 +138,9 @@ export default function DashboardPage() {
 
         let proposalsData: Proposta[] = [];
         if (storedType === "artista") {
-          proposalsData = await api.getPropostasRecebidas(userData.id_usuario);
+          proposalsData = await api.getPropostasRecebidas();
         } else {
-          proposalsData = await api.getPropostasEnviadas(userData.id_usuario);
+          proposalsData = await api.getPropostasEnviadas();
         }
 
         setProposals(proposalsData);

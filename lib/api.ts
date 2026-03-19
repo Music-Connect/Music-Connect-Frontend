@@ -1,11 +1,14 @@
 // API Configuration and Service Functions
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
 
-// Helper to get common headers
-function getHeaders(): HeadersInit {
-  return {
-    "Content-Type": "application/json",
-  };
+// Helper to get common headers, optionally with JWT Authorization
+function getHeaders(withAuth = false): HeadersInit {
+  const headers: Record<string, string> = { "Content-Type": "application/json" };
+  if (withAuth && typeof window !== "undefined") {
+    const token = localStorage.getItem("token");
+    if (token) headers["Authorization"] = `Bearer ${token}`;
+  }
+  return headers;
 }
 
 export interface User {
@@ -74,8 +77,8 @@ export const api = {
   async login(
     email: string,
     password: string,
-  ): Promise<{ user: User; token: string }> {
-    const response = await fetch(`${API_BASE_URL}/api/usuarios/auth/login`, {
+  ): Promise<{ success: boolean; user: User; token: string; type: string }> {
+    const response = await fetch(`${API_BASE_URL}/api/auth/login`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       credentials: "include",
@@ -84,14 +87,14 @@ export const api = {
 
     if (!response.ok) {
       const error = await response.json();
-      throw new Error(error.message || "Erro ao fazer login");
+      throw new Error(error.error || "Erro ao fazer login");
     }
 
     return response.json();
   },
 
   async register(data: Partial<User> & { senha: string }): Promise<User> {
-    const response = await fetch(`${API_BASE_URL}/api/usuarios/auth/register`, {
+    const response = await fetch(`${API_BASE_URL}/api/auth/register`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       credentials: "include",
@@ -100,7 +103,7 @@ export const api = {
 
     if (!response.ok) {
       const error = await response.json();
-      throw new Error(error.message || "Erro ao registrar");
+      throw new Error(error.error || "Erro ao registrar");
     }
 
     return response.json();
@@ -108,7 +111,7 @@ export const api = {
 
   async logout(): Promise<void> {
     try {
-      const response = await fetch(`${API_BASE_URL}/api/usuarios/auth/logout`, {
+      const response = await fetch(`${API_BASE_URL}/api/auth/logout`, {
         method: "POST",
         credentials: "include",
       });
@@ -130,7 +133,7 @@ export const api = {
     email: string,
   ): Promise<{ message: string; resetToken?: string }> {
     const response = await fetch(
-      `${API_BASE_URL}/api/usuarios/auth/forgot-password`,
+      `${API_BASE_URL}/api/auth/forgot-password`,
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -151,7 +154,7 @@ export const api = {
     novaSenha: string,
   ): Promise<{ message: string }> {
     const response = await fetch(
-      `${API_BASE_URL}/api/usuarios/auth/reset-password`,
+      `${API_BASE_URL}/api/auth/reset-password`,
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -169,11 +172,10 @@ export const api = {
 
   // Users
   async getUsers(search?: string): Promise<User[]> {
-    const url = search
-      ? `${API_BASE_URL}/api/usuarios?search=${encodeURIComponent(search)}`
-      : `${API_BASE_URL}/api/usuarios`;
+    const params = new URLSearchParams({ limit: "50" });
+    if (search) params.append("local", search);
 
-    const response = await fetch(url, {
+    const response = await fetch(`${API_BASE_URL}/api/artistas?${params}`, {
       credentials: "include",
     });
 
@@ -201,7 +203,7 @@ export const api = {
   async updateUser(id: number, data: Partial<User>): Promise<User> {
     const response = await fetch(`${API_BASE_URL}/api/usuarios/${id}`, {
       method: "PUT",
-      headers: getHeaders(),
+      headers: getHeaders(true),
       credentials: "include",
       body: JSON.stringify(data),
     });
@@ -255,9 +257,9 @@ export const api = {
   },
 
   // Propostas
-  async getPropostasRecebidas(id_artista: number): Promise<Proposta[]> {
+  async getPropostasRecebidas(): Promise<Proposta[]> {
     const response = await fetch(
-      `${API_BASE_URL}/api/propostas/recebidas?id_artista=${id_artista}`,
+      `${API_BASE_URL}/api/propostas/recebidas`,
       { credentials: "include" },
     );
 
@@ -269,9 +271,9 @@ export const api = {
     return data.data || [];
   },
 
-  async getPropostasEnviadas(id_contratante: number): Promise<Proposta[]> {
+  async getPropostasEnviadas(): Promise<Proposta[]> {
     const response = await fetch(
-      `${API_BASE_URL}/api/propostas/enviadas?id_contratante=${id_contratante}`,
+      `${API_BASE_URL}/api/propostas/enviadas`,
       { credentials: "include" },
     );
 
@@ -299,7 +301,7 @@ export const api = {
   async createProposta(data: Partial<Proposta>): Promise<Proposta> {
     const response = await fetch(`${API_BASE_URL}/api/propostas`, {
       method: "POST",
-      headers: getHeaders(),
+      headers: getHeaders(true),
       credentials: "include",
       body: JSON.stringify(data),
     });
@@ -316,7 +318,7 @@ export const api = {
   async updatePropostaStatus(id: number, status: string): Promise<Proposta> {
     const response = await fetch(`${API_BASE_URL}/api/propostas/${id}/status`, {
       method: "PUT",
-      headers: getHeaders(),
+      headers: getHeaders(true),
       credentials: "include",
       body: JSON.stringify({ status }),
     });
@@ -363,7 +365,7 @@ export const api = {
   async createAvaliacao(data: Partial<Avaliacao>): Promise<Avaliacao> {
     const response = await fetch(`${API_BASE_URL}/api/avaliacoes`, {
       method: "POST",
-      headers: getHeaders(),
+      headers: getHeaders(true),
       credentials: "include",
       body: JSON.stringify(data),
     });
