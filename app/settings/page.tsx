@@ -5,6 +5,8 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { api, User } from "@/lib/api";
 import { useAuthStore } from "@/lib/store";
+import BackButton from "@/components/BackButton";
+import { BarChart2, User as UserIcon, Lock, Bell } from "lucide-react";
 
 const inputClass =
   "w-full rounded-xl border border-zinc-800/60 bg-zinc-900/50 px-4 py-3 text-sm text-white placeholder-zinc-600 outline-none transition-all duration-200 focus:border-zinc-700 focus:bg-zinc-900/80 focus:ring-1 focus:ring-zinc-700/50 disabled:opacity-40 disabled:cursor-not-allowed";
@@ -12,10 +14,10 @@ const labelClass = "mb-1.5 block text-[13px] font-medium text-zinc-400";
 
 type Tab = "account" | "security" | "notifications";
 
-const tabs: { id: Tab; label: string; icon: string }[] = [
-  { id: "account", label: "Conta", icon: "👤" },
-  { id: "security", label: "Segurança", icon: "🔒" },
-  { id: "notifications", label: "Notificações", icon: "🔔" },
+const tabs: { id: Tab; label: string; icon: React.ReactNode }[] = [
+  { id: "account", label: "Conta", icon: <UserIcon size={16} /> },
+  { id: "security", label: "Segurança", icon: <Lock size={16} /> },
+  { id: "notifications", label: "Notificações", icon: <Bell size={16} /> },
 ];
 
 export default function SettingsPage() {
@@ -95,23 +97,26 @@ export default function SettingsPage() {
       {/* ── Sticky navbar ── */}
       <header className="sticky top-0 z-40 border-b border-zinc-800/50 bg-black/70 backdrop-blur-xl">
         <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-3 sm:px-6">
-          <Link href="/" className="shrink-0">
-            <span className="text-xl font-black tracking-tight bg-linear-to-r from-amber-300 via-rose-400 to-fuchsia-500 bg-clip-text text-transparent">
-              Music Connect
-            </span>
-          </Link>
+          <div className="flex items-center gap-3">
+            <BackButton href="/dashboard" />
+            <Link href="/" className="shrink-0">
+              <span className="text-xl font-black tracking-tight bg-linear-to-r from-amber-300 via-rose-400 to-fuchsia-500 bg-clip-text text-transparent">
+                Music Connect
+              </span>
+            </Link>
+          </div>
           <div className="flex items-center gap-3">
             <button
               onClick={() => router.push("/dashboard")}
               className="hidden sm:inline-flex items-center gap-1.5 rounded-xl border border-zinc-800/60 bg-zinc-900/50 px-4 py-2 text-sm font-medium text-zinc-300 transition-all hover:border-zinc-700 hover:text-white"
             >
-              📊 Dashboard
+              <BarChart2 size={14} /> Dashboard
             </button>
             <button
               onClick={() => router.push("/profile")}
               className="hidden sm:inline-flex items-center gap-1.5 rounded-xl border border-zinc-800/60 bg-zinc-900/50 px-4 py-2 text-sm font-medium text-zinc-300 transition-all hover:border-zinc-700 hover:text-white"
             >
-              👤 Perfil
+              <UserIcon size={14} /> Perfil
             </button>
             <div className="relative h-9 w-9 rounded-full bg-linear-to-br from-amber-300 via-rose-400 to-fuchsia-500 p-0.5 shadow-lg shadow-rose-500/10">
               <div className="flex h-full w-full items-center justify-center rounded-full bg-zinc-900 text-xs font-bold text-white">
@@ -153,7 +158,7 @@ export default function SettingsPage() {
                       : "text-zinc-500 hover:bg-zinc-900/60 hover:text-zinc-300"
                   }`}
                 >
-                  <span className="text-base">{tab.icon}</span>
+                  <span className="flex items-center">{tab.icon}</span>
                   {tab.label}
                 </button>
               ))}

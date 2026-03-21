@@ -6,6 +6,20 @@ import Link from "next/link";
 import Image from "next/image";
 import { api, User } from "@/lib/api";
 import { useAuthStore } from "@/lib/store";
+import BackButton from "@/components/BackButton";
+import {
+  Search,
+  BarChart2,
+  Settings,
+  Users,
+  Music,
+  Building2,
+  User as UserIcon,
+  FileText,
+  MapPin,
+  X,
+  ArrowRight,
+} from "lucide-react";
 
 const genres = [
   "Rock",
@@ -106,17 +120,20 @@ function ExploreContent() {
       <header className="sticky top-0 z-40 border-b border-zinc-800/50 bg-black/70 backdrop-blur-xl">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 sm:px-6">
           {/* Brand */}
-          <Link href="/" className="shrink-0">
-            <span className="text-xl font-black tracking-tight bg-linear-to-r from-amber-300 via-rose-400 to-fuchsia-500 bg-clip-text text-transparent">
-              Music Connect
-            </span>
-          </Link>
+          <div className="flex items-center gap-3 shrink-0">
+            <BackButton href={isLoggedIn ? "/dashboard" : "/"} />
+            <Link href="/">
+              <span className="text-xl font-black tracking-tight bg-linear-to-r from-amber-300 via-rose-400 to-fuchsia-500 bg-clip-text text-transparent">
+                Music Connect
+              </span>
+            </Link>
+          </div>
 
           {/* Search — centered */}
           <div className="hidden sm:flex flex-1 max-w-lg mx-6">
             <div className="group relative w-full">
-              <span className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-zinc-500 text-sm transition-colors group-focus-within:text-zinc-300">
-                🔍
+              <span className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-zinc-500 transition-colors group-focus-within:text-zinc-300">
+                <Search size={14} />
               </span>
               <input
                 type="text"
@@ -137,13 +154,13 @@ function ExploreContent() {
                   onClick={() => router.push("/dashboard")}
                   className="hidden sm:inline-flex items-center gap-1.5 rounded-xl border border-zinc-800/60 bg-zinc-900/50 px-4 py-2 text-sm font-medium text-zinc-300 transition-all hover:border-zinc-700 hover:text-white"
                 >
-                  📊 Dashboard
+                  <BarChart2 size={14} /> Dashboard
                 </button>
                 <button
                   onClick={() => router.push("/settings")}
                   className="hidden sm:inline-flex items-center gap-1.5 rounded-xl border border-zinc-800/60 bg-zinc-900/50 px-4 py-2 text-sm font-medium text-zinc-300 transition-all hover:border-zinc-700 hover:text-white"
                 >
-                  ⚙️ Configurações
+                  <Settings size={14} /> Configurações
                 </button>
                 <div className="relative h-9 w-9 rounded-full bg-linear-to-br from-amber-300 via-rose-400 to-fuchsia-500 p-0.5 shadow-lg shadow-rose-500/10">
                   <div className="flex h-full w-full items-center justify-center rounded-full bg-zinc-900 text-xs font-bold text-white">
@@ -175,8 +192,8 @@ function ExploreContent() {
         {/* Mobile search */}
         <div className="sm:hidden px-4 pb-3">
           <div className="group relative">
-            <span className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-zinc-500 text-sm">
-              🔍
+            <span className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-zinc-500">
+              <Search size={14} />
             </span>
             <input
               type="text"
@@ -210,12 +227,12 @@ function ExploreContent() {
                         : "text-zinc-500 hover:bg-zinc-900/60 hover:text-zinc-300"
                     }`}
                   >
-                    <span className="text-base">
+                    <span className="flex items-center">
                       {type === "Todos"
-                        ? "👥"
+                        ? <Users size={16} />
                         : type === "Artistas"
-                          ? "🎵"
-                          : "🏢"}
+                          ? <Music size={16} />
+                          : <Building2 size={16} />}
                     </span>
                     {type}
                   </button>
@@ -246,9 +263,9 @@ function ExploreContent() {
               {selectedGenre && (
                 <button
                   onClick={() => setSelectedGenre(null)}
-                  className="mt-2 text-[11px] text-zinc-600 hover:text-zinc-400 transition-colors"
+                  className="mt-2 inline-flex items-center gap-1 text-[11px] text-zinc-600 hover:text-zinc-400 transition-colors"
                 >
-                  ✕ Limpar gênero
+                  <X size={10} /> Limpar gênero
                 </button>
               )}
             </div>
@@ -265,19 +282,19 @@ function ExploreContent() {
                     onClick={() => router.push("/profile")}
                     className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2.5 text-sm font-medium text-zinc-500 hover:bg-zinc-900/60 hover:text-zinc-300 transition-all"
                   >
-                    👤 Meu Perfil
+                    <UserIcon size={14} /> Meu Perfil
                   </button>
                   <button
                     onClick={() => router.push("/proposals")}
                     className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2.5 text-sm font-medium text-zinc-500 hover:bg-zinc-900/60 hover:text-zinc-300 transition-all"
                   >
-                    📄 Propostas
+                    <FileText size={14} /> Propostas
                   </button>
                   <button
                     onClick={() => router.push("/settings")}
                     className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2.5 text-sm font-medium text-zinc-500 hover:bg-zinc-900/60 hover:text-zinc-300 transition-all"
                   >
-                    ⚙️ Configurações
+                    <Settings size={14} /> Configurações
                   </button>
                 </div>
               </div>
@@ -303,7 +320,7 @@ function ExploreContent() {
               onClick={() => setMobileFilters(!mobileFilters)}
               className="inline-flex items-center gap-2 rounded-xl border border-zinc-800/60 bg-zinc-900/50 px-4 py-2.5 text-sm font-medium text-zinc-400 transition-all hover:border-zinc-700 hover:text-white"
             >
-              <span>⚙️</span> Filtros
+              <Settings size={14} /> Filtros
               {(selectedType !== "Todos" || selectedGenre) && (
                 <span className="ml-1 flex h-5 w-5 items-center justify-center rounded-full bg-rose-500/20 text-[10px] font-bold text-rose-400">
                   {(selectedType !== "Todos" ? 1 : 0) + (selectedGenre ? 1 : 0)}
@@ -362,7 +379,7 @@ function ExploreContent() {
                     onClick={() => setSelectedType("Todos")}
                     className="ml-0.5 text-zinc-600 hover:text-white"
                   >
-                    ✕
+                    <X size={10} />
                   </button>
                 </span>
               )}
@@ -373,7 +390,7 @@ function ExploreContent() {
                     onClick={() => setSelectedGenre(null)}
                     className="ml-0.5 text-rose-600 hover:text-rose-300"
                   >
-                    ✕
+                    <X size={10} />
                   </button>
                 </span>
               )}
@@ -397,7 +414,7 @@ function ExploreContent() {
             </div>
           ) : filteredResults.length === 0 ? (
             <div className="fade-in-up flex flex-col items-center justify-center rounded-2xl border border-dashed border-zinc-800/60 bg-zinc-900/20 py-20 text-center">
-              <span className="mb-4 text-4xl">🔍</span>
+              <span className="mb-4 text-zinc-500"><Search size={40} /></span>
               <p className="text-zinc-400 font-medium mb-1">
                 Nenhum resultado encontrado
               </p>
@@ -430,8 +447,8 @@ function ExploreContent() {
                           className="w-full h-full object-cover"
                         />
                       ) : (
-                        <span className="text-5xl opacity-60">
-                          {user.tipo_usuario === "artista" ? "🎵" : "🏢"}
+                        <span className="opacity-60 text-zinc-500">
+                          {user.tipo_usuario === "artista" ? <Music size={48} /> : <Building2 size={48} />}
                         </span>
                       )}
                     </div>
@@ -453,8 +470,8 @@ function ExploreContent() {
                         </span>
                       )}
                       {user.cidade && (
-                        <span className="text-[11px] text-zinc-600">
-                          📍 {user.cidade}
+                        <span className="inline-flex items-center gap-1 text-[11px] text-zinc-600">
+                          <MapPin size={10} /> {user.cidade}
                           {user.estado && `, ${user.estado}`}
                         </span>
                       )}
@@ -463,7 +480,7 @@ function ExploreContent() {
 
                   {/* Arrow on hover */}
                   <div className="absolute right-4 top-4 flex h-8 w-8 items-center justify-center rounded-lg bg-zinc-800/60 text-zinc-600 opacity-0 transition-all duration-300 group-hover:opacity-100 group-hover:text-white">
-                    →
+                    <ArrowRight size={14} />
                   </div>
                 </div>
               ))}

@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import { Proposta } from "@/lib/api";
+import { Building2, Music, Calendar, DollarSign } from "lucide-react";
 
 interface ProposalCardProps {
   item: Proposta;
@@ -79,9 +80,9 @@ export default function ProposalCard({
                 className="w-full h-full object-cover"
               />
             ) : isArtist ? (
-              "🏢"
+              <Building2 size={18} className="text-zinc-500" />
             ) : (
-              "🎵"
+              <Music size={18} className="text-zinc-500" />
             )}
           </div>
         </div>
@@ -104,7 +105,7 @@ export default function ProposalCard({
         <div className="space-y-2.5 mb-4">
           <div className="flex items-center justify-between text-sm">
             <span className="text-zinc-500 flex items-center gap-1.5">
-              <span className="text-xs">📅</span> Data
+              <Calendar size={12} /> Data
             </span>
             <span className="text-white font-medium text-xs">
               {formatDate(item.data_evento)}
@@ -112,7 +113,7 @@ export default function ProposalCard({
           </div>
           <div className="flex items-center justify-between text-sm">
             <span className="text-zinc-500 flex items-center gap-1.5">
-              <span className="text-xs">💰</span> Valor
+              <DollarSign size={12} /> Valor
             </span>
             <span className="text-white font-semibold text-sm">
               {formatCurrency(item.valor_oferecido)}

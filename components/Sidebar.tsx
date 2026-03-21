@@ -1,6 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import { BarChart2, FileText, Search, User, Settings, ArrowUpRight } from "lucide-react";
 
 interface SidebarProps {
   isArtist: boolean;
@@ -54,7 +55,7 @@ export default function Sidebar({
 
           <div onClick={() => navigate("/dashboard")}>
             <NavItem
-              icon="📊"
+              icon={<BarChart2 size={16} />}
               active={activePage === "dashboard" || !activePage}
             >
               Visão Geral
@@ -62,13 +63,13 @@ export default function Sidebar({
           </div>
 
           <div onClick={() => navigate("/proposals")}>
-            <NavItem icon="📄" active={activePage === "proposals"}>
+            <NavItem icon={<FileText size={16} />} active={activePage === "proposals"}>
               {isArtist ? "Propostas" : "Minhas Contratações"}
             </NavItem>
           </div>
 
           <div onClick={() => navigate("/explore")}>
-            <NavItem icon="🔍" active={activePage === "explore"}>
+            <NavItem icon={<Search size={16} />} active={activePage === "explore"}>
               Explorar
             </NavItem>
           </div>
@@ -79,12 +80,12 @@ export default function Sidebar({
             {isArtist ? "Perfil" : "Organização"}
           </p>
           <div onClick={() => navigate("/profile")}>
-            <NavItem icon="👤" active={activePage === "profile"}>
+            <NavItem icon={<User size={16} />} active={activePage === "profile"}>
               {isArtist ? "Meu Perfil" : "Minha Empresa"}
             </NavItem>
           </div>
           <div onClick={() => navigate("/settings")}>
-            <NavItem icon="⚙️" active={activePage === "settings"}>
+            <NavItem icon={<Settings size={16} />} active={activePage === "settings"}>
               Configurações
             </NavItem>
           </div>
@@ -99,8 +100,8 @@ export default function Sidebar({
           className="group flex w-full items-center justify-between rounded-xl border border-zinc-800/50 bg-zinc-900/40 px-4 py-3 text-sm font-semibold text-zinc-500 transition-all duration-200 hover:border-zinc-700/60 hover:bg-zinc-800/40 hover:text-zinc-300"
         >
           Sair da conta
-          <span className="text-base transition-transform duration-200 group-hover:translate-x-0.5">
-            ↗
+          <span className="transition-transform duration-200 group-hover:translate-x-0.5">
+            <ArrowUpRight size={16} />
           </span>
         </button>
       </div>
@@ -111,7 +112,7 @@ export default function Sidebar({
 /* ── NavItem ── */
 interface NavItemProps {
   children: React.ReactNode;
-  icon: string;
+  icon: React.ReactNode;
   active?: boolean;
 }
 
@@ -124,7 +125,7 @@ function NavItem({ children, icon, active }: NavItemProps) {
           : "hover:bg-white/2 hover:text-zinc-200"
       }`}
     >
-      <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-zinc-800/60 text-sm transition-colors group-hover:bg-zinc-800">
+      <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-zinc-800/60 transition-colors group-hover:bg-zinc-800">
         {icon}
       </span>
       <span className="flex-1 text-[13px]">{children}</span>

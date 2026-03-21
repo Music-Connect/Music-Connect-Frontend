@@ -1,8 +1,22 @@
 "use client";
 
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
+import BackButton from "@/components/BackButton";
+import { useAuthStore } from "@/lib/store";
+import { Mic, Headphones, ArrowRight } from "lucide-react";
 
 export default function ProfileSelectorPage() {
+  const router = useRouter();
+  const { user, sessionLoaded } = useAuthStore();
+
+  useEffect(() => {
+    if (sessionLoaded && user) {
+      router.replace("/dashboard");
+    }
+  }, [user, sessionLoaded, router]);
+
   return (
     <div className="relative flex min-h-screen items-center justify-center bg-black overflow-hidden">
       {/* Background blobs */}
@@ -12,6 +26,11 @@ export default function ProfileSelectorPage() {
       </div>
 
       <div className="relative z-10 w-full max-w-3xl px-6 py-16">
+        {/* Back */}
+        <div className="mb-6">
+          <BackButton href="/" label="Início" />
+        </div>
+
         {/* Brand */}
         <div className="fade-in-up mb-4 text-center">
           <Link href="/" className="inline-block">
@@ -47,8 +66,8 @@ export default function ProfileSelectorPage() {
             <div className="relative overflow-hidden rounded-2xl border border-zinc-800/50 bg-zinc-900/40 p-8 backdrop-blur-sm transition-all duration-300 hover:border-rose-500/30 hover:bg-zinc-900/60 hover:-translate-y-1 hover:shadow-xl hover:shadow-rose-500/5">
               <div className="pointer-events-none absolute -right-8 -top-8 h-32 w-32 rounded-full bg-rose-500/0 blur-3xl transition-all duration-500 group-hover:bg-rose-500/10" />
               <div className="relative">
-                <div className="mb-5 flex h-14 w-14 items-center justify-center rounded-2xl bg-zinc-800/60 text-3xl transition-colors group-hover:bg-zinc-800">
-                  🎤
+                <div className="mb-5 flex h-14 w-14 items-center justify-center rounded-2xl bg-zinc-800/60 text-zinc-400 transition-colors group-hover:bg-zinc-800">
+                  <Mic size={28} />
                 </div>
                 <h3 className="text-xl font-bold text-white mb-2">
                   Sou Artista
@@ -60,7 +79,7 @@ export default function ProfileSelectorPage() {
                 <div className="mt-5 inline-flex items-center gap-1.5 text-sm font-semibold text-zinc-400 transition-colors group-hover:text-white">
                   Começar cadastro
                   <span className="transition-transform duration-200 group-hover:translate-x-1">
-                    →
+                    <ArrowRight size={14} />
                   </span>
                 </div>
               </div>
@@ -72,8 +91,8 @@ export default function ProfileSelectorPage() {
             <div className="relative overflow-hidden rounded-2xl border border-zinc-800/50 bg-zinc-900/40 p-8 backdrop-blur-sm transition-all duration-300 hover:border-amber-500/30 hover:bg-zinc-900/60 hover:-translate-y-1 hover:shadow-xl hover:shadow-amber-500/5">
               <div className="pointer-events-none absolute -right-8 -top-8 h-32 w-32 rounded-full bg-amber-500/0 blur-3xl transition-all duration-500 group-hover:bg-amber-500/10" />
               <div className="relative">
-                <div className="mb-5 flex h-14 w-14 items-center justify-center rounded-2xl bg-zinc-800/60 text-3xl transition-colors group-hover:bg-zinc-800">
-                  🎧
+                <div className="mb-5 flex h-14 w-14 items-center justify-center rounded-2xl bg-zinc-800/60 text-zinc-400 transition-colors group-hover:bg-zinc-800">
+                  <Headphones size={28} />
                 </div>
                 <h3 className="text-xl font-bold text-white mb-2">
                   Sou Contratante
@@ -84,7 +103,7 @@ export default function ProfileSelectorPage() {
                 <div className="mt-5 inline-flex items-center gap-1.5 text-sm font-semibold text-zinc-400 transition-colors group-hover:text-white">
                   Começar cadastro
                   <span className="transition-transform duration-200 group-hover:translate-x-1">
-                    →
+                    <ArrowRight size={14} />
                   </span>
                 </div>
               </div>

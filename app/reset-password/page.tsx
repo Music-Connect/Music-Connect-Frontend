@@ -4,6 +4,8 @@ import Link from "next/link";
 import { useSearchParams, useRouter } from "next/navigation";
 import { useState, Suspense } from "react";
 import { authClient } from "@/lib/auth-client";
+import BackButton from "@/components/BackButton";
+import { AlertTriangle, Lock, CheckCircle2 } from "lucide-react";
 
 const inputClass =
   "w-full rounded-xl border border-zinc-800/60 bg-zinc-900/50 px-4 py-3 text-sm text-white placeholder-zinc-600 outline-none transition-all duration-200 focus:border-zinc-700 focus:bg-zinc-900/80 focus:ring-1 focus:ring-zinc-700/50";
@@ -62,8 +64,8 @@ function ResetPasswordForm() {
 
         <div className="relative z-10 w-full max-w-md px-6 py-12 text-center">
           <div className="fade-in-up rounded-2xl border border-zinc-800/50 bg-zinc-900/40 p-10 backdrop-blur-sm">
-            <div className="mx-auto mb-5 flex h-14 w-14 items-center justify-center rounded-2xl bg-red-500/10 text-2xl">
-              ⚠️
+            <div className="mx-auto mb-5 flex h-14 w-14 items-center justify-center rounded-2xl bg-red-500/10 text-red-400">
+              <AlertTriangle size={24} />
             </div>
             <h1 className="mb-2 text-xl font-bold text-white">Link inválido</h1>
             <p className="mb-8 text-sm text-zinc-500">
@@ -91,6 +93,11 @@ function ResetPasswordForm() {
       </div>
 
       <div className="relative z-10 w-full max-w-md px-6 py-12">
+        {/* Back */}
+        <div className="mb-6">
+          <BackButton href="/login" />
+        </div>
+
         {/* Brand */}
         <div className="fade-in-up mb-10 text-center">
           <Link href="/" className="inline-block">
@@ -108,8 +115,8 @@ function ResetPasswordForm() {
           style={{ animationDelay: "80ms" }}
         >
           <div className="mb-6 text-center">
-            <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-zinc-800/60 text-2xl">
-              🔒
+            <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-zinc-800/60 text-zinc-400">
+              <Lock size={24} />
             </div>
             <h2 className="text-xl font-bold text-white">Nova Senha</h2>
             <p className="mt-2 text-sm text-zinc-500">
@@ -119,14 +126,14 @@ function ResetPasswordForm() {
 
           {message && (
             <div className="mb-5 flex items-center gap-2 rounded-xl border border-emerald-500/20 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-400">
-              <span>✅</span>
+              <CheckCircle2 size={16} />
               {message}
             </div>
           )}
 
           {error && (
             <div className="mb-5 flex items-center gap-2 rounded-xl border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm text-red-400">
-              <span>⚠️</span>
+              <AlertTriangle size={16} />
               {error}
             </div>
           )}

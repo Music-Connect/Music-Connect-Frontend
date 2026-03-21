@@ -1,9 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { authClient } from "@/lib/auth-client";
+import BackButton from "@/components/BackButton";
+import { useAuthStore } from "@/lib/store";
+import { AlertTriangle, ArrowRight } from "lucide-react";
 
 const inputClass =
   "w-full rounded-xl border border-zinc-800/60 bg-zinc-900/50 px-4 py-3 text-sm text-white placeholder-zinc-600 outline-none transition-all duration-200 focus:border-zinc-700 focus:bg-zinc-900/80 focus:ring-1 focus:ring-zinc-700/50";
@@ -12,6 +15,14 @@ const labelClass = "mb-1.5 block text-[13px] font-medium text-zinc-400";
 
 export default function RegisterContractorPage() {
   const router = useRouter();
+  const { user, sessionLoaded } = useAuthStore();
+
+  useEffect(() => {
+    if (sessionLoaded && user) {
+      router.replace("/dashboard");
+    }
+  }, [user, sessionLoaded, router]);
+
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -58,8 +69,7 @@ export default function RegisterContractorPage() {
       });
 
       if (error) throw new Error(error.message || "Erro ao cadastrar");
-      alert("Cadastro realizado com sucesso!");
-      router.push("/login");
+      router.push("/dashboard");
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Erro ao cadastrar");
     } finally {
@@ -76,6 +86,11 @@ export default function RegisterContractorPage() {
       </div>
 
       <div className="relative z-10 w-full max-w-2xl px-6">
+        {/* Back */}
+        <div className="mb-6">
+          <BackButton href="/profile-selector" />
+        </div>
+
         {/* Header */}
         <div className="fade-in-up mb-8 text-center">
           <Link href="/" className="inline-block mb-4">
@@ -102,7 +117,7 @@ export default function RegisterContractorPage() {
           <form onSubmit={handleSubmit} className="space-y-6">
             {error && (
               <div className="flex items-center gap-2 rounded-xl border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm text-red-400">
-                <span>⚠️</span>
+                <AlertTriangle size={16} />
                 {error}
               </div>
             )}
@@ -266,7 +281,7 @@ export default function RegisterContractorPage() {
                 <>
                   Criar Conta de Contratante
                   <span className="transition-transform duration-200 group-hover:translate-x-0.5">
-                    →
+                    <ArrowRight size={14} />
                   </span>
                 </>
               )}

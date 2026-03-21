@@ -1,5 +1,7 @@
 "use client";
 
+import { Search, Bell } from "lucide-react";
+
 interface HeaderProps {
   user: {
     name: string;
@@ -28,8 +30,8 @@ export default function Header({
       {/* Search */}
       <div className="flex items-center gap-3 flex-1 max-w-lg">
         <div className="group relative flex-1">
-          <span className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-zinc-500 text-sm transition-colors group-focus-within:text-zinc-400">
-            🔍
+          <span className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-zinc-500 transition-colors group-focus-within:text-zinc-400">
+            <Search size={14} />
           </span>
           <input
             type="text"
@@ -45,8 +47,8 @@ export default function Header({
       {/* User Area */}
       <div className="flex items-center gap-4">
         {/* Notification bell */}
-        <button className="relative flex h-9 w-9 items-center justify-center rounded-xl border border-zinc-800/60 bg-zinc-900/40 text-sm text-zinc-400 transition-all hover:border-zinc-700 hover:text-white">
-          🔔
+        <button className="relative flex h-9 w-9 items-center justify-center rounded-xl border border-zinc-800/60 bg-zinc-900/40 text-zinc-400 transition-all hover:border-zinc-700 hover:text-white">
+          <Bell size={16} />
           <span className="absolute -right-0.5 -top-0.5 h-2 w-2 rounded-full bg-rose-500 ring-2 ring-black" />
         </button>
 

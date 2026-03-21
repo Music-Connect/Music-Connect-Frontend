@@ -7,6 +7,20 @@ import Image from "next/image";
 import { api, User } from "@/lib/api";
 import { useAuthStore } from "@/lib/store";
 import { authClient } from "@/lib/auth-client";
+import BackButton from "@/components/BackButton";
+import {
+  BarChart2,
+  Settings,
+  Mail,
+  Smartphone,
+  MapPin,
+  Music,
+  DollarSign,
+  Gem,
+  Headphones,
+  Instagram,
+  Youtube,
+} from "lucide-react";
 
 const inputClass =
   "w-full rounded-xl border border-zinc-800/60 bg-zinc-900/50 px-4 py-3 text-sm text-white placeholder-zinc-600 outline-none transition-all duration-200 focus:border-zinc-700 focus:bg-zinc-900/80 focus:ring-1 focus:ring-zinc-700/50";
@@ -94,23 +108,26 @@ export default function ProfilePage() {
       {/* ── Sticky navbar ── */}
       <header className="sticky top-0 z-40 border-b border-zinc-800/50 bg-black/70 backdrop-blur-xl">
         <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-3 sm:px-6">
-          <Link href="/" className="shrink-0">
-            <span className="text-xl font-black tracking-tight bg-linear-to-r from-amber-300 via-rose-400 to-fuchsia-500 bg-clip-text text-transparent">
-              Music Connect
-            </span>
-          </Link>
+          <div className="flex items-center gap-3">
+            <BackButton href="/dashboard" />
+            <Link href="/" className="shrink-0">
+              <span className="text-xl font-black tracking-tight bg-linear-to-r from-amber-300 via-rose-400 to-fuchsia-500 bg-clip-text text-transparent">
+                Music Connect
+              </span>
+            </Link>
+          </div>
           <div className="flex items-center gap-3">
             <button
               onClick={() => router.push("/dashboard")}
               className="hidden sm:inline-flex items-center gap-1.5 rounded-xl border border-zinc-800/60 bg-zinc-900/50 px-4 py-2 text-sm font-medium text-zinc-300 transition-all hover:border-zinc-700 hover:text-white"
             >
-              📊 Dashboard
+              <BarChart2 size={14} /> Dashboard
             </button>
             <button
               onClick={() => router.push("/settings")}
               className="hidden sm:inline-flex items-center gap-1.5 rounded-xl border border-zinc-800/60 bg-zinc-900/50 px-4 py-2 text-sm font-medium text-zinc-300 transition-all hover:border-zinc-700 hover:text-white"
             >
-              ⚙️ Configurações
+              <Settings size={14} /> Configurações
             </button>
             <div className="relative h-9 w-9 rounded-full bg-linear-to-br from-amber-300 via-rose-400 to-fuchsia-500 p-0.5 shadow-lg shadow-rose-500/10">
               <div className="flex h-full w-full items-center justify-center rounded-full bg-zinc-900 text-xs font-bold text-white">
@@ -162,13 +179,13 @@ export default function ProfilePage() {
             </p>
             <div className="mt-3 flex flex-wrap items-center gap-2 justify-center sm:justify-start">
               {user.genero_musical && (
-                <span className="inline-flex items-center rounded-lg border border-rose-500/20 bg-rose-500/10 px-2.5 py-1 text-xs font-semibold text-rose-400">
-                  🎵 {user.genero_musical}
+                <span className="inline-flex items-center gap-1 rounded-lg border border-rose-500/20 bg-rose-500/10 px-2.5 py-1 text-xs font-semibold text-rose-400">
+                  <Music size={12} /> {user.genero_musical}
                 </span>
               )}
               {user.cidade && (
-                <span className="inline-flex items-center rounded-lg border border-zinc-800/60 bg-zinc-900/50 px-2.5 py-1 text-xs text-zinc-500">
-                  📍 {user.cidade}
+                <span className="inline-flex items-center gap-1 rounded-lg border border-zinc-800/60 bg-zinc-900/50 px-2.5 py-1 text-xs text-zinc-500">
+                  <MapPin size={12} /> {user.cidade}
                   {user.estado && `, ${user.estado}`}
                 </span>
               )}
@@ -310,17 +327,17 @@ export default function ProfilePage() {
                     {user.descricao || "Adicione uma descrição ao seu perfil."}
                   </p>
                   <div className="space-y-2">
-                    <InfoItem icon="📧" label="Email" value={user.email} />
+                    <InfoItem icon={<Mail size={14} />} label="Email" value={user.email} />
                     {user.telefone && (
                       <InfoItem
-                        icon="📱"
+                        icon={<Smartphone size={14} />}
                         label="Telefone"
                         value={user.telefone}
                       />
                     )}
                     {user.cidade && (
                       <InfoItem
-                        icon="📍"
+                        icon={<MapPin size={14} />}
                         label="Local"
                         value={`${user.cidade}${user.estado ? `, ${user.estado}` : ""}`}
                       />
@@ -348,7 +365,7 @@ export default function ProfilePage() {
                       rel="noopener noreferrer"
                       className="flex items-center gap-2.5 rounded-xl px-3 py-2.5 text-sm text-zinc-500 hover:bg-zinc-800/40 hover:text-emerald-400 transition-all"
                     >
-                      🎧 Spotify
+                      <Headphones size={14} /> Spotify
                     </a>
                   )}
                   {user.instagram_url && (
@@ -358,7 +375,7 @@ export default function ProfilePage() {
                       rel="noopener noreferrer"
                       className="flex items-center gap-2.5 rounded-xl px-3 py-2.5 text-sm text-zinc-500 hover:bg-zinc-800/40 hover:text-rose-400 transition-all"
                     >
-                      📸 Instagram
+                      <Instagram size={14} /> Instagram
                     </a>
                   )}
                   {user.youtube_url && (
@@ -368,7 +385,7 @@ export default function ProfilePage() {
                       rel="noopener noreferrer"
                       className="flex items-center gap-2.5 rounded-xl px-3 py-2.5 text-sm text-zinc-500 hover:bg-zinc-800/40 hover:text-red-400 transition-all"
                     >
-                      🎬 YouTube
+                      <Youtube size={14} /> YouTube
                     </a>
                   )}
                   {!user.spotify_url &&
@@ -425,28 +442,28 @@ export default function ProfilePage() {
                       {
                         label: "Gênero",
                         value: user.genero_musical || "—",
-                        icon: "🎵",
+                        icon: <Music size={18} />,
                       },
                       {
                         label: "Preço Mín.",
                         value: user.preco_minimo
                           ? `R$ ${user.preco_minimo}`
                           : "—",
-                        icon: "💰",
+                        icon: <DollarSign size={18} />,
                       },
                       {
                         label: "Preço Máx.",
                         value: user.preco_maximo
                           ? `R$ ${user.preco_maximo}`
                           : "—",
-                        icon: "💎",
+                        icon: <Gem size={18} />,
                       },
                     ].map((stat) => (
                       <div
                         key={stat.label}
                         className="rounded-2xl border border-zinc-800/50 bg-zinc-900/40 p-4 backdrop-blur-sm"
                       >
-                        <span className="mb-2 block text-lg">{stat.icon}</span>
+                        <span className="mb-2 block text-zinc-400">{stat.icon}</span>
                         <p className="text-[11px] font-semibold uppercase tracking-wider text-zinc-600">
                           {stat.label}
                         </p>
@@ -495,13 +512,13 @@ function InfoItem({
   label,
   value,
 }: {
-  icon: string;
+  icon: React.ReactNode;
   label: string;
   value: string;
 }) {
   return (
     <div className="flex items-center gap-3 rounded-xl px-3 py-2.5 transition-all hover:bg-zinc-800/30">
-      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-zinc-800/60 text-sm">
+      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-zinc-800/60 text-zinc-400">
         {icon}
       </div>
       <div className="min-w-0 overflow-hidden">

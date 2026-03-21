@@ -1,18 +1,29 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { authClient } from "@/lib/auth-client";
+import BackButton from "@/components/BackButton";
+import { useAuthStore } from "@/lib/store";
+import { AlertTriangle, ArrowRight } from "lucide-react";
 
 export default function LoginPage() {
   const router = useRouter();
+  const { user, sessionLoaded } = useAuthStore();
   const [formLogin, setFormLogin] = useState({
     email: "",
     password: "",
   });
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+
+  // Redireciona para dashboard se já estiver logado
+  useEffect(() => {
+    if (sessionLoaded && user) {
+      router.replace("/dashboard");
+    }
+  }, [user, sessionLoaded, router]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormLogin({ ...formLogin, [e.target.name]: e.target.value });
@@ -46,6 +57,11 @@ export default function LoginPage() {
       </div>
 
       <div className="relative z-10 w-full max-w-md px-6 py-12">
+        {/* Back */}
+        <div className="mb-6">
+          <BackButton href="/" label="Início" />
+        </div>
+
         {/* Brand */}
         <div className="fade-in-up mb-10 text-center">
           <Link href="/" className="inline-block">
@@ -75,7 +91,7 @@ export default function LoginPage() {
           <form onSubmit={loginSubmit} className="space-y-5">
             {error && (
               <div className="flex items-center gap-2 rounded-xl border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm text-red-400">
-                <span>⚠️</span>
+                <AlertTriangle size={16} />
                 {error}
               </div>
             )}
@@ -140,7 +156,7 @@ export default function LoginPage() {
                 <>
                   Entrar
                   <span className="transition-transform duration-200 group-hover:translate-x-0.5">
-                    →
+                    <ArrowRight size={14} />
                   </span>
                 </>
               )}

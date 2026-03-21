@@ -6,6 +6,24 @@ import Link from "next/link";
 import Image from "next/image";
 import { api, User } from "@/lib/api";
 import { useAuthStore } from "@/lib/store";
+import BackButton from "@/components/BackButton";
+import {
+  BarChart2,
+  Search,
+  Frown,
+  Music,
+  MapPin,
+  Mail,
+  Smartphone,
+  Headphones,
+  Instagram,
+  Youtube,
+  DollarSign,
+  Gem,
+  FileText,
+  User as UserIcon,
+  X,
+} from "lucide-react";
 
 const inputClass =
   "w-full rounded-xl border border-zinc-800/60 bg-zinc-900/50 px-4 py-3 text-sm text-white placeholder-zinc-600 outline-none transition-all duration-200 focus:border-zinc-700 focus:bg-zinc-900/80 focus:ring-1 focus:ring-zinc-700/50";
@@ -95,7 +113,7 @@ export default function PublicProfilePage() {
         </div>
         <div className="relative z-10 w-full max-w-md px-6 py-12 text-center">
           <div className="fade-in-up rounded-2xl border border-zinc-800/50 bg-zinc-900/40 p-10 backdrop-blur-sm">
-            <span className="mb-4 block text-4xl">😕</span>
+            <span className="mb-4 flex justify-center text-zinc-500"><Frown size={40} /></span>
             <h1 className="mb-2 text-xl font-bold text-white">
               Usuário não encontrado
             </h1>
@@ -125,11 +143,14 @@ export default function PublicProfilePage() {
       {/* ── Sticky navbar ── */}
       <header className="sticky top-0 z-40 border-b border-zinc-800/50 bg-black/70 backdrop-blur-xl">
         <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-3 sm:px-6">
-          <Link href="/" className="shrink-0">
-            <span className="text-xl font-black tracking-tight bg-linear-to-r from-amber-300 via-rose-400 to-fuchsia-500 bg-clip-text text-transparent">
-              Music Connect
-            </span>
-          </Link>
+          <div className="flex items-center gap-3">
+            <BackButton href="/explore" />
+            <Link href="/" className="shrink-0">
+              <span className="text-xl font-black tracking-tight bg-linear-to-r from-amber-300 via-rose-400 to-fuchsia-500 bg-clip-text text-transparent">
+                Music Connect
+              </span>
+            </Link>
+          </div>
 
           <div className="flex items-center gap-3">
             {isLoggedIn ? (
@@ -138,13 +159,13 @@ export default function PublicProfilePage() {
                   onClick={() => router.push("/dashboard")}
                   className="hidden sm:inline-flex items-center gap-1.5 rounded-xl border border-zinc-800/60 bg-zinc-900/50 px-4 py-2 text-sm font-medium text-zinc-300 transition-all hover:border-zinc-700 hover:text-white"
                 >
-                  📊 Dashboard
+                  <BarChart2 size={14} /> Dashboard
                 </button>
                 <button
                   onClick={() => router.push("/explore")}
                   className="hidden sm:inline-flex items-center gap-1.5 rounded-xl border border-zinc-800/60 bg-zinc-900/50 px-4 py-2 text-sm font-medium text-zinc-300 transition-all hover:border-zinc-700 hover:text-white"
                 >
-                  🔍 Explorar
+                  <Search size={14} /> Explorar
                 </button>
                 <div className="relative h-9 w-9 rounded-full bg-linear-to-br from-amber-300 via-rose-400 to-fuchsia-500 p-0.5 shadow-lg shadow-rose-500/10">
                   <div className="flex h-full w-full items-center justify-center rounded-full bg-zinc-900 text-xs font-bold text-white">
@@ -158,9 +179,9 @@ export default function PublicProfilePage() {
               <>
                 <Link
                   href="/explore"
-                  className="hidden sm:inline-flex rounded-xl border border-zinc-800/60 bg-zinc-900/50 px-4 py-2 text-sm font-medium text-zinc-300 transition-all hover:border-zinc-700 hover:text-white"
+                  className="hidden sm:inline-flex items-center gap-1.5 rounded-xl border border-zinc-800/60 bg-zinc-900/50 px-4 py-2 text-sm font-medium text-zinc-300 transition-all hover:border-zinc-700 hover:text-white"
                 >
-                  🔍 Explorar
+                  <Search size={14} /> Explorar
                 </Link>
                 <Link
                   href="/login"
@@ -219,13 +240,13 @@ export default function PublicProfilePage() {
             </p>
             <div className="mt-3 flex flex-wrap items-center gap-2 justify-center sm:justify-start">
               {profileUser.genero_musical && (
-                <span className="inline-flex items-center rounded-lg border border-rose-500/20 bg-rose-500/10 px-2.5 py-1 text-xs font-semibold text-rose-400">
-                  🎵 {profileUser.genero_musical}
+                <span className="inline-flex items-center gap-1 rounded-lg border border-rose-500/20 bg-rose-500/10 px-2.5 py-1 text-xs font-semibold text-rose-400">
+                  <Music size={12} /> {profileUser.genero_musical}
                 </span>
               )}
               {profileUser.cidade && (
-                <span className="inline-flex items-center rounded-lg border border-zinc-800/60 bg-zinc-900/50 px-2.5 py-1 text-xs text-zinc-500">
-                  📍 {profileUser.cidade}
+                <span className="inline-flex items-center gap-1 rounded-lg border border-zinc-800/60 bg-zinc-900/50 px-2.5 py-1 text-xs text-zinc-500">
+                  <MapPin size={12} /> {profileUser.cidade}
                   {profileUser.estado && `, ${profileUser.estado}`}
                 </span>
               )}
@@ -280,17 +301,17 @@ export default function PublicProfilePage() {
                 {profileUser.descricao || "Nenhuma descrição disponível."}
               </p>
               <div className="space-y-2">
-                <InfoItem icon="📧" label="Email" value={profileUser.email} />
+                <InfoItem icon={<Mail size={14} />} label="Email" value={profileUser.email} />
                 {profileUser.telefone && (
                   <InfoItem
-                    icon="📱"
+                    icon={<Smartphone size={14} />}
                     label="Telefone"
                     value={profileUser.telefone}
                   />
                 )}
                 {profileUser.cidade && (
                   <InfoItem
-                    icon="📍"
+                    icon={<MapPin size={14} />}
                     label="Local"
                     value={`${profileUser.cidade}${profileUser.estado ? `, ${profileUser.estado}` : ""}`}
                   />
@@ -319,7 +340,7 @@ export default function PublicProfilePage() {
                         rel="noopener noreferrer"
                         className="flex items-center gap-2.5 rounded-xl px-3 py-2.5 text-sm text-zinc-500 hover:bg-zinc-800/40 hover:text-emerald-400 transition-all"
                       >
-                        🎧 Spotify
+                        <Headphones size={14} /> Spotify
                       </a>
                     )}
                     {profileUser.instagram_url && (
@@ -329,7 +350,7 @@ export default function PublicProfilePage() {
                         rel="noopener noreferrer"
                         className="flex items-center gap-2.5 rounded-xl px-3 py-2.5 text-sm text-zinc-500 hover:bg-zinc-800/40 hover:text-rose-400 transition-all"
                       >
-                        📸 Instagram
+                        <Instagram size={14} /> Instagram
                       </a>
                     )}
                     {profileUser.youtube_url && (
@@ -339,7 +360,7 @@ export default function PublicProfilePage() {
                         rel="noopener noreferrer"
                         className="flex items-center gap-2.5 rounded-xl px-3 py-2.5 text-sm text-zinc-500 hover:bg-zinc-800/40 hover:text-red-400 transition-all"
                       >
-                        🎬 YouTube
+                        <Youtube size={14} /> YouTube
                       </a>
                     )}
                   </div>
@@ -361,19 +382,19 @@ export default function PublicProfilePage() {
                     onClick={() => router.push("/explore")}
                     className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2.5 text-sm font-medium text-zinc-500 hover:bg-zinc-800/40 hover:text-zinc-300 transition-all"
                   >
-                    🔍 Explorar
+                    <Search size={14} /> Explorar
                   </button>
                   <button
                     onClick={() => router.push("/proposals")}
                     className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2.5 text-sm font-medium text-zinc-500 hover:bg-zinc-800/40 hover:text-zinc-300 transition-all"
                   >
-                    📄 Propostas
+                    <FileText size={14} /> Propostas
                   </button>
                   <button
                     onClick={() => router.push("/profile")}
                     className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2.5 text-sm font-medium text-zinc-500 hover:bg-zinc-800/40 hover:text-zinc-300 transition-all"
                   >
-                    👤 Meu Perfil
+                    <UserIcon size={14} /> Meu Perfil
                   </button>
                 </div>
               </div>
@@ -395,28 +416,28 @@ export default function PublicProfilePage() {
                     {
                       label: "Gênero",
                       value: profileUser.genero_musical || "—",
-                      icon: "🎵",
+                      icon: <Music size={18} />,
                     },
                     {
                       label: "Preço Mín.",
                       value: profileUser.preco_minimo
                         ? `R$ ${profileUser.preco_minimo}`
                         : "—",
-                      icon: "💰",
+                      icon: <DollarSign size={18} />,
                     },
                     {
                       label: "Preço Máx.",
                       value: profileUser.preco_maximo
                         ? `R$ ${profileUser.preco_maximo}`
                         : "—",
-                      icon: "💎",
+                      icon: <Gem size={18} />,
                     },
                   ].map((stat) => (
                     <div
                       key={stat.label}
                       className="rounded-2xl border border-zinc-800/50 bg-zinc-900/40 p-4 backdrop-blur-sm"
                     >
-                      <span className="mb-2 block text-lg">{stat.icon}</span>
+                      <span className="mb-2 block text-zinc-400">{stat.icon}</span>
                       <p className="text-[11px] font-semibold uppercase tracking-wider text-zinc-600">
                         {stat.label}
                       </p>
@@ -489,7 +510,7 @@ export default function PublicProfilePage() {
                 onClick={() => setShowModal(false)}
                 className="flex h-8 w-8 items-center justify-center rounded-lg text-zinc-500 hover:bg-zinc-800/60 hover:text-white transition-all"
               >
-                ✕
+                <X size={16} />
               </button>
             </div>
 
@@ -593,13 +614,13 @@ function InfoItem({
   label,
   value,
 }: {
-  icon: string;
+  icon: React.ReactNode;
   label: string;
   value: string;
 }) {
   return (
     <div className="flex items-center gap-3 rounded-xl px-3 py-2.5 transition-all hover:bg-zinc-800/30">
-      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-zinc-800/60 text-sm">
+      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-zinc-800/60 text-zinc-400">
         {icon}
       </div>
       <div className="min-w-0 overflow-hidden">

@@ -3,6 +3,8 @@
 import Link from "next/link";
 import { useState } from "react";
 import { authClient } from "@/lib/auth-client";
+import BackButton from "@/components/BackButton";
+import { KeyRound, CheckCircle2, AlertTriangle } from "lucide-react";
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState("");
@@ -38,6 +40,11 @@ export default function ForgotPasswordPage() {
       </div>
 
       <div className="relative z-10 w-full max-w-md px-6 py-12">
+        {/* Back */}
+        <div className="mb-6">
+          <BackButton href="/login" />
+        </div>
+
         {/* Brand */}
         <div className="fade-in-up mb-10 text-center">
           <Link href="/" className="inline-block">
@@ -55,8 +62,8 @@ export default function ForgotPasswordPage() {
           style={{ animationDelay: "80ms" }}
         >
           <div className="mb-6 text-center">
-            <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-zinc-800/60 text-2xl">
-              🔑
+            <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-zinc-800/60 text-zinc-400">
+              <KeyRound size={24} />
             </div>
             <h2 className="text-xl font-bold text-white">Recuperar Senha</h2>
             <p className="mt-2 text-sm text-zinc-500">
@@ -66,14 +73,14 @@ export default function ForgotPasswordPage() {
 
           {message && (
             <div className="mb-5 flex items-center gap-2 rounded-xl border border-emerald-500/20 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-400">
-              <span>✅</span>
+              <CheckCircle2 size={16} />
               {message}
             </div>
           )}
 
           {error && (
             <div className="mb-5 flex items-center gap-2 rounded-xl border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm text-red-400">
-              <span>⚠️</span>
+              <AlertTriangle size={16} />
               {error}
             </div>
           )}

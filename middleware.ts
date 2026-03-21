@@ -4,7 +4,7 @@ const PROTECTED_PATHS = ["/dashboard", "/proposals", "/profile", "/settings"];
 
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
-  const isProtected = PROTECTED_PATHS.some((p) => pathname.startsWith(p));
+  const isProtected = PROTECTED_PATHS.some((p) => pathname === p || pathname.startsWith(p + "/"));
 
   if (isProtected) {
     const sessionToken = request.cookies.get("better-auth.session_token");

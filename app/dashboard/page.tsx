@@ -8,6 +8,20 @@ import ProposalCard from "@/components/ProposalCard";
 import { api, Proposta } from "@/lib/api";
 import { useAuthStore } from "@/lib/store";
 import { authClient } from "@/lib/auth-client";
+import {
+  BarChart2,
+  Hourglass,
+  CheckCircle2,
+  XCircle,
+  User,
+  Search,
+  Settings,
+  Music,
+  PenLine,
+  Mic,
+  ClipboardList,
+  ArrowRight,
+} from "lucide-react";
 
 function getGreeting() {
   const h = new Date().getHours();
@@ -27,7 +41,7 @@ function StatCard({
 }: {
   label: string;
   value: number | string;
-  icon: string;
+  icon: React.ReactNode;
   accent: string;
   sub?: string;
   delay?: string;
@@ -54,7 +68,7 @@ function StatCard({
             </p>
           )}
         </div>
-        <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-zinc-800/80 text-lg shrink-0">
+        <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-zinc-800/80 text-zinc-400 shrink-0">
           {icon}
         </span>
       </div>
@@ -97,7 +111,7 @@ function QuickAction({
   label,
   onClick,
 }: {
-  icon: string;
+  icon: React.ReactNode;
   label: string;
   onClick: () => void;
 }) {
@@ -106,12 +120,12 @@ function QuickAction({
       onClick={onClick}
       className="group flex items-center gap-3 w-full rounded-xl border border-zinc-800/60 bg-zinc-900/40 px-4 py-3.5 text-left text-sm font-medium text-zinc-300 transition-all duration-200 hover:border-zinc-700 hover:bg-zinc-800/60 hover:text-white hover:shadow-lg hover:shadow-black/10 active:scale-[0.98]"
     >
-      <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-zinc-800 text-base">
+      <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-zinc-800 text-zinc-400">
         {icon}
       </span>
       {label}
       <span className="ml-auto text-zinc-600 transition-transform duration-200 group-hover:translate-x-0.5">
-        →
+        <ArrowRight size={14} />
       </span>
     </button>
   );
@@ -290,7 +304,7 @@ export default function DashboardPage() {
                 >
                   {isArtist ? "Meu Perfil" : "Explorar Artistas"}
                   <span className="transition-transform duration-200 group-hover:translate-x-0.5">
-                    →
+                    <ArrowRight size={14} />
                   </span>
                 </button>
                 <button
@@ -308,7 +322,7 @@ export default function DashboardPage() {
             <StatCard
               label="Total"
               value={stats.total}
-              icon="📊"
+              icon={<BarChart2 size={20} />}
               accent="bg-blue-500"
               sub={sectionTitle.toLowerCase()}
               delay="0ms"
@@ -316,7 +330,7 @@ export default function DashboardPage() {
             <StatCard
               label="Pendentes"
               value={stats.pendentes}
-              icon="⏳"
+              icon={<Hourglass size={20} />}
               accent="bg-amber-500"
               sub="aguardando resposta"
               delay="60ms"
@@ -324,7 +338,7 @@ export default function DashboardPage() {
             <StatCard
               label="Aceitas"
               value={stats.aceitas}
-              icon="✅"
+              icon={<CheckCircle2 size={20} />}
               accent="bg-emerald-500"
               sub={
                 stats.valorTotal > 0
@@ -336,7 +350,7 @@ export default function DashboardPage() {
             <StatCard
               label="Recusadas"
               value={stats.recusadas}
-              icon="❌"
+              icon={<XCircle size={20} />}
               accent="bg-red-500"
               sub={
                 stats.canceladas > 0
@@ -389,17 +403,17 @@ export default function DashboardPage() {
                 {isArtist ? (
                   <>
                     <QuickAction
-                      icon="👤"
+                      icon={<User size={16} />}
                       label="Editar perfil"
                       onClick={() => router.push("/profile")}
                     />
                     <QuickAction
-                      icon="🔍"
+                      icon={<Search size={16} />}
                       label="Ver contratantes"
                       onClick={() => router.push("/explore")}
                     />
                     <QuickAction
-                      icon="⚙️"
+                      icon={<Settings size={16} />}
                       label="Configurações"
                       onClick={() => router.push("/settings")}
                     />
@@ -407,22 +421,22 @@ export default function DashboardPage() {
                 ) : (
                   <>
                     <QuickAction
-                      icon="🎵"
+                      icon={<Music size={16} />}
                       label="Explorar artistas"
                       onClick={() => router.push("/explore")}
                     />
                     <QuickAction
-                      icon="📝"
+                      icon={<PenLine size={16} />}
                       label="Minhas propostas"
                       onClick={() => router.push("/proposals")}
                     />
                     <QuickAction
-                      icon="👤"
+                      icon={<User size={16} />}
                       label="Meu perfil"
                       onClick={() => router.push("/profile")}
                     />
                     <QuickAction
-                      icon="⚙️"
+                      icon={<Settings size={16} />}
                       label="Configurações"
                       onClick={() => router.push("/settings")}
                     />
@@ -444,9 +458,9 @@ export default function DashboardPage() {
               {proposals.length > 8 && (
                 <button
                   onClick={() => router.push("/proposals")}
-                  className="text-xs font-semibold text-zinc-500 transition-colors hover:text-white"
+                  className="inline-flex items-center gap-1 text-xs font-semibold text-zinc-500 transition-colors hover:text-white"
                 >
-                  Ver todas →
+                  Ver todas <ArrowRight size={12} />
                 </button>
               )}
             </div>
@@ -462,8 +476,8 @@ export default function DashboardPage() {
               </div>
             ) : proposals.length === 0 ? (
               <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-zinc-800 bg-zinc-900/20 py-16">
-                <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-zinc-800/60 text-3xl">
-                  {isArtist ? "🎤" : "📋"}
+                <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-zinc-800/60 text-zinc-400">
+                  {isArtist ? <Mic size={32} /> : <ClipboardList size={32} />}
                 </div>
                 <p className="mb-2 text-sm font-medium text-zinc-400">
                   Nenhuma proposta encontrada
