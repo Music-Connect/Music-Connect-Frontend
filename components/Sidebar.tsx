@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { BarChart2, FileText, Search, User, Settings, ArrowUpRight } from "lucide-react";
+import { BarChart2, FileText, Search, User, Settings, ArrowUpRight, Newspaper } from "lucide-react";
 
 interface SidebarProps {
   isArtist: boolean;
@@ -52,6 +52,12 @@ export default function Sidebar({
           <p className="mb-3 px-3 text-[10px] font-bold text-zinc-600 uppercase tracking-[0.3em]">
             Painel
           </p>
+
+          <div onClick={() => navigate("/feed")}>
+            <NavItem icon={<Newspaper size={16} />} active={activePage === "feed"}>
+              Feed
+            </NavItem>
+          </div>
 
           <div onClick={() => navigate("/dashboard")}>
             <NavItem
