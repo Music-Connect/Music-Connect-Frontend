@@ -8,6 +8,7 @@ import { api, User } from "@/lib/api";
 import { useAuthStore } from "@/lib/store";
 import { authClient } from "@/lib/auth-client";
 import BackButton from "@/components/BackButton";
+import { ProfileSkeleton } from "@/components/Skeleton";
 import {
   BarChart2,
   Settings,
@@ -86,11 +87,7 @@ export default function ProfilePage() {
 
   /* ── Loading state ── */
   if (loading) {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-black">
-        <div className="h-6 w-6 animate-spin rounded-full border-2 border-zinc-700 border-t-white" />
-      </div>
-    );
+    return <ProfileSkeleton />;
   }
 
   if (!user) return null;

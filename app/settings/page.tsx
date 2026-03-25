@@ -6,6 +6,7 @@ import Link from "next/link";
 import { api, User } from "@/lib/api";
 import { useAuthStore } from "@/lib/store";
 import BackButton from "@/components/BackButton";
+import { SettingsSkeleton } from "@/components/Skeleton";
 import { BarChart2, User as UserIcon, Lock, Bell } from "lucide-react";
 
 const inputClass =
@@ -77,11 +78,7 @@ export default function SettingsPage() {
   };
 
   if (loading) {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-black">
-        <div className="h-6 w-6 animate-spin rounded-full border-2 border-zinc-700 border-t-white" />
-      </div>
-    );
+    return <SettingsSkeleton />;
   }
 
   if (!user) return null;
