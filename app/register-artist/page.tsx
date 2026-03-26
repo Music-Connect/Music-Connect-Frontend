@@ -59,20 +59,36 @@ export default function RegisterArtistPage() {
     try {
       const { confirmarSenha: _confirmarSenha, ...rest } = formData;
 
-      const { error } = await authClient.signUp.email({
+      const payload = {
         email: rest.email,
         password: rest.password,
         name: rest.name,
-        // @ts-expect-error additional fields
         tipo_usuario: "artista",
         telefone: rest.telefone || undefined,
         cidade: rest.cidade || undefined,
         estado: rest.estado || undefined,
         genero_musical: rest.genero_musical || undefined,
         descricao: rest.descricao || undefined,
-      });
+      };
 
-      if (error) throw new Error(error.message || "Erro ao cadastrar");
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const { error } = await (authClient.signUp.email as any)(payload);
+
+      if (error) {
+        const mensagens: Record<string, string> = {
+          "User already exists": "Este email já está cadastrado.",
+          "Email already exists": "Este email já está cadastrado.",
+          "Invalid email or password": "Email ou senha inválidos.",
+          "Password is too short": "A senha deve ter no mínimo 6 caracteres.",
+          "Invalid password": "Senha inválida.",
+        };
+        const msg = error.message
+          ? (mensagens[error.message] ?? error.message)
+          : "Erro ao cadastrar. Tente novamente.";
+        throw new Error(msg);
+      }
+
+      router.refresh();
       router.push("/dashboard");
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Erro ao cadastrar");
