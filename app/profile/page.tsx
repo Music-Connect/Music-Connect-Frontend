@@ -41,6 +41,11 @@ export default function ProfilePage() {
     cidade: "",
     estado: "",
     genero_musical: "",
+    preco_minimo: "",
+    preco_maximo: "",
+    spotify_url: "",
+    instagram_url: "",
+    youtube_url: "",
   });
 
   useEffect(() => {
@@ -60,6 +65,11 @@ export default function ProfilePage() {
           cidade: freshUserData.cidade || "",
           estado: freshUserData.estado || "",
           genero_musical: freshUserData.genero_musical || "",
+          preco_minimo: freshUserData.preco_minimo?.toString() || "",
+          preco_maximo: freshUserData.preco_maximo?.toString() || "",
+          spotify_url: freshUserData.spotify_url || "",
+          instagram_url: freshUserData.instagram_url || "",
+          youtube_url: freshUserData.youtube_url || "",
         });
       } catch (error: unknown) {
         console.error("Erro ao carregar perfil:", error);
@@ -75,7 +85,15 @@ export default function ProfilePage() {
     if (!user || !storeUser) return;
     setSaving(true);
     try {
-      const updatedUser = await api.updateUser(storeUser.id, editForm);
+      const payload = {
+        ...editForm,
+        preco_minimo: editForm.preco_minimo ? Number(editForm.preco_minimo) : undefined,
+        preco_maximo: editForm.preco_maximo ? Number(editForm.preco_maximo) : undefined,
+        spotify_url: editForm.spotify_url || undefined,
+        instagram_url: editForm.instagram_url || undefined,
+        youtube_url: editForm.youtube_url || undefined,
+      };
+      const updatedUser = await api.updateUser(storeUser.id, payload);
       setUser(updatedUser);
       setIsEditing(false);
     } catch {
@@ -271,37 +289,103 @@ export default function ProfilePage() {
                     </div>
                   </div>
                   {isArtist && (
-                    <div>
-                      <label className={labelClass}>Gênero Musical</label>
-                      <select
-                        value={editForm.genero_musical}
-                        onChange={(e) =>
-                          setEditForm({
-                            ...editForm,
-                            genero_musical: e.target.value,
-                          })
-                        }
-                        className={inputClass}
-                      >
-                        <option value="">Selecione</option>
-                        {[
-                          "Rock",
-                          "Pop",
-                          "Sertanejo",
-                          "Eletrônica",
-                          "MPB",
-                          "Jazz",
-                          "Funk",
-                          "Forró",
-                          "Hip Hop",
-                          "Indie",
-                        ].map((g) => (
-                          <option key={g} value={g}>
-                            {g}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
+                    <>
+                      <div>
+                        <label className={labelClass}>Gênero Musical</label>
+                        <select
+                          value={editForm.genero_musical}
+                          onChange={(e) =>
+                            setEditForm({
+                              ...editForm,
+                              genero_musical: e.target.value,
+                            })
+                          }
+                          className={inputClass}
+                        >
+                          <option value="">Selecione</option>
+                          {[
+                            "Rock",
+                            "Pop",
+                            "Sertanejo",
+                            "Eletrônica",
+                            "MPB",
+                            "Jazz",
+                            "Funk",
+                            "Forró",
+                            "Hip Hop",
+                            "Indie",
+                          ].map((g) => (
+                            <option key={g} value={g}>
+                              {g}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                      <div className="grid grid-cols-2 gap-3">
+                        <div>
+                          <label className={labelClass}>Preço Mínimo (R$)</label>
+                          <input
+                            type="number"
+                            value={editForm.preco_minimo}
+                            onChange={(e) =>
+                              setEditForm({ ...editForm, preco_minimo: e.target.value })
+                            }
+                            placeholder="500"
+                            min={0}
+                            className={inputClass}
+                          />
+                        </div>
+                        <div>
+                          <label className={labelClass}>Preço Máximo (R$)</label>
+                          <input
+                            type="number"
+                            value={editForm.preco_maximo}
+                            onChange={(e) =>
+                              setEditForm({ ...editForm, preco_maximo: e.target.value })
+                            }
+                            placeholder="5000"
+                            min={0}
+                            className={inputClass}
+                          />
+                        </div>
+                      </div>
+                      <div>
+                        <label className={labelClass}>Spotify</label>
+                        <input
+                          type="url"
+                          value={editForm.spotify_url}
+                          onChange={(e) =>
+                            setEditForm({ ...editForm, spotify_url: e.target.value })
+                          }
+                          placeholder="https://open.spotify.com/artist/..."
+                          className={inputClass}
+                        />
+                      </div>
+                      <div>
+                        <label className={labelClass}>Instagram</label>
+                        <input
+                          type="text"
+                          value={editForm.instagram_url}
+                          onChange={(e) =>
+                            setEditForm({ ...editForm, instagram_url: e.target.value })
+                          }
+                          placeholder="https://instagram.com/seuusuario"
+                          className={inputClass}
+                        />
+                      </div>
+                      <div>
+                        <label className={labelClass}>YouTube</label>
+                        <input
+                          type="url"
+                          value={editForm.youtube_url}
+                          onChange={(e) =>
+                            setEditForm({ ...editForm, youtube_url: e.target.value })
+                          }
+                          placeholder="https://youtube.com/@seucanal"
+                          className={inputClass}
+                        />
+                      </div>
+                    </>
                   )}
                   <button
                     onClick={handleSave}
