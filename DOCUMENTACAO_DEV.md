@@ -873,62 +873,35 @@ stg-danilo          ← Staging do Danilo
 stg-gabriel         ← Staging do Gabriel
 stg-eduardo         ← Staging do Eduardo
 stg-{seu-nome}      ← A sua branch pessoal de staging
-  ↑
-feature/nome        ← Sua feature em desenvolvimento
 ```
 
-> **Regra geral:** você nunca commita direto em `dev` ou `main`. Todo trabalho passa pela sua `stg-{seu-nome}` primeiro.
+> **Regra geral:** você nunca commita direto em `dev` ou `main`. Todo trabalho vai para a sua `stg-{seu-nome}`.
 
 ---
 
-### Passo a Passo — Começando uma tarefa nova
+### Passo a Passo — Fazendo uma tarefa
 
-**1. Sempre atualize sua branch antes de começar:**
+**1. Antes de começar, pegue o código mais recente:**
 ```bash
-git checkout stg-{seu-nome}
-git pull origin stg-{seu-nome}
+git checkout stg
+git pull origin stg
 ```
-> Isso garante que você está com o código mais recente antes de criar sua feature.
+> Isso garante que você parte da versão mais atualizada do projeto.
 
-**2. Crie uma branch para a tarefa:**
+**2. Desenvolva e faça commits:**
 ```bash
-git checkout -b feature/nome-da-feature
-```
-> Use nomes descritivos. Exemplos:
-> - `feature/star-rating-component`
-> - `fix/login-infinite-loading`
-> - `feat/upload-avatar`
-
-**3. Desenvolva e faça commits pequenos e frequentes:**
-```bash
-git add nome-do-arquivo.ts        # prefira adicionar arquivos específicos
+git add nome-do-arquivo.ts
 git commit -m "feat: adiciona componente StarRating"
 ```
 > Nunca use `git add .` sem antes verificar o que está sendo adicionado com `git status`.
 
-**4. Suba sua branch para o remoto:**
+**3. Suba para a sua branch:**
 ```bash
-git push -u origin feature/nome-da-feature
+git push origin stg-{seu-nome}
 ```
+> Exemplo: `git push origin stg-lucas`, `git push origin stg-danilo`
 
-**5. Abra um Pull Request no GitHub:**
-- Base: `stg-{seu-nome}`
-- Compare: `feature/nome-da-feature`
-- Descreva o que foi feito e como testar
-
-**6. Após aprovação, o líder técnico promove para `dev` e depois `main`.**
-
----
-
-### Como atualizar sua branch com o que foi feito por outros devs
-
-Quando outro dev já teve código mergeado em `dev` e você quer trazer essas mudanças:
-
-```bash
-git checkout stg-{seu-nome}
-git pull origin dev              # traz as mudanças integradas de todos
-git push origin stg-{seu-nome}  # atualiza seu remoto
-```
+**4. Após revisão, o líder técnico promove para `dev` e depois `main`.**
 
 ---
 
