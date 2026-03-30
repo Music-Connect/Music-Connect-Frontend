@@ -859,51 +859,106 @@ GET /api/posts?cursor=cuid_do_ultimo_post&limit=20
 
 ## 9. Git Workflow
 
-### Branches
+### Estrutura de Branches
+
+Cada desenvolvedor tem sua própria branch de staging (`stg-{seu-nome}`). Isso evita conflitos entre devs trabalhando em paralelo.
 
 ```
-main          ← Produção (deploy automático)
+main                ← Produção — código estável, deployado
   ↑
- dev          ← Desenvolvimento integrado
+ dev                ← Integração — reúne o trabalho de todos antes de ir pra produção
   ↑
- stg          ← Staging / QA ← BRANCH ATIVA ATUAL
+stg-lucas           ← Staging do Lucas
+stg-danilo          ← Staging do Danilo
+stg-gabriel         ← Staging do Gabriel
+stg-eduardo         ← Staging do Eduardo
+stg-{seu-nome}      ← A sua branch pessoal de staging
   ↑
-feature/xxx   ← Features individuais
+feature/nome        ← Sua feature em desenvolvimento
 ```
 
-### Fluxo
+> **Regra geral:** você nunca commita direto em `dev` ou `main`. Todo trabalho passa pela sua `stg-{seu-nome}` primeiro.
 
-1. Crie branch a partir de `stg`:
-   ```bash
-   git checkout stg
-   git pull origin stg
-   git checkout -b feature/nome-da-feature
-   ```
+---
 
-2. Desenvolva e faça commits:
-   ```bash
-   git add .
-   git commit -m "feat: descrição da mudança"
-   ```
+### Passo a Passo — Começando uma tarefa nova
 
-3. Push e abra PR para `stg`:
-   ```bash
-   git push -u origin feature/nome-da-feature
-   # Abra PR no GitHub: feature/xxx → stg
-   ```
+**1. Sempre atualize sua branch antes de começar:**
+```bash
+git checkout stg-{seu-nome}
+git pull origin stg-{seu-nome}
+```
+> Isso garante que você está com o código mais recente antes de criar sua feature.
 
-4. Após review e merge em `stg`, promova para `dev` e depois `main`.
+**2. Crie uma branch para a tarefa:**
+```bash
+git checkout -b feature/nome-da-feature
+```
+> Use nomes descritivos. Exemplos:
+> - `feature/star-rating-component`
+> - `fix/login-infinite-loading`
+> - `feat/upload-avatar`
+
+**3. Desenvolva e faça commits pequenos e frequentes:**
+```bash
+git add nome-do-arquivo.ts        # prefira adicionar arquivos específicos
+git commit -m "feat: adiciona componente StarRating"
+```
+> Nunca use `git add .` sem antes verificar o que está sendo adicionado com `git status`.
+
+**4. Suba sua branch para o remoto:**
+```bash
+git push -u origin feature/nome-da-feature
+```
+
+**5. Abra um Pull Request no GitHub:**
+- Base: `stg-{seu-nome}`
+- Compare: `feature/nome-da-feature`
+- Descreva o que foi feito e como testar
+
+**6. Após aprovação, o líder técnico promove para `dev` e depois `main`.**
+
+---
+
+### Como atualizar sua branch com o que foi feito por outros devs
+
+Quando outro dev já teve código mergeado em `dev` e você quer trazer essas mudanças:
+
+```bash
+git checkout stg-{seu-nome}
+git pull origin dev              # traz as mudanças integradas de todos
+git push origin stg-{seu-nome}  # atualiza seu remoto
+```
+
+---
 
 ### Convenção de Commits
+
+Siga o padrão **Conventional Commits** para manter o histórico organizado:
 
 ```
 feat:     Nova funcionalidade
 fix:      Correção de bug
-refactor: Refatoração (sem mudança funcional)
-docs:     Documentação
-style:    Formatação (sem mudança de código)
-test:     Testes
-chore:    Manutenção (deps, configs)
+refactor: Refatoração sem mudança de comportamento
+docs:     Apenas documentação
+style:    Formatação (espaços, vírgulas — sem lógica)
+test:     Adição ou correção de testes
+chore:    Tarefas de manutenção (deps, configs, build)
+```
+
+**Exemplos bons:**
+```
+feat: adiciona modal de avaliação com StarRating
+fix: corrige loading infinito no login do mobile
+refactor: extrai lógica de autenticação para hook useAuth
+chore: atualiza @fastify/rate-limit para v10
+```
+
+**Evite:**
+```
+fix: correção         ← vago demais
+update: mudanças      ← não segue o padrão
+WIP                   ← não commite trabalho incompleto
 ```
 
 ---
