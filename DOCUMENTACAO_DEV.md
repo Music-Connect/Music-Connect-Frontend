@@ -859,51 +859,79 @@ GET /api/posts?cursor=cuid_do_ultimo_post&limit=20
 
 ## 9. Git Workflow
 
-### Branches
+### Estrutura de Branches
+
+Cada desenvolvedor tem sua própria branch de staging (`stg-{seu-nome}`). Isso evita conflitos entre devs trabalhando em paralelo.
 
 ```
-main          ← Produção (deploy automático)
+main                ← Produção — código estável, deployado
   ↑
- dev          ← Desenvolvimento integrado
+ dev                ← Integração — reúne o trabalho de todos antes de ir pra produção
   ↑
- stg          ← Staging / QA ← BRANCH ATIVA ATUAL
-  ↑
-feature/xxx   ← Features individuais
+stg-lucas           ← Staging do Lucas
+stg-danilo          ← Staging do Danilo
+stg-gabriel         ← Staging do Gabriel
+stg-eduardo         ← Staging do Eduardo
+stg-{seu-nome}      ← A sua branch pessoal de staging
 ```
 
-### Fluxo
+> **Regra geral:** você nunca commita direto em `dev` ou `main`. Todo trabalho vai para a sua `stg-{seu-nome}`.
 
-1. Crie branch a partir de `stg`:
-   ```bash
-   git checkout stg
-   git pull origin stg
-   git checkout -b feature/nome-da-feature
-   ```
+---
 
-2. Desenvolva e faça commits:
-   ```bash
-   git add .
-   git commit -m "feat: descrição da mudança"
-   ```
+### Passo a Passo — Fazendo uma tarefa
 
-3. Push e abra PR para `stg`:
-   ```bash
-   git push -u origin feature/nome-da-feature
-   # Abra PR no GitHub: feature/xxx → stg
-   ```
+**1. Antes de começar, pegue o código mais recente:**
+```bash
+git checkout stg
+git pull origin stg
+```
+> Isso garante que você parte da versão mais atualizada do projeto.
 
-4. Após review e merge em `stg`, promova para `dev` e depois `main`.
+**2. Desenvolva e faça commits:**
+```bash
+git add nome-do-arquivo.ts
+git commit -m "feat: adiciona componente StarRating"
+```
+> Nunca use `git add .` sem antes verificar o que está sendo adicionado com `git status`.
+
+**3. Suba para a sua branch:**
+```bash
+git push origin stg-{seu-nome}
+```
+> Exemplo: `git push origin stg-lucas`, `git push origin stg-danilo`
+
+**4. Após revisão, o líder técnico promove para `dev` e depois `main`.**
+
+---
 
 ### Convenção de Commits
+
+Siga o padrão **Conventional Commits** para manter o histórico organizado:
 
 ```
 feat:     Nova funcionalidade
 fix:      Correção de bug
-refactor: Refatoração (sem mudança funcional)
-docs:     Documentação
-style:    Formatação (sem mudança de código)
-test:     Testes
-chore:    Manutenção (deps, configs)
+refactor: Refatoração sem mudança de comportamento
+docs:     Apenas documentação
+style:    Formatação (espaços, vírgulas — sem lógica)
+test:     Adição ou correção de testes
+chore:    Tarefas de manutenção (deps, configs, build)
+```
+
+**Exemplos bons:**
+```
+feat: adiciona modal de avaliação com StarRating
+fix: corrige loading infinito no login do mobile
+refactor: extrai lógica de autenticação para hook useAuth
+chore: atualiza @fastify/rate-limit para v10
+```
+
+**Evite:**
+```
+fix: correção         ← vago demais
+update: mudanças      ← não segue o padrão
+WIP                   ← não commite trabalho incompleto
 ```
 
 ---
