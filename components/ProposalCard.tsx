@@ -1,8 +1,9 @@
 "use client";
 
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import { Proposta } from "@/lib/api";
-import { Building2, Music, Calendar, DollarSign } from "lucide-react";
+import { Building2, Music, Calendar, DollarSign, FileText } from "lucide-react";
 
 interface ProposalCardProps {
   item: Proposta;
@@ -39,6 +40,7 @@ export default function ProposalCard({
   isArtist,
   onAcceptDecline,
 }: ProposalCardProps) {
+  const router = useRouter();
   const status = statusConfig[item.status] || statusConfig.pendente;
 
   const formatDate = (dateStr: string) => {
@@ -128,21 +130,38 @@ export default function ProposalCard({
         )}
 
         {/* Action buttons */}
-        {isArtist && item.status === "pendente" && onAcceptDecline && (
-          <div className="flex gap-2 pt-1">
+        {isArtist && item.status === "pendente" && onAcceptDecline ? (
+          <div className="space-y-2 pt-1">
+            <div className="flex gap-2">
+              <button
+                onClick={() => onAcceptDecline(item.id_proposta, "aceita")}
+                className="flex-1 rounded-xl bg-emerald-600 px-4 py-2 text-xs font-bold text-white transition-all duration-200 hover:bg-emerald-500 hover:shadow-lg hover:shadow-emerald-500/20 active:scale-[0.97]"
+              >
+                Aceitar
+              </button>
+              <button
+                onClick={() => onAcceptDecline(item.id_proposta, "recusada")}
+                className="flex-1 rounded-xl border border-zinc-700 bg-zinc-800/60 px-4 py-2 text-xs font-bold text-zinc-300 transition-all duration-200 hover:border-red-500/50 hover:bg-red-500/10 hover:text-red-400 active:scale-[0.97]"
+              >
+                Recusar
+              </button>
+            </div>
             <button
-              onClick={() => onAcceptDecline(item.id_proposta, "aceita")}
-              className="flex-1 rounded-xl bg-emerald-600 px-4 py-2 text-xs font-bold text-white transition-all duration-200 hover:bg-emerald-500 hover:shadow-lg hover:shadow-emerald-500/20 active:scale-[0.97]"
+              onClick={() => router.push(`/proposals/${item.id_proposta}`)}
+              className="flex w-full items-center justify-center gap-1.5 rounded-xl border border-zinc-800/60 bg-transparent px-4 py-1.5 text-[11px] font-medium text-zinc-500 transition-all duration-200 hover:border-zinc-700 hover:text-zinc-300"
             >
-              Aceitar
-            </button>
-            <button
-              onClick={() => onAcceptDecline(item.id_proposta, "recusada")}
-              className="flex-1 rounded-xl border border-zinc-700 bg-zinc-800/60 px-4 py-2 text-xs font-bold text-zinc-300 transition-all duration-200 hover:border-red-500/50 hover:bg-red-500/10 hover:text-red-400 active:scale-[0.97]"
-            >
-              Recusar
+              <FileText size={11} />
+              Ver contrato completo
             </button>
           </div>
+        ) : (
+          <button
+            onClick={() => router.push(`/proposals/${item.id_proposta}`)}
+            className="flex w-full items-center justify-center gap-1.5 rounded-xl border border-zinc-700/60 bg-zinc-800/40 px-4 py-2 text-xs font-semibold text-zinc-300 transition-all duration-200 hover:border-zinc-600 hover:bg-zinc-800/70 hover:text-white active:scale-[0.97]"
+          >
+            <FileText size={12} />
+            Ver Contrato
+          </button>
         )}
       </div>
     </div>

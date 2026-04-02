@@ -1,4 +1,5 @@
 import Link from "next/link";
+import LandingBackgroundClient from "@/components/LandingBackgroundClient";
 
 const features = [
   {
@@ -75,49 +76,8 @@ export default function Home() {
         }}
       />
 
-      {/* ── Ambient light blobs ── */}
-      <div className="pointer-events-none fixed inset-0 z-0">
-        {/* Top center — warm */}
-        <div
-          className="absolute"
-          style={{
-            top: "-10%",
-            left: "50%",
-            transform: "translateX(-50%)",
-            width: "900px",
-            height: "600px",
-            background:
-              "radial-gradient(ellipse at center, rgba(251,146,60,0.08) 0%, rgba(244,63,94,0.05) 40%, transparent 70%)",
-            filter: "blur(60px)",
-          }}
-        />
-        {/* Bottom right — purple */}
-        <div
-          className="absolute"
-          style={{
-            bottom: "10%",
-            right: "-5%",
-            width: "600px",
-            height: "600px",
-            background:
-              "radial-gradient(ellipse at center, rgba(192,38,211,0.07) 0%, transparent 70%)",
-            filter: "blur(60px)",
-          }}
-        />
-        {/* Mid left — emerald accent */}
-        <div
-          className="absolute"
-          style={{
-            top: "40%",
-            left: "-5%",
-            width: "400px",
-            height: "400px",
-            background:
-              "radial-gradient(ellipse at center, rgba(16,185,129,0.04) 0%, transparent 70%)",
-            filter: "blur(60px)",
-          }}
-        />
-      </div>
+      {/* ── Animated background ── */}
+      <LandingBackgroundClient />
 
       {/* ── Navbar ── */}
       <header className="relative z-20 flex items-center justify-between px-6 md:px-12 lg:px-20 py-5 border-b border-white/[0.04]">
