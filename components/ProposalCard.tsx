@@ -1,9 +1,11 @@
 "use client";
 
+import { useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { Proposta } from "@/lib/api";
 import { Building2, Music, Calendar, DollarSign, FileText } from "lucide-react";
+import { ModalAvaliacao } from "./ModalAvaliacao";
 
 interface ProposalCardProps {
   item: Proposta;
@@ -42,6 +44,10 @@ export default function ProposalCard({
 }: ProposalCardProps) {
   const router = useRouter();
   const status = statusConfig[item.status] || statusConfig.pendente;
+  // Estado para abrir/fechar a modal
+  const [isAvaliarModalOpen, setIsAvaliarModalOpen] = useState(false);
+  // Estado para saber se a avaliação já foi enviada
+  const [foiAvaliado, setFoiAvaliado] = useState(false);
 
   const formatDate = (dateStr: string) => {
     const date = new Date(dateStr);
@@ -163,7 +169,36 @@ export default function ProposalCard({
             Ver Contrato
           </button>
         )}
+        {!isArtist && item.status === "aceita" && (
+          <div className="mt-3 pt-3 border-t border-zinc-800/60">
+            {!foiAvaliado ? (
+              <button
+                onClick={() => setIsAvaliarModalOpen(true)}
+                className="w-full rounded-xl bg-amber-500/10 border border-amber-500/20 px-4 py-2.5 text-xs font-bold text-amber-500 transition-all duration-200 hover:bg-amber-500/20 hover:text-amber-400 active:scale-[0.98]"
+              >
+                Avaliar Artista
+              </button>
+            ) : (
+              <button
+                disabled
+                className="w-full rounded-xl bg-emerald-500/10 border border-emerald-500/20 px-4 py-2.5 text-xs font-bold text-emerald-500 cursor-not-allowed opacity-80 flex items-center justify-center gap-2"
+              >
+                Avaliação Enviada ✓
+              </button>
+            )}
+          </div>
+        )}
       </div>
+      <ModalAvaliacao
+        isOpen={isAvaliarModalOpen}
+        onClose={() => setIsAvaliarModalOpen(false)}
+        idAvaliado={item.id_artista}
+        nomeArtista={item.artista?.name || "Artista"}
+        onSuccess={() => {
+          setFoiAvaliado(true);
+          console.log("Avaliação concluída!");
+        }}
+      />
     </div>
   );
 }
