@@ -41,7 +41,6 @@ export default function ProfilePage() {
     telefone: "",
     cidade: "",
     estado: "",
-    genero_musical: "",
   });
 
   useEffect(() => {
@@ -61,7 +60,6 @@ export default function ProfilePage() {
           telefone: freshUserData.telefone || "",
           cidade: freshUserData.cidade || "",
           estado: freshUserData.estado || "",
-          genero_musical: freshUserData.genero_musical || "",
         });
       } catch (error: unknown) {
         console.error("Erro ao carregar perfil:", error);
@@ -77,11 +75,20 @@ export default function ProfilePage() {
     if (!user || !storeUser) return;
     setSaving(true);
     try {
-      const updatedUser = await api.updateUser(storeUser.id, editForm);
+      const payload = {
+        name: editForm.name.trim(),
+        descricao: editForm.descricao.trim(),
+        telefone: editForm.telefone.trim(),
+        cidade: editForm.cidade.trim(),
+        estado: editForm.estado.trim().toUpperCase(),
+      };
+
+      const updatedUser = await api.updateUser(storeUser.id, payload);
       setUser(updatedUser);
       setIsEditing(false);
-    } catch {
-      alert("Erro ao atualizar perfil");
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : "Erro ao atualizar perfil";
+      alert(message);
     } finally {
       setSaving(false);
     }
@@ -172,7 +179,7 @@ export default function ProfilePage() {
           {/* Name + meta */}
           <div className="flex-1 text-center sm:text-left">
             {isEditing ? (
-              <div className="mb-3 max-w-md mx-auto sm:mx-0 space-y-3">
+              <div className="mb-3 max-w-md mx-auto sm:mx-0">
                 <div>
                   <label className={labelClass}>Nome</label>
                   <input
@@ -184,33 +191,6 @@ export default function ProfilePage() {
                     placeholder="Seu nome"
                     className={inputClass}
                   />
-                </div>
-                <div className="grid grid-cols-3 gap-3">
-                  <div className="col-span-2">
-                    <label className={labelClass}>Local</label>
-                    <input
-                      type="text"
-                      value={editForm.cidade}
-                      onChange={(e) =>
-                        setEditForm({ ...editForm, cidade: e.target.value })
-                      }
-                      placeholder="Cidade"
-                      className={inputClass}
-                    />
-                  </div>
-                  <div>
-                    <label className={labelClass}>UF</label>
-                    <input
-                      type="text"
-                      value={editForm.estado}
-                      onChange={(e) =>
-                        setEditForm({ ...editForm, estado: e.target.value })
-                      }
-                      placeholder="SP"
-                      maxLength={2}
-                      className={inputClass}
-                    />
-                  </div>
                 </div>
               </div>
             ) : (
@@ -318,39 +298,6 @@ export default function ProfilePage() {
                       />
                     </div>
                   </div>
-                  {isArtist && (
-                    <div>
-                      <label className={labelClass}>Gênero Musical</label>
-                      <select
-                        value={editForm.genero_musical}
-                        onChange={(e) =>
-                          setEditForm({
-                            ...editForm,
-                            genero_musical: e.target.value,
-                          })
-                        }
-                        className={inputClass}
-                      >
-                        <option value="">Selecione</option>
-                        {[
-                          "Rock",
-                          "Pop",
-                          "Sertanejo",
-                          "Eletrônica",
-                          "MPB",
-                          "Jazz",
-                          "Funk",
-                          "Forró",
-                          "Hip Hop",
-                          "Indie",
-                        ].map((g) => (
-                          <option key={g} value={g}>
-                            {g}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-                  )}
                   <button
                     onClick={handleSave}
                     disabled={saving}

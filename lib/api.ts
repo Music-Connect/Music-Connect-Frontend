@@ -169,7 +169,18 @@ export const api = {
       body: JSON.stringify(data),
     });
 
-    if (!response.ok) throw new Error("Erro ao atualizar usuário");
+    if (!response.ok) {
+      let errorMessage = "Erro ao atualizar usuário";
+      try {
+        const errorData = await response.json();
+        if (errorData?.error && typeof errorData.error === "string") {
+          errorMessage = errorData.error;
+        }
+      } catch {
+        // Keep default message when response body is not JSON.
+      }
+      throw new Error(errorMessage);
+    }
 
     const result = await response.json();
     return result.data;

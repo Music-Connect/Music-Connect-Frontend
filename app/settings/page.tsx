@@ -68,7 +68,13 @@ export default function SettingsPage() {
     if (!user || !storeUser) return;
     setSaving(true);
     try {
-      const updatedUser = await api.updateUser(storeUser.id, formData);
+      const updatedUser = await api.updateUser(storeUser.id, {
+        name: formData.name.trim(),
+        descricao: (user.descricao || "").trim(),
+        telefone: formData.telefone.trim(),
+        cidade: formData.cidade.trim(),
+        estado: formData.estado.trim().toUpperCase(),
+      });
       setUser(updatedUser);
     } catch {
       alert("Erro ao salvar configurações");
