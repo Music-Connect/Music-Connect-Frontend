@@ -36,6 +36,7 @@ export default function ProfilePage() {
   const [isEditing, setIsEditing] = useState(false);
   const [saving, setSaving] = useState(false);
   const [editForm, setEditForm] = useState({
+    name: "",
     descricao: "",
     telefone: "",
     cidade: "",
@@ -60,6 +61,7 @@ export default function ProfilePage() {
         const freshUserData = await api.getUserById(storeUser.id);
         setUser(freshUserData);
         setEditForm({
+          name: freshUserData.name || "",
           descricao: freshUserData.descricao || "",
           telefone: freshUserData.telefone || "",
           cidade: freshUserData.cidade || "",
@@ -86,7 +88,12 @@ export default function ProfilePage() {
     setSaving(true);
     try {
       const payload = {
-        ...editForm,
+        name: editForm.name.trim(),
+        descricao: editForm.descricao.trim(),
+        telefone: editForm.telefone.trim(),
+        cidade: editForm.cidade.trim(),
+        estado: editForm.estado.trim().toUpperCase(),
+        genero_musical: editForm.genero_musical || undefined,
         preco_minimo: editForm.preco_minimo ? Number(editForm.preco_minimo) : undefined,
         preco_maximo: editForm.preco_maximo ? Number(editForm.preco_maximo) : undefined,
         spotify_url: editForm.spotify_url || undefined,
@@ -96,8 +103,9 @@ export default function ProfilePage() {
       const updatedUser = await api.updateUser(storeUser.id, payload);
       setUser(updatedUser);
       setIsEditing(false);
-    } catch {
-      alert("Erro ao atualizar perfil");
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : "Erro ao atualizar perfil";
+      alert(message);
     } finally {
       setSaving(false);
     }
@@ -111,6 +119,7 @@ export default function ProfilePage() {
   if (!user) return null;
 
   const isArtist = user.tipo_usuario === "artista";
+  const displayName = isEditing ? editForm.name || user.name : user.name;
 
   return (
     <div className="relative min-h-screen bg-black text-white overflow-x-hidden">
@@ -146,8 +155,8 @@ export default function ProfilePage() {
             </button>
             <div className="relative h-9 w-9 rounded-full bg-linear-to-br from-amber-300 via-rose-400 to-fuchsia-500 p-0.5 shadow-lg shadow-rose-500/10">
               <div className="flex h-full w-full items-center justify-center rounded-full bg-zinc-900 text-xs font-bold text-white">
-                {user.name
-                  ? user.name.substring(0, 2).toUpperCase()
+                {displayName
+                  ? displayName.substring(0, 2).toUpperCase()
                   : "U"}
               </div>
             </div>
@@ -172,23 +181,41 @@ export default function ProfilePage() {
               {user.image ? (
                 <Image
                   src={user.image}
-                  alt={user.name}
+                  alt={displayName}
                   width={160}
                   height={160}
                   className="w-full h-full object-cover"
                   priority
                 />
               ) : (
-                user.name.substring(0, 2).toUpperCase()
+                displayName.substring(0, 2).toUpperCase()
               )}
             </div>
           </div>
 
           {/* Name + meta */}
           <div className="flex-1 text-center sm:text-left">
-            <h1 className="text-3xl sm:text-4xl font-black tracking-tight text-white">
-              {user.name}
-            </h1>
+            {isEditing ? (
+              <div className="mb-3 max-w-md mx-auto sm:mx-0">
+                <div>
+                  <label className={labelClass}>Nome</label>
+                  <input
+                    type="text"
+                    value={editForm.name}
+                    onChange={(e) =>
+                      setEditForm({ ...editForm, name: e.target.value })
+                    }
+                    placeholder="Seu nome"
+                    className={inputClass}
+                  />
+                </div>
+              </div>
+            ) : (
+              <h1 className="text-3xl sm:text-4xl font-black tracking-tight text-white">
+                {displayName}
+              </h1>
+            )}
+
             <p className="mt-1 text-sm text-zinc-500 capitalize">
               {user.tipo_usuario}
             </p>
@@ -511,7 +538,7 @@ export default function ProfilePage() {
                 <div className="rounded-2xl border border-zinc-800/50 bg-zinc-900/40 p-6 backdrop-blur-sm">
                   <p className="text-sm text-zinc-400 leading-relaxed">
                     Esta é a página de perfil de{" "}
-                    <strong className="text-white">{user.name}</strong>.
+                    <strong className="text-white">{displayName}</strong>.
                     Adicione mais informações editando o perfil.
                   </p>
                 </div>
