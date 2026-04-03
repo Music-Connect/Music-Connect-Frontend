@@ -41,6 +41,12 @@ export default function ProfilePage() {
     telefone: "",
     cidade: "",
     estado: "",
+    genero_musical: "",
+    preco_minimo: "",
+    preco_maximo: "",
+    spotify_url: "",
+    instagram_url: "",
+    youtube_url: "",
   });
 
   useEffect(() => {
@@ -60,6 +66,12 @@ export default function ProfilePage() {
           telefone: freshUserData.telefone || "",
           cidade: freshUserData.cidade || "",
           estado: freshUserData.estado || "",
+          genero_musical: freshUserData.genero_musical || "",
+          preco_minimo: freshUserData.preco_minimo?.toString() || "",
+          preco_maximo: freshUserData.preco_maximo?.toString() || "",
+          spotify_url: freshUserData.spotify_url || "",
+          instagram_url: freshUserData.instagram_url || "",
+          youtube_url: freshUserData.youtube_url || "",
         });
       } catch (error: unknown) {
         console.error("Erro ao carregar perfil:", error);
@@ -81,6 +93,12 @@ export default function ProfilePage() {
         telefone: editForm.telefone.trim(),
         cidade: editForm.cidade.trim(),
         estado: editForm.estado.trim().toUpperCase(),
+        genero_musical: editForm.genero_musical || undefined,
+        preco_minimo: editForm.preco_minimo ? Number(editForm.preco_minimo) : undefined,
+        preco_maximo: editForm.preco_maximo ? Number(editForm.preco_maximo) : undefined,
+        spotify_url: editForm.spotify_url || undefined,
+        instagram_url: editForm.instagram_url || undefined,
+        youtube_url: editForm.youtube_url || undefined,
       };
 
       const updatedUser = await api.updateUser(storeUser.id, payload);
