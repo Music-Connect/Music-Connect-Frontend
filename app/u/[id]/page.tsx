@@ -1,5 +1,6 @@
 "use client";
 
+import { StarRating } from "@/components/StarRating";
 import { useEffect, useState } from "react";
 import { useRouter, useParams } from "next/navigation";
 import Link from "next/link";
@@ -240,6 +241,15 @@ export default function PublicProfilePage() {
             <p className="mt-1 text-sm text-zinc-500 capitalize">
               {profileUser.tipo_usuario}
             </p>
+            {/* Estrelas de Avaliação (Apenas Leitura) */}
+          {isArtistProfile && (
+            <div className="mt-2 flex items-center justify-center sm:justify-start gap-2">
+              <StarRating rating={Math.round(profileUser.media_avaliacoes || 0)} readOnly size={16} />
+              <span className="text-xs text-zinc-500">
+                ({profileUser.total_avaliacoes || 0} avaliações)
+              </span>
+            </div>
+          )}
             <div className="mt-3 flex flex-wrap items-center gap-2 justify-center sm:justify-start">
               {profileUser.genero_musical && (
                 <span className="inline-flex items-center gap-1 rounded-lg border border-rose-500/20 bg-rose-500/10 px-2.5 py-1 text-xs font-semibold text-rose-400">

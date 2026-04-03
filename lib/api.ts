@@ -21,6 +21,8 @@ export interface User {
   youtube_url?: string | null;
   createdAt?: string;
   updatedAt?: string;
+  media_avaliacoes?: number;
+  total_avaliacoes?: number;
 }
 
 export interface Proposta {
@@ -46,7 +48,12 @@ export interface Proposta {
   created_at: string;
   updated_at?: string | null;
   contratante?: { id: string; name: string; image: string | null };
-  artista?: { id: string; name: string; image: string | null; genero_musical?: string | null };
+  artista?: {
+    id: string;
+    name: string;
+    image: string | null;
+    genero_musical?: string | null;
+  };
 }
 
 export interface Avaliacao {
@@ -95,7 +102,12 @@ export interface Comentario {
   id_comentario_pai?: string | null;
   conteudo: string;
   created_at: string;
-  autor: { id: string; name: string; image: string | null; tipo_usuario: string };
+  autor: {
+    id: string;
+    name: string;
+    image: string | null;
+    tipo_usuario: string;
+  };
   respostas?: Comentario[];
 }
 
@@ -111,7 +123,12 @@ export interface Story {
 }
 
 export interface StoryGroup {
-  user: { id: string; name: string; image: string | null; tipo_usuario: string };
+  user: {
+    id: string;
+    name: string;
+    image: string | null;
+    tipo_usuario: string;
+  };
   stories: Story[];
   hasUnseen: boolean;
 }
@@ -187,7 +204,10 @@ export const api = {
   },
 
   // Artistas
-  async getArtistas(filters?: { genero?: string; local?: string }): Promise<User[]> {
+  async getArtistas(filters?: {
+    genero?: string;
+    local?: string;
+  }): Promise<User[]> {
     const params = new URLSearchParams();
     if (filters?.genero) params.append("genero", filters.genero);
     if (filters?.local) params.append("local", filters.local);
@@ -282,9 +302,12 @@ export const api = {
 
   // Avaliações
   async getAvaliacoesByUserId(id: string): Promise<Avaliacao[]> {
-    const response = await fetch(`${API_BASE_URL}/api/avaliacoes/usuario/${id}`, {
-      credentials: "include",
-    });
+    const response = await fetch(
+      `${API_BASE_URL}/api/avaliacoes/usuario/${id}`,
+      {
+        credentials: "include",
+      },
+    );
 
     if (!response.ok) throw new Error("Erro ao buscar avaliações");
 
@@ -292,10 +315,15 @@ export const api = {
     return data.data || [];
   },
 
-  async getMediaAvaliacoes(id: string): Promise<{ total_avaliacoes: number; media_nota: number }> {
-    const response = await fetch(`${API_BASE_URL}/api/avaliacoes/usuario/${id}/media`, {
-      credentials: "include",
-    });
+  async getMediaAvaliacoes(
+    id: string,
+  ): Promise<{ total_avaliacoes: number; media_nota: number }> {
+    const response = await fetch(
+      `${API_BASE_URL}/api/avaliacoes/usuario/${id}/media`,
+      {
+        credentials: "include",
+      },
+    );
 
     if (!response.ok) throw new Error("Erro ao buscar média de avaliações");
 
@@ -337,35 +365,51 @@ export const api = {
     if (params?.estado) qs.append("estado", params.estado);
     if (params?.tag) qs.append("tag", params.tag);
 
-    const response = await fetch(`${API_BASE_URL}/api/posts?${qs}`, { credentials: "include" });
+    const response = await fetch(`${API_BASE_URL}/api/posts?${qs}`, {
+      credentials: "include",
+    });
     if (!response.ok) throw new Error("Erro ao buscar feed");
     const result = await response.json();
     return { data: result.data || [], meta: result.meta };
   },
 
-  async getFeedRecomendado(params?: { cursor?: string; limit?: number }): Promise<{ data: Post[]; meta: CursorMeta }> {
+  async getFeedRecomendado(params?: {
+    cursor?: string;
+    limit?: number;
+  }): Promise<{ data: Post[]; meta: CursorMeta }> {
     const qs = new URLSearchParams();
     if (params?.cursor) qs.append("cursor", params.cursor);
     if (params?.limit) qs.append("limit", String(params.limit));
 
-    const response = await fetch(`${API_BASE_URL}/api/posts/feed/recomendados?${qs}`, { credentials: "include" });
+    const response = await fetch(
+      `${API_BASE_URL}/api/posts/feed/recomendados?${qs}`,
+      { credentials: "include" },
+    );
     if (!response.ok) throw new Error("Erro ao buscar feed recomendado");
     const result = await response.json();
     return { data: result.data || [], meta: result.meta };
   },
 
   async getPostById(id: string): Promise<Post> {
-    const response = await fetch(`${API_BASE_URL}/api/posts/${id}`, { credentials: "include" });
+    const response = await fetch(`${API_BASE_URL}/api/posts/${id}`, {
+      credentials: "include",
+    });
     if (!response.ok) throw new Error("Erro ao buscar post");
     const result = await response.json();
     return result.data;
   },
 
-  async getPostsByUser(userId: string, cursor?: string): Promise<{ data: Post[]; meta: CursorMeta }> {
+  async getPostsByUser(
+    userId: string,
+    cursor?: string,
+  ): Promise<{ data: Post[]; meta: CursorMeta }> {
     const qs = new URLSearchParams();
     if (cursor) qs.append("cursor", cursor);
 
-    const response = await fetch(`${API_BASE_URL}/api/posts/usuario/${userId}?${qs}`, { credentials: "include" });
+    const response = await fetch(
+      `${API_BASE_URL}/api/posts/usuario/${userId}?${qs}`,
+      { credentials: "include" },
+    );
     if (!response.ok) throw new Error("Erro ao buscar posts do usuário");
     const result = await response.json();
     return { data: result.data || [], meta: result.meta };
@@ -414,46 +458,67 @@ export const api = {
     if (!response.ok) throw new Error("Erro ao descurtir post");
   },
 
-  async getComentarios(postId: string, cursor?: string): Promise<{ data: Comentario[]; meta: CursorMeta }> {
+  async getComentarios(
+    postId: string,
+    cursor?: string,
+  ): Promise<{ data: Comentario[]; meta: CursorMeta }> {
     const qs = new URLSearchParams();
     if (cursor) qs.append("cursor", cursor);
 
-    const response = await fetch(`${API_BASE_URL}/api/posts/${postId}/comentarios?${qs}`, { credentials: "include" });
+    const response = await fetch(
+      `${API_BASE_URL}/api/posts/${postId}/comentarios?${qs}`,
+      { credentials: "include" },
+    );
     if (!response.ok) throw new Error("Erro ao buscar comentários");
     const result = await response.json();
     return { data: result.data || [], meta: result.meta };
   },
 
-  async createComentario(postId: string, data: { conteudo: string; id_comentario_pai?: string }): Promise<Comentario> {
-    const response = await fetch(`${API_BASE_URL}/api/posts/${postId}/comentarios`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      credentials: "include",
-      body: JSON.stringify(data),
-    });
+  async createComentario(
+    postId: string,
+    data: { conteudo: string; id_comentario_pai?: string },
+  ): Promise<Comentario> {
+    const response = await fetch(
+      `${API_BASE_URL}/api/posts/${postId}/comentarios`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify(data),
+      },
+    );
     if (!response.ok) throw new Error("Erro ao criar comentário");
     const result = await response.json();
     return result.data;
   },
 
   async deleteComentario(postId: string, comentarioId: string): Promise<void> {
-    const response = await fetch(`${API_BASE_URL}/api/posts/${postId}/comentarios/${comentarioId}`, {
-      method: "DELETE",
-      credentials: "include",
-    });
+    const response = await fetch(
+      `${API_BASE_URL}/api/posts/${postId}/comentarios/${comentarioId}`,
+      {
+        method: "DELETE",
+        credentials: "include",
+      },
+    );
     if (!response.ok) throw new Error("Erro ao deletar comentário");
   },
 
   // ── Stories ──
 
   async getStories(): Promise<StoryGroup[]> {
-    const response = await fetch(`${API_BASE_URL}/api/stories`, { credentials: "include" });
+    const response = await fetch(`${API_BASE_URL}/api/stories`, {
+      credentials: "include",
+    });
     if (!response.ok) throw new Error("Erro ao buscar stories");
     const result = await response.json();
     return result.data || [];
   },
 
-  async createStory(data: { midia_url: string; tipo_midia?: string; duracao?: number }): Promise<Story> {
+  async createStory(data: {
+    midia_url: string;
+    tipo_midia?: string;
+    duracao?: number;
+  }): Promise<Story> {
     const response = await fetch(`${API_BASE_URL}/api/stories`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -482,12 +547,18 @@ export const api = {
 
   // ── Recomendações ──
 
-  async getRecomendacoes(params?: { page?: number; limit?: number }): Promise<ArtistaRecomendado[]> {
+  async getRecomendacoes(params?: {
+    page?: number;
+    limit?: number;
+  }): Promise<ArtistaRecomendado[]> {
     const qs = new URLSearchParams();
     if (params?.page) qs.append("page", String(params.page));
     if (params?.limit) qs.append("limit", String(params.limit));
 
-    const response = await fetch(`${API_BASE_URL}/api/recomendacoes/artistas?${qs}`, { credentials: "include" });
+    const response = await fetch(
+      `${API_BASE_URL}/api/recomendacoes/artistas?${qs}`,
+      { credentials: "include" },
+    );
     if (!response.ok) throw new Error("Erro ao buscar recomendações");
     const result = await response.json();
     return result.data || [];
