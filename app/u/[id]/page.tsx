@@ -39,6 +39,7 @@ export default function PublicProfilePage() {
   const [showModal, setShowModal] = useState(false);
   const [sending, setSending] = useState(false);
   const [proposalForm, setProposalForm] = useState({
+    titulo: "",
     descricao: "",
     local_evento: "",
     data_evento: "",
@@ -68,16 +69,17 @@ export default function PublicProfilePage() {
     setSending(true);
     try {
       await api.createProposta({
-        id_contratante: currentUser.id,
         id_artista: profileUser.id,
+        titulo: proposalForm.titulo,
         descricao: proposalForm.descricao,
         local_evento: proposalForm.local_evento,
         data_evento: proposalForm.data_evento,
-        status: "pendente",
+        valor_oferecido: Number(proposalForm.valor),
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } as any);
       setShowModal(false);
       setProposalForm({
+        titulo: "",
         descricao: "",
         local_evento: "",
         data_evento: "",
@@ -515,6 +517,20 @@ export default function PublicProfilePage() {
             </div>
 
             <div className="space-y-5">
+              <div>
+                <label className={labelClass}>Título *</label>
+                <input
+                  type="text"
+                  value={proposalForm.titulo}
+                  onChange={(e) =>
+                    setProposalForm({ ...proposalForm, titulo: e.target.value })
+                  }
+                  placeholder="Ex: Show de aniversário"
+                  required
+                  className={inputClass}
+                />
+              </div>
+
               <div>
                 <label className={labelClass}>Local do Evento *</label>
                 <input
