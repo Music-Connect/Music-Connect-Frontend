@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { createPortal } from "react-dom";
 import { X } from "lucide-react";
 import { StarRating } from "./StarRating";
 import { api } from "@/lib/api";
@@ -19,7 +20,7 @@ export function ModalAvaliacao({ isOpen, onClose, idAvaliado, nomeArtista, onSuc
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
 
-  if (!isOpen) return null;
+  if (!isOpen || typeof document === "undefined") return null;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -54,14 +55,14 @@ export function ModalAvaliacao({ isOpen, onClose, idAvaliado, nomeArtista, onSuc
     }
   };
 
-  return (
-    <div 
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4"
+  return createPortal(
+    <div
+      className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/70 backdrop-blur-sm p-4"
       onClick={onClose}
     >
-      <div 
+      <div
         className="fade-in-up w-full max-w-md rounded-2xl border border-zinc-800/50 bg-zinc-900/90 p-8 shadow-2xl backdrop-blur-xl"
-        onClick={(e) => e.stopPropagation()} // Impede que o clique dentro feche a modal
+        onClick={(e) => e.stopPropagation()}
       >
         <div className="mb-6 flex items-center justify-between">
           <h2 className="text-xl font-bold text-white">Avaliar Artista</h2>
@@ -117,6 +118,7 @@ export function ModalAvaliacao({ isOpen, onClose, idAvaliado, nomeArtista, onSuc
           </div>
         </form>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
