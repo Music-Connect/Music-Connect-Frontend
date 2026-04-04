@@ -1,17 +1,16 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Sidebar from "@/components/Sidebar";
 import Header from "@/components/Header";
 import PostCard from "@/components/PostCard";
 import StoryBar from "@/components/StoryBar";
-import CreatePostModal from "@/components/CreatePostModal";
 import CommentSection from "@/components/CommentSection";
 import { api, Post, StoryGroup, ArtistaRecomendado } from "@/lib/api";
 import { useAuthStore } from "@/lib/store";
 import { authClient } from "@/lib/auth-client";
-import { Star, MapPin, Music, TrendingUp } from "lucide-react";
+import { Star, MapPin, Music, TrendingUp, Image, Film, Hash, Send, ChevronDown } from "lucide-react";
 
 export default function FeedPage() {
   const router = useRouter();
@@ -24,12 +23,23 @@ export default function FeedPage() {
   const [hasMore, setHasMore] = useState(false);
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
-  const [showCreatePost, setShowCreatePost] = useState(false);
   const [showCreateStory, setShowCreateStory] = useState(false);
   const [storyUrl, setStoryUrl] = useState("");
   const [commentPost, setCommentPost] = useState<Post | null>(null);
   const [feedType, setFeedType] = useState<"recente" | "recomendado">("recente");
   const [filterTipo, setFilterTipo] = useState<string>("");
+
+  // Inline composer
+  const [composeText, setComposeText] = useState("");
+  const [composeType, setComposeType] = useState<"post" | "disponibilidade" | "buscando">("post");
+  const [composeTagsInput, setComposeTagsInput] = useState("");
+  const [composeImageUrl, setComposeImageUrl] = useState("");
+  const [composeImages, setComposeImages] = useState<string[]>([]);
+  const [composeVideoUrl, setComposeVideoUrl] = useState("");
+  const [composeFocused, setComposeFocused] = useState(false);
+  const [composeShowMedia, setComposeShowMedia] = useState(false);
+  const [composeLoading, setComposeLoading] = useState(false);
+  const composeRef = useRef<HTMLTextAreaElement>(null);
 
   const isArtist = user?.tipo_usuario === "artista";
 
@@ -87,9 +97,43 @@ export default function FeedPage() {
     router.push("/login");
   };
 
-  const handlePostCreated = () => {
-    setShowCreatePost(false);
-    loadFeed(true);
+  const handlePublishInline = async () => {
+    if (!composeText.trim()) return;
+    setComposeLoading(true);
+    try {
+      const tags = composeTagsInput
+        .split(",")
+        .map((t) => t.trim().replace(/^#/, ""))
+        .filter(Boolean);
+
+      await api.createPost({
+        conteudo: composeText.trim(),
+        tipo: composeType,
+        imagens: composeImages.length > 0 ? composeImages : undefined,
+        video_url: composeVideoUrl || undefined,
+        tags: tags.length > 0 ? tags : undefined,
+      });
+      setComposeText("");
+      setComposeType("post");
+      setComposeTagsInput("");
+      setComposeImages([]);
+      setComposeImageUrl("");
+      setComposeVideoUrl("");
+      setComposeFocused(false);
+      setComposeShowMedia(false);
+      loadFeed(true);
+    } catch {
+      alert("Erro ao criar post");
+    } finally {
+      setComposeLoading(false);
+    }
+  };
+
+  const addComposeImage = () => {
+    if (composeImageUrl && composeImages.length < 10) {
+      setComposeImages([...composeImages, composeImageUrl]);
+      setComposeImageUrl("");
+    }
   };
 
   const handleCreateStory = async () => {
@@ -149,16 +193,150 @@ export default function FeedPage() {
                   />
                 </div>
 
-                {/* Create post prompt */}
-                <button
-                  onClick={() => setShowCreatePost(true)}
-                  className="w-full flex items-center gap-3 rounded-2xl border border-zinc-800/50 bg-zinc-900/40 backdrop-blur-sm px-5 py-4 text-left transition-all hover:border-zinc-700/60 hover:bg-zinc-900/60"
-                >
-                  <div className="h-10 w-10 rounded-full bg-gradient-to-br from-amber-400 via-rose-400 to-fuchsia-500 flex items-center justify-center text-white font-bold text-sm shrink-0">
-                    {user.name?.charAt(0).toUpperCase()}
+                {/* Inline Composer */}
+                <div className={`rounded-2xl border bg-zinc-900/40 backdrop-blur-sm transition-all ${composeFocused ? "border-zinc-700/60 bg-zinc-900/60" : "border-zinc-800/50"}`}>
+                  <div className="flex gap-3 px-5 pt-4 pb-2">
+                    <div className="h-10 w-10 rounded-full bg-gradient-to-br from-amber-400 via-rose-400 to-fuchsia-500 flex items-center justify-center text-white font-bold text-sm shrink-0 overflow-hidden">
+                      {user.image ? (
+                        <img src={user.image} alt="" className="h-full w-full object-cover" />
+                      ) : (
+                        user.name?.charAt(0).toUpperCase()
+                      )}
+                    </div>
+                    <textarea
+                      ref={composeRef}
+                      value={composeText}
+                      onChange={(e) => setComposeText(e.target.value)}
+                      onFocus={() => setComposeFocused(true)}
+                      placeholder={
+                        composeType === "disponibilidade"
+                          ? "Conte sobre sua disponibilidade..."
+                          : composeType === "buscando"
+                          ? "Descreva o artista que você está buscando..."
+                          : `O que você quer compartilhar, ${user.name?.split(" ")[0]}?`
+                      }
+                      rows={composeFocused ? 3 : 1}
+                      maxLength={2000}
+                      className="flex-1 bg-transparent text-sm text-white placeholder-zinc-500 resize-none focus:outline-none mt-2"
+                    />
                   </div>
-                  <span className="text-sm text-zinc-500">O que você quer compartilhar, {user.name?.split(" ")[0]}?</span>
-                </button>
+
+                  {(composeFocused || composeText.length > 0) && (
+                    <div className="px-5 pb-4 space-y-3">
+                      {/* Type chips */}
+                      <div className="flex gap-2 ml-[52px]">
+                        {([
+                          { value: "post", label: "Post" },
+                          { value: "disponibilidade", label: "Disponível" },
+                          { value: "buscando", label: "Buscando Artista" },
+                        ] as const).map((opt) => (
+                          <button
+                            key={opt.value}
+                            onClick={() => setComposeType(opt.value)}
+                            className={`text-[11px] font-medium px-2.5 py-1 rounded-full border transition-all ${
+                              composeType === opt.value
+                                ? "border-rose-400/40 bg-rose-400/10 text-rose-400"
+                                : "border-zinc-800 bg-zinc-800/40 text-zinc-400 hover:text-zinc-300"
+                            }`}
+                          >
+                            {opt.label}
+                          </button>
+                        ))}
+                      </div>
+
+                      {/* Tags */}
+                      <div className="ml-[52px] relative">
+                        <Hash size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-600" />
+                        <input
+                          value={composeTagsInput}
+                          onChange={(e) => setComposeTagsInput(e.target.value)}
+                          placeholder="Tags (separadas por vírgula)"
+                          className="w-full rounded-xl border border-zinc-800/60 bg-zinc-800/30 pl-9 pr-4 py-2 text-xs text-white placeholder-zinc-600 focus:border-zinc-700 focus:outline-none"
+                        />
+                      </div>
+
+                      {/* Media toggle */}
+                      <div className="ml-[52px]">
+                        <button
+                          onClick={() => setComposeShowMedia(!composeShowMedia)}
+                          className="flex items-center gap-1.5 text-xs font-medium text-zinc-400 hover:text-zinc-300 px-3 py-1.5 rounded-lg border border-zinc-800/60 hover:bg-zinc-800/40 transition-colors"
+                        >
+                          <Image size={14} />
+                          Mídia
+                          <ChevronDown size={12} className={`transition-transform ${composeShowMedia ? "rotate-180" : ""}`} />
+                        </button>
+                      </div>
+
+                      {/* Media inputs */}
+                      {composeShowMedia && (
+                        <div className="ml-[52px] space-y-3 rounded-xl border border-zinc-800/40 bg-zinc-800/20 p-4">
+                          <div>
+                            <label className="text-[11px] font-semibold text-zinc-500 uppercase tracking-wider mb-1.5 block">
+                              Imagens ({composeImages.length}/10)
+                            </label>
+                            <div className="flex gap-2">
+                              <input
+                                value={composeImageUrl}
+                                onChange={(e) => setComposeImageUrl(e.target.value)}
+                                placeholder="URL da imagem"
+                                className="flex-1 rounded-lg border border-zinc-800/60 bg-zinc-800/30 px-3 py-2 text-xs text-white placeholder-zinc-600 focus:border-zinc-700 focus:outline-none"
+                              />
+                              <button
+                                onClick={addComposeImage}
+                                disabled={!composeImageUrl || composeImages.length >= 10}
+                                className="px-3 py-2 rounded-lg bg-zinc-800 text-xs font-medium text-zinc-300 hover:bg-zinc-700 disabled:opacity-30 transition-colors"
+                              >
+                                Adicionar
+                              </button>
+                            </div>
+                            {composeImages.length > 0 && (
+                              <div className="flex flex-wrap gap-2 mt-2">
+                                {composeImages.map((img, i) => (
+                                  <div key={i} className="relative group">
+                                    <img src={img} alt="" className="h-16 w-16 rounded-lg object-cover" />
+                                    <button
+                                      onClick={() => setComposeImages(composeImages.filter((_, idx) => idx !== i))}
+                                      className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-red-500 text-white text-[10px] flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                                    >
+                                      x
+                                    </button>
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                          <div>
+                            <label className="text-[11px] font-semibold text-zinc-500 uppercase tracking-wider mb-1.5 block">
+                              Vídeo (YouTube URL)
+                            </label>
+                            <div className="flex items-center gap-2">
+                              <Film size={14} className="text-zinc-600 shrink-0" />
+                              <input
+                                value={composeVideoUrl}
+                                onChange={(e) => setComposeVideoUrl(e.target.value)}
+                                placeholder="https://youtube.com/watch?v=..."
+                                className="flex-1 rounded-lg border border-zinc-800/60 bg-zinc-800/30 px-3 py-2 text-xs text-white placeholder-zinc-600 focus:border-zinc-700 focus:outline-none"
+                              />
+                            </div>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Footer actions */}
+                      <div className="flex items-center justify-between ml-[52px]">
+                        <p className="text-[10px] text-zinc-600">{composeText.length}/2000</p>
+                        <button
+                          onClick={handlePublishInline}
+                          disabled={!composeText.trim() || composeLoading}
+                          className="flex items-center gap-2 px-5 py-2 rounded-xl bg-white text-black text-sm font-semibold hover:bg-zinc-200 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+                        >
+                          <Send size={14} />
+                          {composeLoading ? "Publicando..." : "Publicar"}
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
 
                 {/* Feed controls */}
                 <div className="flex items-center gap-3 flex-wrap">
@@ -213,7 +391,10 @@ export default function FeedPage() {
                   <div className="rounded-2xl border border-zinc-800/50 bg-zinc-900/40 p-12 text-center">
                     <p className="text-sm text-zinc-500">Nenhuma publicação encontrada.</p>
                     <button
-                      onClick={() => setShowCreatePost(true)}
+                      onClick={() => {
+                        setComposeFocused(true);
+                        composeRef.current?.focus();
+                      }}
                       className="mt-3 text-sm font-semibold text-rose-400 hover:text-rose-300 transition-colors"
                     >
                       Seja o primeiro a publicar!
@@ -307,14 +488,6 @@ export default function FeedPage() {
       </div>
 
       {/* Modals */}
-      {showCreatePost && (
-        <CreatePostModal
-          onClose={() => setShowCreatePost(false)}
-          onCreated={handlePostCreated}
-          userName={user.name}
-        />
-      )}
-
       {showCreateStory && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
           <div className="w-full max-w-sm rounded-2xl border border-zinc-800/60 bg-zinc-900 p-6 space-y-4">
